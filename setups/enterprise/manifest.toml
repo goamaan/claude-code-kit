@@ -1,0 +1,56 @@
+[setup]
+name = "enterprise"
+version = "1.0.0"
+description = "Enterprise development with strict compliance and security"
+author = "claude-kit"
+
+[requires]
+addons = []
+
+[skills]
+enabled = [
+  "autopilot",
+  "ralph",
+  "planner",
+  "git-master",
+  "tdd-guide",
+  "code-reviewer",
+  "security-reviewer",
+  "analyze",
+  "deepsearch"
+]
+disabled = [
+  "ultrawork"
+]
+
+[agents.architect]
+model = "opus"
+priority = 90
+
+[agents.security-reviewer]
+model = "opus"
+priority = 95
+
+[agents.code-reviewer]
+model = "opus"
+priority = 85
+
+[agents.executor]
+model = "sonnet"
+priority = 50
+
+[agents.qa-tester-high]
+model = "opus"
+priority = 80
+
+[mcp]
+recommended = ["filesystem", "git"]
+max_enabled = 3
+
+[hooks]
+templates = [
+  { name = "security-audit", matcher = "**/src/**/*.{ts,js,py}", handler = "security-check", priority = 100 },
+  { name = "compliance-check", matcher = "**/src/**/*", handler = "compliance-validate", priority = 90 }
+]
+
+[commands]

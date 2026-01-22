@@ -1,0 +1,46 @@
+[setup]
+name = "frontend"
+version = "1.0.0"
+description = "Frontend development with React, Vue, or Svelte"
+author = "claude-kit"
+
+[requires]
+addons = []
+
+[skills]
+enabled = [
+  "autopilot",
+  "ralph",
+  "ultrawork",
+  "planner",
+  "git-master",
+  "frontend-ui-ux",
+  "tdd-guide",
+  "code-reviewer",
+  "analyze",
+  "deepsearch"
+]
+
+[agents.designer]
+model = "opus"
+priority = 90
+
+[agents.designer-low]
+model = "haiku"
+priority = 30
+
+[agents.executor]
+model = "sonnet"
+priority = 50
+
+[agents.architect]
+model = "sonnet"
+priority = 60
+
+[mcp]
+recommended = ["filesystem", "git", "fetch"]
+
+[hooks]
+templates = []
+
+[commands]

@@ -1,0 +1,47 @@
+[setup]
+name = "fullstack"
+version = "1.0.0"
+description = "Full-stack development with React and Node.js"
+author = "claude-kit"
+
+[requires]
+addons = []
+
+[skills]
+enabled = [
+  "autopilot",
+  "ralph",
+  "ultrawork",
+  "planner",
+  "git-master",
+  "frontend-ui-ux",
+  "tdd-guide",
+  "code-reviewer",
+  "security-reviewer",
+  "analyze",
+  "deepsearch"
+]
+
+[agents.designer]
+model = "sonnet"
+priority = 70
+
+[agents.executor]
+model = "sonnet"
+priority = 50
+
+[agents.architect]
+model = "opus"
+priority = 80
+
+[agents.qa-tester]
+model = "sonnet"
+priority = 60
+
+[mcp]
+recommended = ["filesystem", "git", "fetch"]
+
+[hooks]
+templates = []
+
+[commands]

@@ -1,0 +1,15 @@
+[addon]
+name = "rm-rf-guard"
+version = "1.0.0"
+description = "Prevents destructive file deletion commands"
+author = "claude-kit"
+license = "MIT"
+keywords = ["safety", "protection", "rm", "delete"]
+
+[hooks]
+PreToolUse = [
+  { matcher = "Bash", handler = "./hook.ts", priority = 10 }
+]
+
+[install]
+runtime = "bun"

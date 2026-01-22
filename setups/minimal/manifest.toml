@@ -1,0 +1,11 @@
+[setup]
+name = "minimal"
+version = "1.0.0"
+description = "Clean slate with just essentials"
+author = "claude-kit"
+
+[skills]
+enabled = []
+
+[hooks]
+templates = []

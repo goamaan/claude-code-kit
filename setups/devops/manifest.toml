@@ -1,0 +1,44 @@
+[setup]
+name = "devops"
+version = "1.0.0"
+description = "DevOps with Docker, Kubernetes, and Terraform"
+author = "claude-kit"
+
+[requires]
+addons = []
+
+[skills]
+enabled = [
+  "autopilot",
+  "ralph",
+  "ultrawork",
+  "planner",
+  "git-master",
+  "security-reviewer",
+  "analyze",
+  "deepsearch"
+]
+
+[agents.architect]
+model = "opus"
+priority = 85
+
+[agents.executor]
+model = "sonnet"
+priority = 50
+
+[agents.security-reviewer]
+model = "opus"
+priority = 80
+
+[agents.build-fixer]
+model = "sonnet"
+priority = 70
+
+[mcp]
+recommended = ["filesystem", "git", "fetch"]
+
+[hooks]
+templates = []
+
+[commands]

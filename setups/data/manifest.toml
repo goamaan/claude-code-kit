@@ -1,0 +1,52 @@
+[setup]
+name = "data"
+version = "1.0.0"
+description = "Data science and analytics with Python and Jupyter"
+author = "claude-kit"
+
+[requires]
+addons = []
+
+[skills]
+enabled = [
+  "autopilot",
+  "ralph",
+  "ultrawork",
+  "planner",
+  "git-master",
+  "research",
+  "analyze",
+  "deepsearch"
+]
+
+[agents.scientist]
+model = "sonnet"
+priority = 80
+
+[agents.scientist-high]
+model = "opus"
+priority = 90
+
+[agents.scientist-low]
+model = "haiku"
+priority = 30
+
+[agents.researcher]
+model = "sonnet"
+priority = 70
+
+[agents.architect]
+model = "sonnet"
+priority = 60
+
+[agents.executor]
+model = "sonnet"
+priority = 50
+
+[mcp]
+recommended = ["filesystem", "git", "postgres", "fetch"]
+
+[hooks]
+templates = []
+
+[commands]

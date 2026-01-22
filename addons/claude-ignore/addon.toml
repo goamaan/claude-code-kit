@@ -1,0 +1,16 @@
+[addon]
+name = "claude-ignore"
+version = "1.0.0"
+description = "Respects .claudeignore files to prevent reading sensitive files"
+author = "claude-kit"
+license = "MIT"
+keywords = ["safety", "protection", "ignore", "privacy", "secrets"]
+
+[hooks]
+PreToolUse = [
+  { matcher = "Read", handler = "./hook.ts", priority = 5 },
+  { matcher = "Bash", handler = "./hook.ts", priority = 5 }
+]
+
+[install]
+runtime = "bun"

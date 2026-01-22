@@ -1,0 +1,67 @@
+# {{name}}
+
+{{description}}
+
+## Installation
+
+Install via claude-kit:
+
+```bash
+claude-kit addon install ./{{name}}
+```
+
+Or from GitHub:
+
+```bash
+claude-kit addon install github:username/{{name}}
+```
+
+## Usage
+
+Once installed, this addon automatically runs hooks when Claude Code uses tools.
+
+## Configuration
+
+Edit `addon.toml` to configure hooks and behavior:
+
+```toml
+[addon]
+name = "{{name}}"
+version = "1.0.0"
+
+[hooks]
+PreToolUse = [
+  { matcher = "Bash", handler = "./hook.ts", priority = 0 }
+]
+```
+
+### Hook Matchers
+
+- `"Bash"` - Match Bash tool calls
+- `"Read"` - Match file read operations
+- `"Write"` - Match file write operations
+- `"*"` - Match all tools
+
+### Priority
+
+Higher priority hooks run first. Use priority to control execution order when multiple addons are installed.
+
+## Development
+
+### Hook Exit Codes
+
+- `0` - Allow the tool call to proceed
+- `1` - Error (stop execution with error message)
+- `2` - Block (skip this tool call silently)
+
+### Testing
+
+Test your hook locally:
+
+```bash
+echo '{"tool_name":"Bash","tool_input":{"command":"ls"}}' | bun run hook.ts
+```
+
+## License
+
+MIT

@@ -1,0 +1,46 @@
+[setup]
+name = "backend"
+version = "1.0.0"
+description = "Backend API development with security focus"
+author = "claude-kit"
+
+[requires]
+addons = []
+
+[skills]
+enabled = [
+  "autopilot",
+  "ralph",
+  "ultrawork",
+  "planner",
+  "git-master",
+  "tdd-guide",
+  "code-reviewer",
+  "security-reviewer",
+  "analyze",
+  "deepsearch"
+]
+
+[agents.architect]
+model = "opus"
+priority = 85
+
+[agents.executor]
+model = "sonnet"
+priority = 50
+
+[agents.security-reviewer]
+model = "opus"
+priority = 80
+
+[agents.qa-tester]
+model = "sonnet"
+priority = 65
+
+[mcp]
+recommended = ["filesystem", "git", "postgres", "fetch"]
+
+[hooks]
+templates = []
+
+[commands]
