@@ -1,14 +1,14 @@
 {
-  "name": "claude-code-kit",
+  "name": "claudeops",
   "version": "0.1.0",
   "type": "module",
-  "description": "CLI toolkit for Claude Code configuration management",
+  "description": "Batteries-included Claude Code enhancement toolkit - orchestration, guardrails, profiles, and configuration management",
   "author": "Amaan",
   "license": "MIT",
   "bin": {
-    "claude-code-kit": "dist/cli.mjs",
-    "cck": "dist/cli.mjs",
-    "ck": "dist/cli.mjs"
+    "claudeops": "./dist/cli.mjs",
+    "cops": "./dist/cli.mjs",
+    "co": "./dist/cli.mjs"
   },
   "exports": {
     ".": {
@@ -19,7 +19,10 @@
   "files": [
     "dist",
     "setups",
-    "addons"
+    "addons",
+    "agents",
+    "skills",
+    "hooks"
   ],
   "scripts": {
     "dev": "tsdown --watch",

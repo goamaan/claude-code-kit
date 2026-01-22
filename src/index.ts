@@ -1,12 +1,12 @@
 /**
- * claude-code-kit - CLI toolkit for Claude Code configuration management
+ * claudeops - Batteries-included Claude Code enhancement toolkit
  *
- * @module claude-code-kit
+ * @module claudeops
  */
 
 export const VERSION = "0.1.0";
 
-export const NAME = "claude-code-kit";
+export const NAME = "claudeops";
 
 /**
  * Placeholder for future exports.

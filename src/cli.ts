@@ -7,7 +7,7 @@ const main = defineCommand({
   meta: {
     name: NAME,
     version: VERSION,
-    description: "CLI toolkit for Claude Code configuration management",
+    description: "Batteries-included Claude Code enhancement toolkit",
   },
   subCommands: {
     // Profile management
@@ -40,13 +40,13 @@ const main = defineCommand({
     // Installation wizard
     install: () => import("./commands/install.js").then((m) => m.default),
 
-    // Upgrade claude-code-kit
+    // Upgrade claudeops
     upgrade: () => import("./commands/upgrade.js").then((m) => m.default),
   },
   run({ args: _args }) {
     // Default behavior when no subcommand is provided
     console.log(`${NAME} v${VERSION}`);
-    console.log("CLI toolkit for Claude Code configuration management");
+    console.log("Batteries-included Claude Code enhancement toolkit");
     console.log("");
     console.log("Commands:");
     console.log("  profile   Manage profiles (list, use, create, delete, export, import)");
