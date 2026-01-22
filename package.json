@@ -1,13 +1,14 @@
 {
-  "name": "claude-kit",
+  "name": "claude-code-kit",
   "version": "0.1.0",
   "type": "module",
   "description": "CLI toolkit for Claude Code configuration management",
   "author": "Amaan",
   "license": "MIT",
   "bin": {
-    "claude-kit": "./dist/cli.mjs",
-    "ck": "./dist/cli.mjs"
+    "claude-code-kit": "dist/cli.mjs",
+    "cck": "dist/cli.mjs",
+    "ck": "dist/cli.mjs"
   },
   "exports": {
     ".": {

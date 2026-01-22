@@ -1,5 +1,5 @@
 /**
- * TOML parser with Zod validation for claude-kit configuration files
+ * TOML parser with Zod validation for claude-code-kit configuration files
  */
 
 /// <reference types="node" />

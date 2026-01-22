@@ -2,7 +2,7 @@
 name = "devops"
 version = "1.0.0"
 description = "DevOps with Docker, Kubernetes, and Terraform"
-author = "claude-kit"
+author = "claude-code-kit"
 
 [requires]
 addons = []

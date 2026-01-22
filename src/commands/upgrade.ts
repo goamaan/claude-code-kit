@@ -29,7 +29,7 @@ interface PackageInfo {
 
 async function fetchLatestVersion(): Promise<string | null> {
   try {
-    const response = await fetch('https://registry.npmjs.org/claude-kit');
+    const response = await fetch('https://registry.npmjs.org/claude-code-kit');
     if (!response.ok) {
       return null;
     }
@@ -66,10 +66,10 @@ async function executeUpgrade(): Promise<boolean> {
                         userAgent.includes('bun') ? 'bun' : 'npm';
 
   const commands: Record<string, string[]> = {
-    npm: ['npm', 'install', '-g', 'claude-kit@latest'],
-    yarn: ['yarn', 'global', 'add', 'claude-kit@latest'],
-    pnpm: ['pnpm', 'add', '-g', 'claude-kit@latest'],
-    bun: ['bun', 'add', '-g', 'claude-kit@latest'],
+    npm: ['npm', 'install', '-g', 'claude-code-kit@latest'],
+    yarn: ['yarn', 'global', 'add', 'claude-code-kit@latest'],
+    pnpm: ['pnpm', 'add', '-g', 'claude-code-kit@latest'],
+    bun: ['bun', 'add', '-g', 'claude-code-kit@latest'],
   };
 
   const cmd = commands[packageManager] ?? commands['npm']!;
@@ -182,7 +182,7 @@ export default defineCommand({
 
     // Execute upgrade
     console.log();
-    output.info('Upgrading claude-kit...');
+    output.info('Upgrading claude-code-kit...');
     console.log();
 
     const success = await executeUpgrade();
@@ -195,9 +195,9 @@ export default defineCommand({
       console.log();
       output.error('Upgrade failed');
       output.info('Try running manually:');
-      output.dim('  npm install -g claude-kit@latest');
+      output.dim('  npm install -g claude-code-kit@latest');
       output.dim('  # or');
-      output.dim('  yarn global add claude-kit@latest');
+      output.dim('  yarn global add claude-code-kit@latest');
       process.exit(1);
     }
   },

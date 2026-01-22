@@ -44,7 +44,7 @@ function removeUndefined<T extends Record<string, unknown>>(obj: T): T {
 // Constants
 // =============================================================================
 
-const CLAUDE_KIT_DIR = '.claude-kit';
+const CLAUDE_KIT_DIR = '.claude-code-kit';
 const PROFILES_DIR = 'profiles';
 const ACTIVE_PROFILE_FILE = 'active-profile';
 const PROFILE_EXTENSION = '.toml';

@@ -40,7 +40,7 @@ const main = defineCommand({
     // Installation wizard
     install: () => import("./commands/install.js").then((m) => m.default),
 
-    // Upgrade claude-kit
+    // Upgrade claude-code-kit
     upgrade: () => import("./commands/upgrade.js").then((m) => m.default),
   },
   run({ args: _args }) {
@@ -61,7 +61,7 @@ const main = defineCommand({
     console.log("  install   Interactive installation wizard");
     console.log("  upgrade   Check for and install updates");
     console.log("");
-    console.log("Run 'ck <command> --help' for more information on a command.");
+    console.log("Run 'cck <command> --help' for more information on a command.");
   },
 });
 

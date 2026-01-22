@@ -105,7 +105,7 @@ export function createMcpManager(): McpManager {
   }
 
   /**
-   * Get path to MCP servers state file (for claude-kit tracking)
+   * Get path to MCP servers state file (for claude-code-kit tracking)
    */
   function getStatePath(): string {
     return join(getGlobalConfigDir(), 'cache', MCP_SERVERS_FILE);

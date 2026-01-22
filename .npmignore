@@ -1,0 +1,26 @@
+# Source files (dist is published)
+src/
+tests/
+*.test.ts
+
+# Config files
+tsconfig.json
+tsdown.config.ts
+vitest.config.ts
+eslint.config.js
+.editorconfig
+
+# Development
+.omc/
+.claude/
+node_modules/
+coverage/
+*.log
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+PLAN.md
+CONTRIBUTING.md

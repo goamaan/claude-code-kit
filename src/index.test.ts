@@ -1,14 +1,14 @@
 import { describe, it, expect } from "vitest";
 import { VERSION, NAME } from "./index.js";
 
-describe("claude-kit", () => {
+describe("claude-code-kit", () => {
   describe("exports", () => {
     it("should export VERSION", () => {
       expect(VERSION).toBe("0.1.0");
     });
 
     it("should export NAME", () => {
-      expect(NAME).toBe("claude-kit");
+      expect(NAME).toBe("claude-code-kit");
     });
   });
 

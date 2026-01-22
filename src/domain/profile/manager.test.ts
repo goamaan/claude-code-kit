@@ -20,7 +20,7 @@ describe('ProfileManager', () => {
 
   beforeEach(async () => {
     // Create a temporary directory for tests
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'claude-kit-test-'));
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'claude-code-kit-test-'));
     const storage = createProfileStorage(tempDir);
     manager = createProfileManager(storage);
   });

@@ -1,6 +1,6 @@
 /**
  * Doctor Module
- * Provides diagnostic and repair functionality for claude-kit
+ * Provides diagnostic and repair functionality for claude-code-kit
  */
 
 import type {
@@ -161,7 +161,7 @@ export function createDoctor(): Doctor {
    */
   async function healthCheck(): Promise<'healthy' | 'degraded' | 'unhealthy'> {
     // Run only critical checks
-    const criticalChecks = ['claude-kit-dir', 'config-valid', 'active-profile'];
+    const criticalChecks = ['claude-code-kit-dir', 'config-valid', 'active-profile'];
     const results = await runDiagnostics({ checks: criticalChecks });
 
     const failed = results.filter((r) => !r.passed);
@@ -204,7 +204,7 @@ async function getSystemInfo(): Promise<DiagnosticReport['system']> {
   let claudeCodeVersion: string | undefined;
   let omcVersion: string | undefined;
 
-  // Try to get claude-kit version from package.json
+  // Try to get claude-code-kit version from package.json
   try {
     const packageJson = await import('../../../package.json', {
       assert: { type: 'json' },
@@ -275,7 +275,7 @@ export function formatReport(report: DiagnosticReport): string {
   // Available fixes
   if (report.availableFixes.length > 0) {
     lines.push('## Available Fixes');
-    lines.push('Run "claude-kit doctor --fix" to apply these fixes:');
+    lines.push('Run "claude-code-kit doctor --fix" to apply these fixes:');
     for (const fix of report.availableFixes) {
       lines.push(`- ${fix.description} (${fix.checkId})`);
     }
@@ -286,7 +286,7 @@ export function formatReport(report: DiagnosticReport): string {
   lines.push('## System Information');
   lines.push(`- Platform: ${report.system.platform}`);
   lines.push(`- Node.js: ${report.system.nodeVersion}`);
-  lines.push(`- claude-kit: ${report.system.claudeKitVersion}`);
+  lines.push(`- claude-code-kit: ${report.system.claudeKitVersion}`);
   if (report.system.claudeCodeVersion) {
     lines.push(`- Claude Code: ${report.system.claudeCodeVersion}`);
   }

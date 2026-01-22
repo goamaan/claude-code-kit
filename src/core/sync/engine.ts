@@ -1,6 +1,6 @@
 /**
- * Sync Engine - Main synchronization engine for claude-kit
- * Orchestrates sync between claude-kit config and Claude Code settings
+ * Sync Engine - Main synchronization engine for claude-code-kit
+ * Orchestrates sync between claude-code-kit config and Claude Code settings
  */
 
 import { join } from 'node:path';
@@ -595,11 +595,11 @@ class SyncEngineImpl implements SyncEngine {
         const metadata = copy['metadata'];
         if (metadata && typeof metadata === 'object') {
           const metadataCopy = { ...(metadata as Record<string, unknown>) };
-          const claudeKit = metadataCopy['claude-kit'];
+          const claudeKit = metadataCopy['claude-code-kit'];
           if (claudeKit && typeof claudeKit === 'object') {
             const claudeKitCopy = { ...(claudeKit as Record<string, unknown>) };
             delete claudeKitCopy['generatedAt'];
-            metadataCopy['claude-kit'] = claudeKitCopy;
+            metadataCopy['claude-code-kit'] = claudeKitCopy;
           }
           copy['metadata'] = metadataCopy;
         }

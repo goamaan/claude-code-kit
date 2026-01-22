@@ -24,24 +24,24 @@ type DiagnosticCheck = () => Promise<DiagnosticResult>;
 
 const checks: Record<string, DiagnosticCheck> = {
   // Installation checks
-  'installation:claude-kit-dir': async () => {
+  'installation:claude-code-kit-dir': async () => {
     const start = Date.now();
     const configDir = getGlobalConfigDir();
     const dirExists = await exists(configDir);
 
     return {
-      id: 'installation:claude-kit-dir',
-      name: 'claude-kit directory',
+      id: 'installation:claude-code-kit-dir',
+      name: 'claude-code-kit directory',
       category: 'installation',
       severity: dirExists ? 'info' : 'warning',
       passed: dirExists,
-      description: 'Check if ~/.claude-kit directory exists',
+      description: 'Check if ~/.claude-code-kit directory exists',
       message: dirExists
         ? `Found: ${configDir}`
         : `Missing: ${configDir}`,
       suggestions: dirExists ? undefined : [
-        'Run: ck config init',
-        'Or: mkdir -p ~/.claude-kit',
+        'Run: cck config init',
+        'Or: mkdir -p ~/.claude-code-kit',
       ],
       fixAvailable: !dirExists,
       fixId: dirExists ? undefined : 'fix:create-config-dir',
@@ -550,7 +550,7 @@ export default defineCommand({
     output.header('System Info');
     output.kv('Platform', report.system.platform);
     output.kv('Node.js', report.system.nodeVersion);
-    output.kv('claude-kit', report.system.claudeKitVersion);
+    output.kv('claude-code-kit', report.system.claudeKitVersion);
 
     // Exit with appropriate code
     if (report.status === 'unhealthy') {

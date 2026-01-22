@@ -1,15 +1,15 @@
 /**
- * Global constants for claude-kit
+ * Global constants for claude-code-kit
  */
 
-/** Global configuration directory (~/.claude-kit) */
-export const GLOBAL_CONFIG_DIR = '.claude-kit';
+/** Global configuration directory (~/.claude-code-kit) */
+export const GLOBAL_CONFIG_DIR = '.claude-code-kit';
 
 /** Claude configuration directory (~/.claude) */
 export const CLAUDE_DIR = '.claude';
 
 /** Project-level configuration directory */
-export const PROJECT_CONFIG_DIR = '.claude-kit';
+export const PROJECT_CONFIG_DIR = '.claude-code-kit';
 
 /** Main configuration file name */
 export const CONFIG_FILE = 'config.toml';

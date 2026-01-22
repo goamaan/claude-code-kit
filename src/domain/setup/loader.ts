@@ -96,7 +96,7 @@ class SetupLoaderImpl implements SetupLoader {
   constructor(options: SetupLoaderOptions = {}) {
     // Default to package's setups directory
     this.builtinDir = options.builtinDir ?? path.join(__dirname, '..', '..', '..', BUILTIN_SETUPS_DIR);
-    this.cacheDir = options.cacheDir ?? path.join(os.homedir(), '.claude-kit', 'cache', 'setups');
+    this.cacheDir = options.cacheDir ?? path.join(os.homedir(), '.claude-code-kit', 'cache', 'setups');
     this.fetchFn = options.fetch ?? globalThis.fetch;
   }
 
@@ -138,7 +138,7 @@ class SetupLoaderImpl implements SetupLoader {
 
     try {
       // Create a temporary directory for extraction
-      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'claude-kit-setup-'));
+      const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'claude-code-kit-setup-'));
 
       try {
         // Extract the archive

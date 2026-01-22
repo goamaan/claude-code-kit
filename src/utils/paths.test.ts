@@ -33,8 +33,8 @@ describe('paths', () => {
   });
 
   describe('getGlobalConfigDir', () => {
-    it('should return ~/.claude-kit', () => {
-      expect(getGlobalConfigDir()).toBe(join(home, '.claude-kit'));
+    it('should return ~/.claude-code-kit', () => {
+      expect(getGlobalConfigDir()).toBe(join(home, '.claude-code-kit'));
     });
   });
 
@@ -45,55 +45,55 @@ describe('paths', () => {
   });
 
   describe('getProjectConfigDir', () => {
-    it('should return .claude-kit in cwd by default', () => {
-      expect(getProjectConfigDir()).toBe(join(process.cwd(), '.claude-kit'));
+    it('should return .claude-code-kit in cwd by default', () => {
+      expect(getProjectConfigDir()).toBe(join(process.cwd(), '.claude-code-kit'));
     });
 
-    it('should return .claude-kit in specified root', () => {
+    it('should return .claude-code-kit in specified root', () => {
       expect(getProjectConfigDir('/custom/root')).toBe(
-        '/custom/root/.claude-kit'
+        '/custom/root/.claude-code-kit'
       );
     });
   });
 
   describe('getProfilesDir', () => {
-    it('should return ~/.claude-kit/profiles', () => {
-      expect(getProfilesDir()).toBe(join(home, '.claude-kit', 'profiles'));
+    it('should return ~/.claude-code-kit/profiles', () => {
+      expect(getProfilesDir()).toBe(join(home, '.claude-code-kit', 'profiles'));
     });
   });
 
   describe('getProfileDir', () => {
     it('should return profile directory path', () => {
       expect(getProfileDir('my-profile')).toBe(
-        join(home, '.claude-kit', 'profiles', 'my-profile')
+        join(home, '.claude-code-kit', 'profiles', 'my-profile')
       );
     });
   });
 
   describe('getAddonsDir', () => {
-    it('should return ~/.claude-kit/addons', () => {
-      expect(getAddonsDir()).toBe(join(home, '.claude-kit', 'addons'));
+    it('should return ~/.claude-code-kit/addons', () => {
+      expect(getAddonsDir()).toBe(join(home, '.claude-code-kit', 'addons'));
     });
   });
 
   describe('getAddonDir', () => {
     it('should return addon directory path', () => {
       expect(getAddonDir('my-addon')).toBe(
-        join(home, '.claude-kit', 'addons', 'my-addon')
+        join(home, '.claude-code-kit', 'addons', 'my-addon')
       );
     });
   });
 
   describe('getSetupsDir', () => {
-    it('should return ~/.claude-kit/setups', () => {
-      expect(getSetupsDir()).toBe(join(home, '.claude-kit', 'setups'));
+    it('should return ~/.claude-code-kit/setups', () => {
+      expect(getSetupsDir()).toBe(join(home, '.claude-code-kit', 'setups'));
     });
   });
 
   describe('getSetupDir', () => {
     it('should return setup directory path', () => {
       expect(getSetupDir('my-setup')).toBe(
-        join(home, '.claude-kit', 'setups', 'my-setup')
+        join(home, '.claude-code-kit', 'setups', 'my-setup')
       );
     });
   });

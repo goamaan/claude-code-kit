@@ -175,7 +175,7 @@ export const AddonManifestSchema = z.object({
 
   // Compatibility
   requires: z.object({
-    'claude-kit': z.string().optional(),
+    'claude-code-kit': z.string().optional(),
     'oh-my-claudecode': z.string().optional(),
   }).optional(),
 

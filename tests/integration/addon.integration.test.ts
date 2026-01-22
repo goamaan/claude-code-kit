@@ -22,7 +22,7 @@ describe('Addon Integration', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(tmpdir(), `claude-kit-integration-${randomUUID()}`);
+    testDir = join(tmpdir(), `claude-code-kit-integration-${randomUUID()}`);
     await mkdir(testDir, { recursive: true });
   });
 
@@ -156,9 +156,9 @@ keywords = ${JSON.stringify(addon.keywords)}
         const addonPath = await manager.create('my-new-addon');
 
         // Verify files were created
-        await expect(access(join(addonPath, 'addon.toml'))).resolves.toBeNull();
-        await expect(access(join(addonPath, 'hook.ts'))).resolves.toBeNull();
-        await expect(access(join(addonPath, 'README.md'))).resolves.toBeNull();
+        await expect(access(join(addonPath, 'addon.toml'))).resolves.toBeUndefined();
+        await expect(access(join(addonPath, 'hook.ts'))).resolves.toBeUndefined();
+        await expect(access(join(addonPath, 'README.md'))).resolves.toBeUndefined();
 
         // Verify manifest is valid
         const manifest = await loadAddonManifest(addonPath);

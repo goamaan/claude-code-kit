@@ -25,7 +25,7 @@ import { mergeSetups, type MergeOptions } from './merger.js';
 // Constants
 // =============================================================================
 
-const USER_SETUPS_DIR = '.claude-kit/setups';
+const USER_SETUPS_DIR = '.claude-code-kit/setups';
 const CLAUDE_MD_FILENAME = 'CLAUDE.md';
 
 // =============================================================================
@@ -366,7 +366,7 @@ class SetupManagerImpl implements SetupManager {
         }
       } else {
         // Load from buffer (archive)
-        tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'claude-kit-import-'));
+        tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'claude-code-kit-import-'));
         const tempArchive = path.join(tempDir, 'import.tar.gz');
         await fs.writeFile(tempArchive, source);
         const loaded = await this.loader.loadFromArchive(tempArchive);

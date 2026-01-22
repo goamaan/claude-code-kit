@@ -236,7 +236,7 @@ version = "not-a-version"
         name: 'caret-req',
         version: '1.0.0',
         requires: {
-          'claude-kit': '^1.0.0',
+          'claude-code-kit': '^1.0.0',
         },
       };
 
@@ -250,7 +250,7 @@ version = "not-a-version"
         name: 'tilde-req',
         version: '1.0.0',
         requires: {
-          'claude-kit': '~1.2.0',
+          'claude-code-kit': '~1.2.0',
         },
       };
 
@@ -264,7 +264,7 @@ version = "not-a-version"
         name: 'gte-req',
         version: '1.0.0',
         requires: {
-          'claude-kit': '>=2.0.0',
+          'claude-code-kit': '>=2.0.0',
         },
       };
 

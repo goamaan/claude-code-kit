@@ -1,12 +1,12 @@
 /**
- * claude-kit - CLI toolkit for Claude Code configuration management
+ * claude-code-kit - CLI toolkit for Claude Code configuration management
  *
- * @module claude-kit
+ * @module claude-code-kit
  */
 
 export const VERSION = "0.1.0";
 
-export const NAME = "claude-kit";
+export const NAME = "claude-code-kit";
 
 /**
  * Placeholder for future exports.

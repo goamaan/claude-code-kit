@@ -1,5 +1,5 @@
 /**
- * Colored console output utilities for claude-kit
+ * Colored console output utilities for claude-code-kit
  */
 
 import pc from 'picocolors';

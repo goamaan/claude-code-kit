@@ -21,7 +21,7 @@ import type { DiagnosticCategory } from '@/types/index.js';
 
 // Mock path utilities
 // vi.mock('@/utils/paths.js', () => ({
-//   getGlobalConfigDir: vi.fn(() => '/mock/home/.claude-kit'),
+//   getGlobalConfigDir: vi.fn(() => '/mock/home/.claude-code-kit'),
 //   getClaudeDir: vi.fn(() => '/mock/home/.claude'),
 //   getProfilesDir: vi.fn(() => '/mock/home/.claude-kit/profiles'),
 //   getAddonsDir: vi.fn(() => '/mock/home/.claude-kit/addons'),
@@ -97,9 +97,9 @@ describe.skip('Diagnostics', () => {
 
   describe('getCheck', () => {
     it('returns check by ID', () => {
-      const check = getCheck('claude-kit-dir');
+      const check = getCheck('claude-code-kit-dir');
       expect(check).toBeDefined();
-      expect(check?.id).toBe('claude-kit-dir');
+      expect(check?.id).toBe('claude-code-kit-dir');
     });
 
     it('returns undefined for unknown ID', () => {
@@ -146,11 +146,11 @@ describe.skip('Diagnostics', () => {
       mockIsDirectory.mockResolvedValue(true);
 
       const results = await runDiagnostics({
-        checks: ['claude-kit-dir'],
+        checks: ['claude-code-kit-dir'],
       });
 
       expect(results.length).toBe(1);
-      expect(results[0]?.id).toBe('claude-kit-dir');
+      expect(results[0]?.id).toBe('claude-code-kit-dir');
     });
 
     it('skips specified checks', async () => {
@@ -176,7 +176,7 @@ describe.skip('Diagnostics', () => {
       });
 
       const results = await runDiagnostics({
-        checks: ['claude-kit-dir', 'config-valid'],
+        checks: ['claude-code-kit-dir', 'config-valid'],
       });
 
       // config-valid depends on claude-kit-dir
@@ -185,16 +185,16 @@ describe.skip('Diagnostics', () => {
 
       // Note: The actual behavior depends on implementation
       // Either skipped or the dependency should have run first
-      expect(results.find((r) => r.id === 'claude-kit-dir')).toBeDefined();
+      expect(results.find((r) => r.id === 'claude-code-kit-dir')).toBeDefined();
     });
   });
 
   describe('individual checks', () => {
-    describe('claude-kit-dir', () => {
+    describe('claude-code-kit-dir', () => {
       it('passes when directory exists', async () => {
         mockIsDirectory.mockResolvedValue(true);
 
-        const check = getCheck('claude-kit-dir')!;
+        const check = getCheck('claude-code-kit-dir')!;
         const result = await check.run();
 
         expect(result.passed).toBe(true);
@@ -204,7 +204,7 @@ describe.skip('Diagnostics', () => {
       it('fails when directory missing', async () => {
         mockIsDirectory.mockResolvedValue(false);
 
-        const check = getCheck('claude-kit-dir')!;
+        const check = getCheck('claude-code-kit-dir')!;
         const result = await check.run();
 
         expect(result.passed).toBe(false);
@@ -338,7 +338,7 @@ version = "1.0.0"
       const mockMkdir = mkdir as ReturnType<typeof vi.fn>;
       mockMkdir.mockResolvedValue(undefined);
 
-      const check = getCheck('claude-kit-dir')!;
+      const check = getCheck('claude-code-kit-dir')!;
       expect(check.fix).toBeDefined();
 
       const fixResult = await check.fix!();

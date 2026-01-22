@@ -2,7 +2,7 @@
 name = "data"
 version = "1.0.0"
 description = "Data science and analytics with Python and Jupyter"
-author = "claude-kit"
+author = "claude-code-kit"
 
 [requires]
 addons = []

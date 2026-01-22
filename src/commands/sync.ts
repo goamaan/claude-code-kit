@@ -345,7 +345,7 @@ export default defineCommand({
       output.success(`Applied ${plan.actions.length} change(s)`);
 
       if (args.backup) {
-        output.dim('Backups saved to ~/.claude-kit/backups/');
+        output.dim('Backups saved to ~/.claude-code-kit/backups/');
       }
 
       console.log();

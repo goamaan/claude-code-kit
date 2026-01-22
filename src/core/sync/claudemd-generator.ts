@@ -9,17 +9,17 @@ import type { MergedSetup, MergedConfig } from '@/types';
 // Constants
 // =============================================================================
 
-/** Marker for start of claude-kit managed section */
-const MANAGED_START = '<!-- claude-kit:managed:start -->';
+/** Marker for start of claude-code-kit managed section */
+const MANAGED_START = '<!-- claude-code-kit:managed:start -->';
 
-/** Marker for end of claude-kit managed section */
-const MANAGED_END = '<!-- claude-kit:managed:end -->';
+/** Marker for end of claude-code-kit managed section */
+const MANAGED_END = '<!-- claude-code-kit:managed:end -->';
 
 /** Default header for managed section */
 const MANAGED_HEADER = `
-# claude-kit Configuration
+# claude-code-kit Configuration
 
-This section is automatically managed by claude-kit.
+This section is automatically managed by claude-code-kit.
 Do not edit manually - changes will be overwritten on sync.
 `;
 

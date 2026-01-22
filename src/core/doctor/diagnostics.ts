@@ -1,6 +1,6 @@
 /**
  * Diagnostic Checks Module
- * Defines and runs diagnostic checks for claude-kit installation health
+ * Defines and runs diagnostic checks for claude-code-kit installation health
  */
 
 import { join } from 'node:path';
@@ -69,10 +69,10 @@ export const CHECKS: DiagnosticCheck[] = [
   // Installation Checks
   // =========================================================================
   {
-    id: 'claude-kit-dir',
-    name: 'Check ~/.claude-kit exists',
+    id: 'claude-code-kit-dir',
+    name: 'Check ~/.claude-code-kit exists',
     category: 'installation',
-    description: 'Verify the claude-kit configuration directory exists',
+    description: 'Verify the claude-code-kit configuration directory exists',
     enabledByDefault: true,
     async run() {
       const start = performance.now();
@@ -84,9 +84,9 @@ export const CHECKS: DiagnosticCheck[] = [
         message: dirExists
           ? `Configuration directory exists at ${configDir}`
           : `Configuration directory not found at ${configDir}`,
-        suggestions: dirExists ? undefined : ['Run "claude-kit init" to create the directory'],
+        suggestions: dirExists ? undefined : ['Run "cck init" to create the directory'],
         fixAvailable: !dirExists,
-        fixId: 'claude-kit-dir',
+        fixId: 'claude-code-kit-dir',
         duration: performance.now() - start,
       });
     },
@@ -97,7 +97,7 @@ export const CHECKS: DiagnosticCheck[] = [
       try {
         await mkdir(configDir, { recursive: true });
         return {
-          fixId: 'claude-kit-dir',
+          fixId: 'claude-code-kit-dir',
           success: true,
           description: `Created directory ${configDir}`,
           actions: [{ action: 'mkdir', success: true, details: configDir }],
@@ -105,7 +105,7 @@ export const CHECKS: DiagnosticCheck[] = [
         };
       } catch (error) {
         return {
-          fixId: 'claude-kit-dir',
+          fixId: 'claude-code-kit-dir',
           success: false,
           description: 'Failed to create directory',
           error: error instanceof Error ? error.message : String(error),
@@ -122,7 +122,7 @@ export const CHECKS: DiagnosticCheck[] = [
     category: 'configuration',
     description: 'Verify the main configuration file is valid',
     enabledByDefault: true,
-    dependsOn: ['claude-kit-dir'],
+    dependsOn: ['claude-code-kit-dir'],
     async run() {
       const start = performance.now();
       const configPath = join(getGlobalConfigDir(), CONFIG_FILE);
@@ -162,7 +162,7 @@ export const CHECKS: DiagnosticCheck[] = [
           passed: false,
           severity: 'error',
           message: `Configuration file has invalid syntax: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          suggestions: ['Check the TOML syntax in the config file', 'Run "claude-kit config validate" for details'],
+          suggestions: ['Check the TOML syntax in the config file', 'Run "cck config validate" for details'],
           fixAvailable: false,
           details: { error: error instanceof Error ? error.message : String(error) },
           duration: performance.now() - start,
@@ -177,7 +177,7 @@ export const CHECKS: DiagnosticCheck[] = [
     category: 'profiles',
     description: 'Verify the active profile directory exists',
     enabledByDefault: true,
-    dependsOn: ['claude-kit-dir'],
+    dependsOn: ['claude-code-kit-dir'],
     async run() {
       const start = performance.now();
       const profileFilePath = join(getGlobalConfigDir(), PROFILE_FILE);
@@ -209,7 +209,7 @@ export const CHECKS: DiagnosticCheck[] = [
           passed: true, // Default profile not existing is OK
           severity: 'info',
           message: 'Using default profile (no explicit profile configured)',
-          suggestions: ['Run "claude-kit profile create default" to create an explicit default profile'],
+          suggestions: ['Run "cck profile create default" to create an explicit default profile'],
           fixAvailable: true,
           fixId: 'active-profile',
           duration: performance.now() - start,
@@ -221,8 +221,8 @@ export const CHECKS: DiagnosticCheck[] = [
         severity: 'error',
         message: `Active profile "${activeProfile}" not found`,
         suggestions: [
-          `Run "claude-kit profile create ${activeProfile}" to create it`,
-          'Run "claude-kit profile use default" to switch to default profile',
+          `Run "cck profile create ${activeProfile}" to create it`,
+          'Run "cck profile use default" to switch to default profile',
         ],
         fixAvailable: true,
         fixId: 'active-profile',
@@ -365,7 +365,7 @@ description = "Default claude-kit profile"
           message: 'Bun is not installed or not in PATH',
           suggestions: [
             'Install Bun: curl -fsSL https://bun.sh/install | bash',
-            'claude-kit can run with Node.js but Bun is recommended',
+            'claude-code-kit can run with Node.js but Bun is recommended',
           ],
           duration: performance.now() - start,
         });
@@ -380,7 +380,7 @@ description = "Default claude-kit profile"
     id: 'claude-dir-sync',
     name: 'Check ~/.claude in sync',
     category: 'sync',
-    description: 'Verify claude-kit state is synced to ~/.claude',
+    description: 'Verify claude-code-kit state is synced to ~/.claude',
     enabledByDefault: true,
     async run() {
       const start = performance.now();
@@ -393,7 +393,7 @@ description = "Default claude-kit profile"
           passed: false,
           severity: 'warning',
           message: '~/.claude directory does not exist',
-          suggestions: ['Run "claude-kit sync" to initialize'],
+          suggestions: ['Run "cck sync" to initialize'],
           fixAvailable: true,
           fixId: 'claude-dir-sync',
           duration: performance.now() - start,
@@ -417,7 +417,7 @@ description = "Default claude-kit profile"
           passed: false,
           severity: 'error',
           message: 'Claude settings file is invalid JSON',
-          suggestions: ['Run "claude-kit sync --force" to regenerate'],
+          suggestions: ['Run "cck sync --force" to regenerate'],
           fixAvailable: true,
           fixId: 'claude-dir-sync',
           duration: performance.now() - start,
@@ -442,7 +442,7 @@ description = "Default claude-kit profile"
           description: 'Created ~/.claude directory',
           actions: [{ action: 'mkdir', success: true, details: claudeDir }],
           requiresRestart: false,
-          instructions: ['Run "claude-kit sync" to complete setup'],
+          instructions: ['Run "cck sync" to complete setup'],
         };
       } catch (error) {
         return {
@@ -466,7 +466,7 @@ description = "Default claude-kit profile"
     category: 'hooks',
     description: 'Verify hook handler files exist',
     enabledByDefault: true,
-    dependsOn: ['claude-kit-dir'],
+    dependsOn: ['claude-code-kit-dir'],
     async run() {
       const start = performance.now();
 
@@ -504,7 +504,7 @@ description = "Default claude-kit profile"
     category: 'addons',
     description: 'Verify all installed addon manifests are valid',
     enabledByDefault: true,
-    dependsOn: ['claude-kit-dir'],
+    dependsOn: ['claude-code-kit-dir'],
     async run() {
       const start = performance.now();
       const addonsDir = getAddonsDir();

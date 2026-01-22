@@ -409,12 +409,12 @@ main().catch((err) => {
     // Create README.md
     const readme = `# ${name}
 
-A custom addon for claude-kit.
+A custom addon for claude-code-kit.
 
 ## Installation
 
 \`\`\`bash
-claude-kit addon install ./${name}
+claude-code-kit addon install ./${name}
 \`\`\`
 
 ## Configuration

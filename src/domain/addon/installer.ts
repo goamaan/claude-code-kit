@@ -23,8 +23,8 @@ import { VERSION } from '@/index.js';
 // Constants
 // =============================================================================
 
-const ADDONS_DIR = join(homedir(), '.claude-kit', 'addons');
-const STATE_FILE = join(homedir(), '.claude-kit', 'addons.json');
+const ADDONS_DIR = join(homedir(), '.claude-code-kit', 'addons');
+const STATE_FILE = join(homedir(), '.claude-code-kit', 'addons.json');
 
 // =============================================================================
 // Error Types
@@ -250,7 +250,7 @@ class AddonInstallerImpl implements AddonInstaller {
     }
 
     // Create temp directory for clone
-    const tempDir = join(tmpdir(), `claude-kit-addon-${randomUUID()}`);
+    const tempDir = join(tmpdir(), `claude-code-kit-addon-${randomUUID()}`);
     await ensureDir(tempDir);
 
     try {
