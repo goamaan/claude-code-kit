@@ -71,7 +71,8 @@ All built-in setups have been updated to v2.0.0 with the new agent/skill referen
 
 ### Added
 
-- **Native Claude Code Integration**: Leverages Claude Code's native Task tool (TaskCreate, TaskUpdate, TaskList), background execution (`run_in_background: true`), and `/plan` mode
+- **Native Claude Code Integration**: Leverages Claude Code's native Task tool (TaskCreate, TaskUpdate, TaskGet, TaskList), background execution (`run_in_background: true`), and `/plan` mode
+- **Full Task System Documentation**: Added comprehensive Task dependency management (addBlockedBy/addBlocks), agent assignment via owner field, task persistence via CLAUDE_CODE_TASK_LIST_ID, and task storage location (~/.claude/tasks/)
 - **Self-contained Orchestration**: 12 specialized agents and 6 focused skills built directly into claudeops
 - **Streamlined Model Routing**: haiku/sonnet/opus routing with explicit `model` parameter support
 
