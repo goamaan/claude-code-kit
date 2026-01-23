@@ -1,6 +1,6 @@
 {
   "name": "claudeops",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "type": "module",
   "description": "Batteries-included Claude Code enhancement toolkit - orchestration, guardrails, profiles, and configuration management",
   "author": "Amaan",
@@ -57,18 +57,14 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/git": "^10.0.1",
     "@types/bun": "^1.1.14",
     "@types/node": "^22.10.2",
     "@types/semver": "^7.5.8",
     "@typescript-eslint/eslint-plugin": "^8.18.1",
     "@typescript-eslint/parser": "^8.18.1",
     "@vitest/coverage-v8": "^2.1.8",
-    "conventional-changelog-conventionalcommits": "^9.1.0",
     "eslint": "^9.17.0",
     "prettier": "^3.4.2",
-    "semantic-release": "^25.0.2",
     "tsdown": "^0.19.0",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
