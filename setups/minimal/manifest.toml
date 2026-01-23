@@ -2,7 +2,7 @@
 name = "minimal"
 version = "1.0.0"
 description = "Clean slate with just essentials"
-author = "claude-code-kit"
+author = "claudeops"
 
 [skills]
 enabled = []

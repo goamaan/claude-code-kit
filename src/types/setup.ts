@@ -1,6 +1,6 @@
 /**
  * Setup manifest types with Zod schemas
- * Defines setup/profile structure for claude-code-kit
+ * Defines setup/profile structure for claudeops
  */
 
 import { z } from 'zod';

@@ -31,7 +31,7 @@ const TomlAddonFileSchema = z.object({
     keywords: z.array(z.string()).optional(),
   }),
   requires: z.object({
-    'claude-code-kit': z.string().optional(),
+    'claudeops': z.string().optional(),
     'oh-my-claudecode': z.string().optional(),
   }).optional(),
   install: z.object({
@@ -290,7 +290,7 @@ export function validateManifestSafe(manifest: unknown): AddonValidationResult {
 }
 
 /**
- * Check if a manifest is compatible with current claude-code-kit version
+ * Check if a manifest is compatible with current claudeops version
  * Uses semver for proper version constraint checking
  */
 export function checkCompatibility(
@@ -299,12 +299,12 @@ export function checkCompatibility(
 ): { compatible: boolean; reason?: string } {
   const requires = manifest.requires;
 
-  if (!requires || !requires['claude-code-kit']) {
+  if (!requires || !requires['claudeops']) {
     // No version requirement specified, assume compatible
     return { compatible: true };
   }
 
-  const requiredVersion = requires['claude-code-kit'];
+  const requiredVersion = requires['claudeops'];
 
   // Use dynamic import for semver to avoid bundling issues
   // For synchronous usage, we do basic version comparison
@@ -319,7 +319,7 @@ export function checkCompatibility(
     if (reqMajor !== undefined && curMajor !== undefined && curMajor < reqMajor) {
       return {
         compatible: false,
-        reason: `Requires claude-code-kit ${requiredVersion}, but ${claudeKitVersion} is installed`,
+        reason: `Requires claudeops ${requiredVersion}, but ${claudeKitVersion} is installed`,
       };
     }
     return { compatible: true };
@@ -332,13 +332,13 @@ export function checkCompatibility(
     if (reqMajor !== undefined && curMajor !== undefined && curMajor < reqMajor) {
       return {
         compatible: false,
-        reason: `Requires claude-code-kit ${requiredVersion}, but ${claudeKitVersion} is installed`,
+        reason: `Requires claudeops ${requiredVersion}, but ${claudeKitVersion} is installed`,
       };
     }
     if (reqMinor !== undefined && curMinor !== undefined && curMajor === reqMajor && curMinor < reqMinor) {
       return {
         compatible: false,
-        reason: `Requires claude-code-kit ${requiredVersion}, but ${claudeKitVersion} is installed`,
+        reason: `Requires claudeops ${requiredVersion}, but ${claudeKitVersion} is installed`,
       };
     }
     return { compatible: true };
@@ -353,7 +353,7 @@ export function checkCompatibility(
       if (cur < req) {
         return {
           compatible: false,
-          reason: `Requires claude-code-kit ${requiredVersion}, but ${claudeKitVersion} is installed`,
+          reason: `Requires claudeops ${requiredVersion}, but ${claudeKitVersion} is installed`,
         };
       }
     }
@@ -366,7 +366,7 @@ export function checkCompatibility(
   if (reqMajor !== undefined && curMajor !== undefined && curMajor < reqMajor) {
     return {
       compatible: false,
-      reason: `Requires claude-code-kit ${requiredVersion}, but ${claudeKitVersion} is installed`,
+      reason: `Requires claudeops ${requiredVersion}, but ${claudeKitVersion} is installed`,
     };
   }
 

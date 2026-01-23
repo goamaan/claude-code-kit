@@ -1,7 +1,7 @@
 <!-- Parent: none (root) -->
 <!-- Generated: 2026-01-22 -->
 
-# claude-code-kit
+# claudeops
 
 ## Purpose
 

@@ -280,7 +280,7 @@ const createCommand = defineCommand({
 
       s.stop('Setup created');
       output.success(`Created setup: ${args.name}`);
-      output.info(`Edit your setup in: ~/.claude-code-kit/setups/${args.name}/`);
+      output.info(`Edit your setup in: ~/.claudeops/setups/${args.name}/`);
     } catch (err) {
       s.stop('Creation failed');
       if (err instanceof SetupManagerError) {

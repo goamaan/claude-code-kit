@@ -20,7 +20,7 @@ CLI command implementations using citty framework. Each file defines a command w
 | `hook.ts` | Hook management commands (list, enable, disable) |
 | `sync.ts` | Sync command (sync profiles/addons to ~/.claude/) |
 | `doctor.ts` | Diagnostic command (check system health) |
-| `install.ts` | Install command (setup claude-code-kit) |
+| `install.ts` | Install command (setup claudeops) |
 | `upgrade.ts` | Upgrade command (update to latest version) |
 
 ## For AI Agents

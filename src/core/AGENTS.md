@@ -5,7 +5,7 @@
 
 ## Purpose
 
-Core infrastructure for claude-code-kit. Provides multi-layer configuration management (global/local/runtime), diagnostic checks for system health, and sync engine to propagate configurations to `~/.claude/`.
+Core infrastructure for claudeops. Provides multi-layer configuration management (global/local/runtime), diagnostic checks for system health, and sync engine to propagate configurations to `~/.claude/`.
 
 ## Key Files
 
@@ -31,7 +31,7 @@ Core infrastructure for claude-code-kit. Provides multi-layer configuration mana
 
 ### Working In This Directory
 
-- **Configuration layers**: Global (~/.claude-kit/) → Local (.claude-kit/) → Runtime (in-memory)
+- **Configuration layers**: Global (~/.claudeops/) → Local (.claude-kit/) → Runtime (in-memory)
 - **Sync engine**: Propagates active profile to `~/.claude/CLAUDE.md` and addons to `~/.claude/addons/`
 - **Diagnostics**: Check directory structure, file permissions, configuration conflicts
 - **TOML format**: All config files use TOML serialization

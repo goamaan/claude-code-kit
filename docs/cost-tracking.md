@@ -1,6 +1,6 @@
 # Cost Tracking Guide
 
-Claude Code Kit includes comprehensive cost tracking to help you monitor API usage and control spending across Claude models. This guide covers everything you need to know about tracking costs, setting budgets, and understanding your usage patterns.
+claudeops includes comprehensive cost tracking to help you monitor API usage and control spending across Claude models. This guide covers everything you need to know about tracking costs, setting budgets, and understanding your usage patterns.
 
 ## Overview
 
@@ -14,16 +14,16 @@ Cost tracking automatically monitors:
 - **Usage by project** (per-project cost attribution)
 - **Session-based tracking** (linked to Claude Code sessions)
 
-All cost data is stored locally on your machine in `~/.claude-code-kit/costs/` directory.
+All cost data is stored locally on your machine in `~/.claudeops/costs/` directory.
 
 ## Quick Start
 
 ### View Today's Usage
 
 ```bash
-cck cost
+claudeopscost
 # or
-cck cost today
+claudeopscost today
 ```
 
 Shows your current day's API usage, token count, and budget status.
@@ -31,7 +31,7 @@ Shows your current day's API usage, token count, and budget status.
 ### View This Week's Usage
 
 ```bash
-cck cost week
+claudeopscost week
 ```
 
 Displays daily breakdown for the current week with comparison to your weekly budget.
@@ -39,7 +39,7 @@ Displays daily breakdown for the current week with comparison to your weekly bud
 ### Check Budget Status
 
 ```bash
-cck cost budget
+claudeopscost budget
 ```
 
 Shows all configured budgets (daily, weekly, monthly) and how much you've used.
@@ -47,7 +47,7 @@ Shows all configured budgets (daily, weekly, monthly) and how much you've used.
 ### See Model Pricing
 
 ```bash
-cck cost pricing
+claudeopscost pricing
 ```
 
 Displays current per-token pricing for all available Claude models.
@@ -56,7 +56,7 @@ Displays current per-token pricing for all available Claude models.
 
 ### Enable Cost Tracking
 
-Cost tracking is configured in your Claude Code Kit config file (typically `~/.claude-code-kit/config.toml`):
+Cost tracking is configured in your claudeops config file (typically `~/.claudeops/config.toml`):
 
 ```toml
 [cost]
@@ -84,7 +84,7 @@ All budget values are in USD. Set any combination of daily, weekly, or monthly b
 
 ## Models and Pricing
 
-Claude Code Kit supports three models with different capabilities and costs:
+claudeops supports three models with different capabilities and costs:
 
 ### Model Overview
 
@@ -99,7 +99,7 @@ Claude Code Kit supports three models with different capabilities and costs:
 ### Full Pricing Table
 
 ```bash
-cck cost pricing
+claudeopscost pricing
 ```
 
 Shows detailed pricing including cache operation costs:
@@ -140,7 +140,7 @@ opus      │ $15.00  │ $75.00   │ $1.50      │ $18.75
 
 ## Commands
 
-### `cck cost` (Default)
+### `claudeopscost` (Default)
 
 Show today's cost summary.
 
@@ -149,8 +149,8 @@ Show today's cost summary.
 
 **Example:**
 ```bash
-cck cost
-cck cost --json
+claudeopscost
+claudeopscost --json
 ```
 
 **Output:**
@@ -175,16 +175,16 @@ By Model:
   opus     │ $0.75   │ 50,000     │ 2
 ```
 
-### `cck cost today`
+### `claudeopscost today`
 
 Detailed breakdown for the current day.
 
-Same as `cck cost` but explicitly named.
+Same as `claudeopscost` but explicitly named.
 
 **Options:**
 - `--json` - Output as JSON
 
-### `cck cost week`
+### `claudeopscost week`
 
 Show weekly cost breakdown with daily details.
 
@@ -195,7 +195,7 @@ Displays total weekly cost, weekly budget status, and a day-by-day breakdown sho
 
 **Example:**
 ```bash
-cck cost week
+claudeopscost week
 ```
 
 **Output:**
@@ -225,7 +225,7 @@ Daily Breakdown:
   Sun, Jan 21   │ $1.25   │ 100,000    │ 2
 ```
 
-### `cck cost month`
+### `claudeopscost month`
 
 Show monthly cost breakdown.
 
@@ -234,7 +234,7 @@ Displays total monthly cost, monthly budget status, and trends compared to the p
 **Options:**
 - `--json` - Output as JSON
 
-### `cck cost budget`
+### `claudeopscost budget`
 
 Display all configured budgets and current usage.
 
@@ -245,7 +245,7 @@ Shows usage for daily, weekly, and monthly budgets with remaining balance and al
 
 **Example:**
 ```bash
-cck cost budget
+claudeopscost budget
 ```
 
 **Output:**
@@ -268,7 +268,7 @@ Monthly Budget:
   Remaining:       $155.00
 ```
 
-### `cck cost export`
+### `claudeopscost export`
 
 Export cost data for analysis in spreadsheets or other tools.
 
@@ -282,16 +282,16 @@ Export cost data for analysis in spreadsheets or other tools.
 
 ```bash
 # Export all cost data as JSON
-cck cost export --format json --output costs.json
+claudeopscost export --format json --output costs.json
 
 # Export data as CSV for spreadsheet
-cck cost export --format csv --output costs.csv
+claudeopscost export --format csv --output costs.csv
 
 # Export January 2024 data
-cck cost export --format csv --start 2024-01-01 --end 2024-01-31 --output jan2024.csv
+claudeopscost export --format csv --start 2024-01-01 --end 2024-01-31 --output jan2024.csv
 
 # Print to stdout
-cck cost export --format json
+claudeopscost export --format json
 ```
 
 **CSV Format:**
@@ -302,7 +302,7 @@ abc123,2024-01-15T10:30:00Z,sess-001,haiku,chat,1500,2000,3500,0.000375,0.0025,0
 def456,2024-01-15T10:35:00Z,sess-001,sonnet,tool_use,5000,3000,8000,0.015,0.045,0.06,default,~/projects/myapp
 ```
 
-### `cck cost pricing`
+### `claudeopscost pricing`
 
 Show current model pricing.
 
@@ -379,8 +379,8 @@ For weekly and monthly reports:
 Start by observing your usage for a few days, then set budgets:
 
 ```bash
-cck cost today
-cck cost week
+claudeopscost today
+claudeopscost week
 ```
 
 **Recommended starting budgets:**
@@ -399,7 +399,7 @@ cck cost week
 Check your weekly summary every Sunday:
 
 ```bash
-cck cost week
+claudeopscost week
 ```
 
 Look for:
@@ -412,7 +412,7 @@ Look for:
 Monitor which models you're using and costs:
 
 ```bash
-cck cost --json | grep -A 10 byModel
+claudeopscost --json | grep -A 10 byModel
 ```
 
 **Optimization strategies:**
@@ -435,7 +435,7 @@ Export monthly reports for deeper analysis:
 
 ```bash
 # Export all January data as CSV
-cck cost export --format csv \
+claudeopscost export --format csv \
   --start 2024-01-01 \
   --end 2024-01-31 \
   --output jan2024.csv
@@ -467,7 +467,7 @@ Use project tracking to understand cost per project:
 
 ```bash
 # View costs by project
-cck cost --json | jq '.byProject'
+claudeopscost --json | jq '.byProject'
 ```
 
 Set up multiple configs per project if needed to track costs separately.
@@ -476,7 +476,7 @@ Set up multiple configs per project if needed to track costs separately.
 
 ### No Cost Data Showing
 
-**Problem:** `cck cost` shows "No cost data recorded yet"
+**Problem:** `claudeopscost` shows "No cost data recorded yet"
 
 **Causes:**
 - Cost tracking is disabled in config
@@ -486,7 +486,7 @@ Set up multiple configs per project if needed to track costs separately.
 **Solutions:**
 1. Verify tracking is enabled:
    ```bash
-   grep -A 2 "\[cost\]" ~/.claude-code-kit/config.toml
+   grep -A 2 "\[cost\]" ~/.claudeops/config.toml
    ```
    Should show `tracking = true`
 
@@ -494,7 +494,7 @@ Set up multiple configs per project if needed to track costs separately.
 
 3. Check cost data file exists:
    ```bash
-   ls -la ~/.claude-code-kit/costs/
+   ls -la ~/.claudeops/costs/
    ```
 
 ### Budget Not Alerting
@@ -504,37 +504,37 @@ Set up multiple configs per project if needed to track costs separately.
 **Solutions:**
 1. Verify budget is configured:
    ```bash
-   cck cost budget
+   claudeopscost budget
    ```
 
 2. Budgets are checked when:
-   - Running `cck cost` command
-   - Running `cck cost budget` command
+   - Running `claudeopscost` command
+   - Running `claudeopscost budget` command
    - At end of Claude Code operations (if integration enabled)
 
 3. For continuous monitoring, run:
    ```bash
-   watch -n 300 'cck cost budget'  # Check every 5 minutes
+   watch -n 300 'claudeopscost budget'  # Check every 5 minutes
    ```
 
 ### Exports Not Working
 
-**Problem:** `cck cost export` produces empty or incorrect output
+**Problem:** `claudeopscost export` produces empty or incorrect output
 
 **Solutions:**
 1. Verify date format (must be YYYY-MM-DD):
    ```bash
-   cck cost export --start 2024-01-15 --end 2024-01-21
+   claudeopscost export --start 2024-01-15 --end 2024-01-21
    ```
 
 2. Check that data exists for date range:
    ```bash
-   cck cost --json | jq '.period'
+   claudeopscost --json | jq '.period'
    ```
 
 3. Try without date filters:
    ```bash
-   cck cost export --format csv --output all.csv
+   claudeopscost export --format csv --output all.csv
    ```
 
 ## Advanced Usage
@@ -545,7 +545,7 @@ Use JSON output for automation:
 
 ```bash
 # Get today's total cost as plain number
-COST=$(cck cost --json | jq -r '.cost.total')
+COST=$(claudeopscost --json | jq -r '.cost.total')
 echo "Today's cost: \$$COST"
 
 # Alert if exceeding limit
@@ -560,7 +560,7 @@ fi
 Analyze cost breakdown by operation:
 
 ```bash
-cck cost --json | jq '.byOperation'
+claudeopscost --json | jq '.byOperation'
 ```
 
 **Output example:**
@@ -594,7 +594,7 @@ MONTH=$1  # e.g., "2024-01"
 START="${MONTH}-01"
 END="${MONTH}-31"
 
-cck cost export --format csv \
+claudeopscost export --format csv \
   --start "$START" \
   --end "$END" \
   --output "${MONTH}_costs.csv"
@@ -608,7 +608,7 @@ Compare costs across different profiles:
 
 ```bash
 # If using multiple profiles
-cck cost --json | jq '.byProfile | to_entries | sort_by(-.value.cost.total)'
+claudeopscost --json | jq '.byProfile | to_entries | sort_by(-.value.cost.total)'
 ```
 
 ## Cost Data Storage
@@ -617,7 +617,7 @@ cck cost --json | jq '.byProfile | to_entries | sort_by(-.value.cost.total)'
 
 All cost data is stored locally in:
 ```
-~/.claude-code-kit/costs/
+~/.claudeops/costs/
 ```
 
 This directory contains:
@@ -652,28 +652,28 @@ Regularly export cost data for backup:
 
 ```bash
 # Monthly backup
-cck cost export --format json --output "backup-$(date +%Y-%m).json"
+claudeopscost export --format json --output "backup-$(date +%Y-%m).json"
 
 # Or use CSV for spreadsheet import
-cck cost export --format csv --output "costs-$(date +%Y-%m).csv"
+claudeopscost export --format csv --output "costs-$(date +%Y-%m).csv"
 ```
 
 ## FAQ
 
 **Q: Does cost tracking affect performance?**
 
-A: No. Cost tracking is asynchronous and has minimal impact on Claude Code Kit's operation.
+A: No. Cost tracking is asynchronous and has minimal impact on claudeops's operation.
 
 **Q: Can I access cost data programmatically?**
 
 A: Yes. Export as JSON and parse with your preferred tools:
 ```bash
-cck cost export --format json | jq '.entries'
+claudeopscost export --format json | jq '.entries'
 ```
 
 **Q: How often is cost data updated?**
 
-A: Cost data is logged immediately when operations complete. Run `cck cost` anytime to view current costs.
+A: Cost data is logged immediately when operations complete. Run `claudeopscost` anytime to view current costs.
 
 **Q: Can I reset cost history?**
 
@@ -692,7 +692,7 @@ Cache hits can reduce costs by 10-90% depending on cache usage.
 
 **Q: How accurate is the pricing?**
 
-A: Pricing matches Anthropic's official Claude API pricing as of January 2024. Pricing may change; check `cck cost pricing` for current rates and visit [Anthropic's pricing page](https://www.anthropic.com/pricing) for the latest.
+A: Pricing matches Anthropic's official Claude API pricing as of January 2024. Pricing may change; check `claudeopscost pricing` for current rates and visit [Anthropic's pricing page](https://www.anthropic.com/pricing) for the latest.
 
 **Q: Can I budget by project?**
 
@@ -712,12 +712,12 @@ Future versions may support:
 ## Next Steps
 
 1. **Set up budgets**: Configure `[cost]` section in your config
-2. **Monitor usage**: Run `cck cost` daily for the first week
+2. **Monitor usage**: Run `claudeopscost` daily for the first week
 3. **Optimize models**: Review usage by model and adjust selection
 4. **Export reports**: Create monthly reports for analysis
 5. **Refine budgets**: Adjust limits based on observed patterns
 
 For more help:
 - Check config documentation for additional cost options
-- Run `cck --help` to see all available commands
-- Inspect raw cost data: `cck cost export --format json`
+- Run `claudeops--help` to see all available commands
+- Inspect raw cost data: `claudeopscost export --format json`

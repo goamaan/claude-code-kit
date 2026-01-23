@@ -38,14 +38,14 @@ Activate when:
 
 ## Diagnostic Checks
 
-### Check 1: Claude-Kit Installation
+### Check 1: ClaudeOps Installation
 
 ```bash
-# Verify claude-kit is installed
-which claude-kit || npm list -g claude-kit
+# Verify claudeops is installed
+which claudeops || npm list -g claudeops
 
 # Check version
-claude-kit --version
+claudeops --version
 ```
 
 **Issues to detect:**
@@ -64,7 +64,7 @@ ls -la .claude/
 **Files to verify:**
 - `~/.claude/CLAUDE.md` - Global instructions
 - `.claude/CLAUDE.md` - Project instructions
-- `claude-kit.config.toml` - Kit configuration
+- `claudeops.config.toml` - Kit configuration
 
 **Issues to detect:**
 - Missing files
@@ -146,12 +146,12 @@ ls tsconfig.json
 ## Diagnostic Report Format
 
 ```
-# Claude-Kit Doctor Report
+# ClaudeOps Doctor Report
 
 ## System Status: [HEALTHY/WARNING/ERROR]
 
 ### Checks Passed
-- [x] Claude-Kit installed (v1.0.0)
+- [x] ClaudeOps installed (v1.0.0)
 - [x] Node.js (v20.10.0)
 - [x] Git configured
 - [x] Configuration valid
@@ -162,7 +162,7 @@ ls tsconfig.json
 Location: ~/.claude/CLAUDE.md
 Status: Not found
 
-**Fix:** Run `claude-kit init --global`
+**Fix:** Run `claudeops init --global`
 
 #### [WARNING] Outdated dependency
 Package: typescript
@@ -177,7 +177,7 @@ The following issues can be fixed automatically:
 1. Create missing CLAUDE.md
 2. Update outdated dependencies
 
-Run `claude-kit doctor --fix` to apply fixes.
+Run `claudeops doctor --fix` to apply fixes.
 
 ### Manual Actions Required
 
@@ -187,24 +187,24 @@ The following need manual attention:
 
 ## Recommendations
 
-- Consider updating to latest claude-kit
+- Consider updating to latest claudeops
 - Review CLAUDE.md for project-specific settings
 ```
 
 ## Common Issues and Fixes
 
-### Issue: "command not found: claude-kit"
+### Issue: "command not found: claudeops"
 
 **Diagnosis:**
 ```bash
-npm list -g claude-kit
-which claude-kit
+npm list -g claudeops
+which claudeops
 echo $PATH
 ```
 
 **Fix:**
 ```bash
-npm install -g claude-kit
+npm install -g claudeops
 # Or ensure npm global bin is in PATH
 export PATH="$PATH:$(npm config get prefix)/bin"
 ```
@@ -219,7 +219,7 @@ ls -la .claude/
 
 **Fix:**
 ```bash
-claude-kit init
+claudeops init
 # Or manually create
 mkdir -p ~/.claude
 touch ~/.claude/CLAUDE.md

@@ -5,7 +5,7 @@
 
 ## Purpose
 
-Business logic modules for claude-code-kit. Each subdirectory implements a specific domain concept (addon, cost, hook, mcp, profile, setup) following a consistent manager pattern.
+Business logic modules for claudeops. Each subdirectory implements a specific domain concept (addon, cost, hook, mcp, profile, setup) following a consistent manager pattern.
 
 ## Key Files
 

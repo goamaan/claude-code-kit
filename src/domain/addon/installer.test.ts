@@ -19,7 +19,7 @@ describe('installer', () => {
 
   beforeEach(async () => {
     // Create a temporary test directory
-    testDir = join(tmpdir(), `claude-code-kit-test-${randomUUID()}`);
+    testDir = join(tmpdir(), `claudeops-test-${randomUUID()}`);
     addonDir = join(testDir, 'test-addon');
     await mkdir(addonDir, { recursive: true });
   });
@@ -182,7 +182,7 @@ version = "not-semver"
     it('should return the addons directory path', () => {
       const dir = getAddonsDir();
 
-      expect(dir).toContain('.claude-code-kit');
+      expect(dir).toContain('.claudeops');
       expect(dir).toContain('addons');
     });
   });

@@ -1,6 +1,6 @@
-# Getting Started with claude-code-kit
+# Getting Started with claudeops
 
-Welcome to claude-code-kit, a CLI toolkit for managing Claude Code configuration. This guide will help you get up and running in minutes.
+Welcome to claudeops, a CLI toolkit for managing Claude Code configuration. This guide will help you get up and running in minutes.
 
 ## Prerequisites
 
@@ -14,12 +14,12 @@ Don't have Node.js? Download it from [nodejs.org](https://nodejs.org/). We recom
 
 ## Installation
 
-### Step 1: Install claude-code-kit
+### Step 1: Install claudeops
 
 Install the package globally using npm:
 
 ```bash
-npm install -g claude-code-kit
+npm install -g claudeops
 ```
 
 ### Step 2: Verify Installation
@@ -27,16 +27,16 @@ npm install -g claude-code-kit
 Confirm it's installed correctly:
 
 ```bash
-cck --version
+claudeops --version
 ```
 
 You should see the version number displayed. Great! You now have three ways to run the toolkit:
 
-- `cck` - Short alias
-- `ck` - Ultra-short alias
-- `claude-code-kit` - Full name
+- `claudeops` - Full name
+- `cops` - Short alias
+- `co` - Ultra-short alias
 
-For the rest of this guide, we'll use `cck` for brevity, but feel free to use any of them.
+For the rest of this guide, we'll use `claudeops` for clarity, but feel free to use any of them.
 
 ## Initial Setup
 
@@ -45,7 +45,7 @@ For the rest of this guide, we'll use `cck` for brevity, but feel free to use an
 Start the interactive setup process:
 
 ```bash
-cck install
+claudeops install
 ```
 
 This wizard will guide you through:
@@ -58,9 +58,9 @@ This wizard will guide you through:
 
 Here's what happens under the hood:
 
-- **Creates `~/.claude-code-kit/`** - Your configuration directory
-- **Creates `~/.claude-code-kit/profiles/`** - Stores your profiles
-- **Creates `~/.claude-code-kit/config.toml`** - Main configuration file
+- **Creates `~/.claudeops/`** - Your configuration directory
+- **Creates `~/.claudeops/profiles/`** - Stores your profiles
+- **Creates `~/.claudeops/config.toml`** - Main configuration file
 - **Creates your first profile** - Usually named "default"
 
 ### Installation Options
@@ -68,13 +68,13 @@ Here's what happens under the hood:
 If you prefer a minimal setup without prompts:
 
 ```bash
-cck install --minimal
+claudeops install --minimal
 ```
 
 Or use a specific setup directly:
 
 ```bash
-cck install --setup fullstack
+claudeops install --setup fullstack
 ```
 
 ## Understanding Profiles
@@ -91,7 +91,7 @@ Profiles are configurations tailored to different projects or use cases. Each pr
 See all available profiles:
 
 ```bash
-cck profile list
+claudeops profile list
 ```
 
 Example output:
@@ -113,13 +113,13 @@ The `*` marks your currently active profile.
 Create a profile for a different project:
 
 ```bash
-cck profile create my-project
+claudeops profile create my-project
 ```
 
 Answer the prompts to customize it. You can also extend from existing profiles:
 
 ```bash
-cck profile create api-server --description "REST API server"
+claudeops profile create api-server --description "REST API server"
 ```
 
 ### Switch Between Profiles
@@ -127,7 +127,7 @@ cck profile create api-server --description "REST API server"
 Switch to a different profile:
 
 ```bash
-cck profile use backend
+claudeops profile use backend
 ```
 
 After switching, your configuration changes to match that profile.
@@ -146,7 +146,7 @@ Setups are pre-built configurations for common scenarios. They include:
 See what setups are available:
 
 ```bash
-cck setup list
+claudeops setup list
 ```
 
 Example output showing built-in setups:
@@ -171,7 +171,7 @@ Available Setups
 Learn more about a specific setup:
 
 ```bash
-cck setup info fullstack
+claudeops setup info fullstack
 ```
 
 Shows the setup's skills, agents, hooks, and a preview of its CLAUDE.md content.
@@ -181,19 +181,19 @@ Shows the setup's skills, agents, hooks, and a preview of its CLAUDE.md content.
 Generate a CLAUDE.md file from a setup:
 
 ```bash
-cck setup use fullstack
+claudeops setup use fullstack
 ```
 
 This creates a `CLAUDE.md` file in your current directory. By default, it's created in the current working directory—you can specify a different path:
 
 ```bash
-cck setup use fullstack --output ~/.claude/CLAUDE.md
+claudeops setup use fullstack --output ~/.claude/CLAUDE.md
 ```
 
 You can also extend from multiple setups:
 
 ```bash
-cck setup use fullstack --extend backend,data
+claudeops setup use fullstack --extend backend,data
 ```
 
 ## Syncing to Claude Code
@@ -203,7 +203,7 @@ After configuring your profiles and setups, sync everything to Claude Code:
 ### Run Sync
 
 ```bash
-cck sync
+claudeops sync
 ```
 
 This generates:
@@ -224,7 +224,7 @@ The sync process:
 See what would be synced without making changes:
 
 ```bash
-cck sync --dry-run
+claudeops sync --dry-run
 ```
 
 ### Force Sync
@@ -232,7 +232,7 @@ cck sync --dry-run
 Overwrite existing files without confirmation:
 
 ```bash
-cck sync --force
+claudeops sync --force
 ```
 
 ## Basic Workflow
@@ -243,7 +243,7 @@ Here's a typical workflow for managing your Claude Code configuration:
 
 ```bash
 # Run the interactive setup wizard
-cck install
+claudeops install
 
 # Choose your setup (fullstack, backend, frontend, etc.)
 # Configure your model preferences
@@ -254,10 +254,10 @@ cck install
 
 ```bash
 # Create a profile for your current project
-cck profile create my-api-server
+claudeops profile create my-api-server
 
 # View all profiles
-cck profile list
+claudeops profile list
 ```
 
 ### 3. Configure Profiles
@@ -266,23 +266,23 @@ Edit your profile to add skills, agents, and settings:
 
 ```bash
 # Edit profile configuration
-cck config edit
+claudeops config edit
 
 # View current settings
-cck config show
+claudeops config show
 ```
 
 ### 4. Sync to Claude Code
 
 ```bash
 # Switch to your desired profile
-cck profile use my-api-server
+claudeops profile use my-api-server
 
 # Sync the configuration
-cck sync
+claudeops sync
 
 # Verify everything is correct
-cck doctor
+claudeops doctor
 ```
 
 ### 5. Work with Claude Code
@@ -300,13 +300,13 @@ Make changes to your profile or setup:
 
 ```bash
 # Edit configuration
-cck config edit
+claudeops config edit
 
 # Apply setup changes
-cck setup use frontend
+claudeops setup use frontend
 
 # Sync again
-cck sync
+claudeops sync
 ```
 
 ## Checking Your Installation
@@ -314,12 +314,12 @@ cck sync
 Use the doctor command to verify everything is working:
 
 ```bash
-cck doctor
+claudeops doctor
 ```
 
 This checks:
 
-- claude-code-kit directory exists
+- claudeops directory exists
 - Claude Code directory exists
 - Configuration is valid
 - Profiles are configured correctly
@@ -328,10 +328,10 @@ This checks:
 Example output:
 
 ```
-claude-code-kit Doctor Report
+claudeops Doctor Report
 
 Installation
-✓ claude-code-kit directory
+✓ claudeops directory
 ✓ Claude directory
 ✓ Configuration file
 
@@ -348,7 +348,7 @@ Status
 If there are issues, the doctor command will suggest fixes:
 
 ```bash
-cck doctor --fix
+claudeops doctor --fix
 ```
 
 ## Next Steps
@@ -363,29 +363,29 @@ cck doctor --fix
 
 **Add a new MCP server:**
 ```bash
-cck mcp add my-server "command to run"
+claudeops mcp add my-server "command to run"
 ```
 
 **Track API costs:**
 ```bash
-cck cost today    # Today's spending
-cck cost week     # This week's spending
-cck cost budget   # Your budget status
+claudeops cost today    # Today's spending
+claudeops cost week     # This week's spending
+claudeops cost budget   # Your budget status
 ```
 
 **Create a custom setup:**
 ```bash
-cck setup create my-setup --from fullstack
+claudeops setup create my-setup --from fullstack
 ```
 
 **Export your configuration:**
 ```bash
-cck profile export default > backup.json
+claudeops profile export default > backup.json
 ```
 
 ## Troubleshooting
 
-### "Command not found: cck"
+### "Command not found: claudeops"
 
 Make sure Node.js 20+ is installed and npm is in your PATH:
 
@@ -397,7 +397,7 @@ npm --version
 Then reinstall:
 
 ```bash
-npm install -g claude-code-kit
+npm install -g claudeops
 ```
 
 ### "~/.claude directory not found"
@@ -405,7 +405,7 @@ npm install -g claude-code-kit
 Run Claude Code at least once to create its configuration directory. Then run:
 
 ```bash
-cck install
+claudeops install
 ```
 
 ### Configuration issues
@@ -413,7 +413,7 @@ cck install
 Run the doctor command to diagnose problems:
 
 ```bash
-cck doctor --fix
+claudeops doctor --fix
 ```
 
 This will attempt to fix common configuration issues automatically.
@@ -423,15 +423,15 @@ This will attempt to fix common configuration issues automatically.
 Check specific command help:
 
 ```bash
-cck <command> --help
+claudeops <command> --help
 ```
 
 Examples:
 
 ```bash
-cck profile --help
-cck setup --help
-cck sync --help
+claudeops profile --help
+claudeops setup --help
+claudeops sync --help
 ```
 
 ## What's Next?
@@ -444,4 +444,4 @@ Now that you're set up, you can:
 4. **Create addons** - Build reusable configuration packages
 5. **Automate workflows** - Set up hooks for common tasks
 
-Happy coding with claude-code-kit!
+Happy coding with claudeops!

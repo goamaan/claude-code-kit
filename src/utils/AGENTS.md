@@ -5,7 +5,7 @@
 
 ## Purpose
 
-Cross-cutting utilities used throughout claude-code-kit. Provides constants, path resolution, logging, and file system helpers.
+Cross-cutting utilities used throughout claudeops. Provides constants, path resolution, logging, and file system helpers.
 
 ## Key Files
 

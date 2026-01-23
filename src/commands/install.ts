@@ -42,7 +42,7 @@ export default defineCommand({
     },
   },
   async run({ args }) {
-    prompts.intro('claude-code-kit Installation');
+    prompts.intro('claudeops Installation');
 
     const configDir = getGlobalConfigDir();
     const claudeDir = getClaudeDir();
@@ -126,7 +126,7 @@ export default defineCommand({
 
     if (!prereqs.claudeDir) {
       output.warn('~/.claude directory not found');
-      output.info('Claude Code should be run at least once before using claude-code-kit');
+      output.info('Claude Code should be run at least once before using claudeops');
 
       const proceed = await prompts.confirm({
         message: 'Continue anyway?',
@@ -324,7 +324,7 @@ export default defineCommand({
         'Run `ck addon search` to find addons',
       ].filter(Boolean));
 
-      prompts.outro('Welcome to claude-code-kit!');
+      prompts.outro('Welcome to claudeops!');
     } catch (err) {
       installSpinner.stop('Installation failed');
       output.error(err instanceof Error ? err.message : String(err));

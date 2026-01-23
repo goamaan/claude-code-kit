@@ -24,7 +24,7 @@ Plugin system for extensibility. Provides addon lifecycle management with instal
 - **Addon structure**: Directory with `addon.toml` manifest + hook scripts
 - **Manifest format**: TOML with `[addon]` metadata, `[hooks]` definitions, `[install]` config
 - **Hook types**: PreToolUse, PostToolUse, Stop, SubagentStop (match hook events)
-- **State tracking**: JSON file at `~/.claude-code-kit/cache/addons-state.json` with installed addons
+- **State tracking**: JSON file at `~/.claudeops/cache/addons-state.json` with installed addons
 - **Enable/disable**: Toggle via state file, affects hook composition in sync engine
 - **Addon creation**: `create(name)` generates scaffold with addon.toml, hook.ts, README.md
 - **Hook scripts**: Executable scripts (Bun/Node/Python) that receive JSON input via stdin and return exit code (0=allow, 1=error, 2=block)

@@ -28,7 +28,7 @@ Safety addons for Claude Code. Each addon provides specialized safety features t
 - **Addon structure**: Each addon contains `addon.toml` (metadata) + `hook.ts` (implementation) + optional README
 - **Hook types**: `pre-command` (before execution), `post-command` (after execution)
 - **Hook interface**: Hooks receive context object with command, args, and environment
-- **Installation**: Addons installed via `claude-code-kit addon install <name>`
+- **Installation**: Addons installed via `claudeops addon install <name>`
 - **Activation**: Hooks activated when addon is enabled in profile
 
 ### Testing Requirements

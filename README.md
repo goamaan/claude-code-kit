@@ -1,4 +1,4 @@
-# claude-code-kit
+# claudeops
 
 **CLI toolkit for Claude Code configuration management**
 
@@ -10,7 +10,7 @@
 
 ## Overview
 
-`claude-code-kit` (`cck`, `ck`) is a command-line toolkit for managing Claude Code configurations, profiles, and integrations. It provides a unified way to:
+`claudeops` (`cops`, `co`) is a command-line toolkit for managing Claude Code configurations, profiles, and integrations. It provides a unified way to:
 
 - **Manage profiles** - Create and switch between different configuration contexts
 - **Use setup templates** - Pre-configured environments for common development scenarios
@@ -32,16 +32,16 @@
 
 ### Install Globally
 
-Install `claude-code-kit` globally to use `cck`, `ck`, or `claude-code-kit` commands anywhere:
+Install `claudeops` globally to use `claudeops`, `cops`, or `co` commands anywhere:
 
 ```bash
-npm install -g claude-code-kit
+npm install -g claudeops
 ```
 
 Verify installation:
 
 ```bash
-cck --version
+claudeops --version
 ```
 
 ### Install Locally (Development)
@@ -50,10 +50,10 @@ Clone and install for local development:
 
 ```bash
 git clone <repository-url>
-cd claude-kit
+cd claudeops
 npm install
 npm run build
-npm link  # Optional: makes cck available globally
+npm link  # Optional: makes claudeops available globally
 ```
 
 ---
@@ -65,7 +65,7 @@ npm link  # Optional: makes cck available globally
 Start an interactive setup wizard:
 
 ```bash
-cck config init
+claudeops config init
 ```
 
 This will prompt you to configure:
@@ -78,7 +78,7 @@ This will prompt you to configure:
 Create a new profile (optionally based on a setup template):
 
 ```bash
-cck profile create my-project --setup fullstack --activate
+claudeops profile create my-project --setup fullstack --activate
 ```
 
 This creates a new profile called `my-project` based on the fullstack template and activates it.
@@ -88,7 +88,7 @@ This creates a new profile called `my-project` based on the fullstack template a
 See all pre-configured templates:
 
 ```bash
-cck setup list
+claudeops setup list
 ```
 
 ### 4. Sync to Claude Code
@@ -96,7 +96,7 @@ cck setup list
 Apply your configuration to Claude Code:
 
 ```bash
-cck sync
+claudeops sync
 ```
 
 This updates:
@@ -109,7 +109,7 @@ This updates:
 Run diagnostics to ensure everything is configured correctly:
 
 ```bash
-cck doctor
+claudeops doctor
 ```
 
 ---
@@ -130,16 +130,16 @@ Profiles are named configuration contexts. Use them to maintain separate setting
 
 ```bash
 # List all profiles
-cck profile list
+claudeops profile list
 
 # Create profile extending another
-cck profile create client-a --from my-project
+claudeops profile create client-a --from my-project
 
 # Switch active profile
-cck profile use client-a
+claudeops profile use client-a
 
 # Show detailed profile info
-cck profile show client-a
+claudeops profile show client-a
 ```
 
 ### Setup Templates
@@ -161,8 +161,8 @@ Pre-built configurations for common development scenarios. Setups define which s
 **Use a setup:**
 
 ```bash
-cck setup use fullstack
-cck setup info backend
+claudeops setup use fullstack
+claudeops setup info backend
 ```
 
 ### Addon System
@@ -173,21 +173,21 @@ Addons extend functionality through hooks and plugins. Install from local paths,
 
 ```bash
 # From local directory
-cck addon install ./my-addon
+claudeops addon install ./my-addon
 
 # From GitHub
-cck addon install github:username/addon-name
+claudeops addon install github:username/addon-name
 
 # From registry
-cck addon install addon-name
+claudeops addon install addon-name
 ```
 
 **Manage addons:**
 
 ```bash
-cck addon list
-cck addon update addon-name
-cck addon remove addon-name
+claudeops addon list
+claudeops addon update addon-name
+claudeops addon remove addon-name
 ```
 
 ### MCP Servers
@@ -197,10 +197,10 @@ Model Context Protocol servers provide tools and resources to Claude Code. Commo
 **Manage MCP servers:**
 
 ```bash
-cck mcp list
-cck mcp add filesystem
-cck mcp enable github
-cck mcp disable fetch
+claudeops mcp list
+claudeops mcp add filesystem
+claudeops mcp enable github
+claudeops mcp disable fetch
 ```
 
 ### Cost Tracking
@@ -211,16 +211,16 @@ Monitor token usage and spending with optional daily/weekly budgets.
 
 ```bash
 # Today's usage
-cck cost today
+claudeops cost today
 
 # This week
-cck cost week
+claudeops cost week
 
 # Check against budget
-cck cost budget
+claudeops cost budget
 
 # Export for analysis
-cck cost export --format csv
+claudeops cost export --format csv
 ```
 
 ### Hook System
@@ -237,9 +237,9 @@ Hooks are composed from installed addons and executed in priority order.
 **Debug hooks:**
 
 ```bash
-cck hook list
-cck hook debug
-cck hook test <hook-name>
+claudeops hook list
+claudeops hook debug
+claudeops hook test <hook-name>
 ```
 
 ### Configuration Layers
@@ -247,16 +247,16 @@ cck hook test <hook-name>
 Configurations merge in priority order (highest to lowest):
 
 1. **Default hardcoded** - Built-in defaults
-2. **Global** - `~/.claude-code-kit/config.toml`
-3. **Profile** - `~/.claude-code-kit/profiles/{name}.toml`
+2. **Global** - `~/.claudeops/config.toml`
+3. **Profile** - `~/.claudeops/profiles/{name}.toml`
 4. **Setup** - Configuration from active setup
 5. **Team** - Remote team configuration (URL)
-6. **Project** - `.claude-code-kit.yaml` in project root
+6. **Project** - `.claudeops.yaml` in project root
 
 Later layers override earlier ones. Inspect the merge order:
 
 ```bash
-cck config show --layers
+claudeops config show --layers
 ```
 
 ### Model Routing
@@ -270,7 +270,7 @@ Route tasks to appropriate Claude models based on complexity:
 Configure routing per profile:
 
 ```bash
-cck profile show
+claudeops profile show
 # Shows routing configuration under "Model Configuration"
 ```
 
@@ -282,155 +282,155 @@ cck profile show
 
 ```bash
 # List all profiles
-cck profile list [--json]
+claudeops profile list [--json]
 
 # Switch active profile
-cck profile use <name>
+claudeops profile use <name>
 
 # Create new profile
-cck profile create <name> [--from <base>] [--setup <setup>] [--description <text>] [--activate]
+claudeops profile create <name> [--from <base>] [--setup <setup>] [--description <text>] [--activate]
 
 # Delete profile
-cck profile delete <name> [--force]
+claudeops profile delete <name> [--force]
 
 # Export profile
-cck profile export <name> [--format toml|json] [--output <path>] [--resolved]
+claudeops profile export <name> [--format toml|json] [--output <path>] [--resolved]
 
 # Import profile
-cck profile import <source> [--name <name>] [--merge] [--activate]
+claudeops profile import <source> [--name <name>] [--merge] [--activate]
 
 # Show profile details
-cck profile show [name] [--json]
+claudeops profile show [name] [--json]
 ```
 
 ### Setup Management
 
 ```bash
 # List available setups
-cck setup list [--json]
+claudeops setup list [--json]
 
 # Get setup information
-cck setup info <name> [--json]
+claudeops setup info <name> [--json]
 
 # Apply setup to current profile
-cck setup use <name>
+claudeops setup use <name>
 
 # Create custom setup
-cck setup create <name> [--description <text>] [--author <name>]
+claudeops setup create <name> [--description <text>] [--author <name>]
 
 # Export setup
-cck setup export <name> [--output <path>]
+claudeops setup export <name> [--output <path>]
 
 # Import setup
-cck setup import <source> [--name <name>]
+claudeops setup import <source> [--name <name>]
 ```
 
 ### Addon Management
 
 ```bash
 # List installed addons
-cck addon list [--json]
+claudeops addon list [--json]
 
 # Search registry
-cck addon search <query>
+claudeops addon search <query>
 
 # Install addon
-cck addon install <source> [--version <version>] [--config <json>]
+claudeops addon install <source> [--version <version>] [--config <json>]
 
 # Update addon
-cck addon update <name> [--version <version>]
+claudeops addon update <name> [--version <version>]
 
 # Remove addon
-cck addon remove <name> [--force]
+claudeops addon remove <name> [--force]
 
 # Create custom addon
-cck addon create <name> [--description <text>]
+claudeops addon create <name> [--description <text>]
 ```
 
 ### Configuration Management
 
 ```bash
 # Initialize configuration (interactive)
-cck config init [--global] [--force]
+claudeops config init [--global] [--force]
 
 # Edit configuration
-cck config edit [--global] [--project]
+claudeops config edit [--global] [--project]
 
 # Show configuration
-cck config show [--layers] [--resolved] [--format toml|json]
+claudeops config show [--layers] [--resolved] [--format toml|json]
 
 # Validate configuration
-cck config validate [--fix]
+claudeops config validate [--fix]
 
 # Export configuration
-cck config export [--format toml|json] [--output <path>]
+claudeops config export [--format toml|json] [--output <path>]
 ```
 
 ### MCP Server Management
 
 ```bash
 # List MCP servers
-cck mcp list [--json] [--status]
+claudeops mcp list [--json] [--status]
 
 # Add MCP server
-cck mcp add <server> [--config <json>]
+claudeops mcp add <server> [--config <json>]
 
 # Remove MCP server
-cck mcp remove <server>
+claudeops mcp remove <server>
 
 # Enable MCP server
-cck mcp enable <server>
+claudeops mcp enable <server>
 
 # Disable MCP server
-cck mcp disable <server>
+claudeops mcp disable <server>
 ```
 
 ### Cost Tracking
 
 ```bash
 # Today's usage
-cck cost today [--format table|json]
+claudeops cost today [--format table|json]
 
 # This week's usage
-cck cost week [--format table|json]
+claudeops cost week [--format table|json]
 
 # Check budget status
-cck cost budget [--set <usd>] [--period daily|weekly|monthly]
+claudeops cost budget [--set <usd>] [--period daily|weekly|monthly]
 
 # Export cost data
-cck cost export [--format csv|json] [--period <period>] [--output <path>]
+claudeops cost export [--format csv|json] [--period <period>] [--output <path>]
 
 # Show pricing information
-cck cost pricing [--model <haiku|sonnet|opus>]
+claudeops cost pricing [--model <haiku|sonnet|opus>]
 ```
 
 ### Hook Management
 
 ```bash
 # List all hooks
-cck hook list [--json]
+claudeops hook list [--json]
 
 # Debug hook execution
-cck hook debug [--event <event>] [--verbose]
+claudeops hook debug [--event <event>] [--verbose]
 
 # Test a specific hook
-cck hook test <hook-name> [--event <event>] [--input <json>]
+claudeops hook test <hook-name> [--event <event>] [--input <json>]
 ```
 
 ### System Commands
 
 ```bash
 # Sync configuration to Claude Code
-cck sync [--dry-run] [--force] [--backup]
+claudeops sync [--dry-run] [--force] [--backup]
 
 # Run diagnostics
-cck doctor [--fix] [--verbose]
+claudeops doctor [--fix] [--verbose]
 
 # Installation wizard
-cck install
+claudeops install
 
 # Check for updates and upgrade
-cck upgrade [--check] [--force]
+claudeops upgrade [--check] [--force]
 ```
 
 ---
@@ -439,7 +439,7 @@ cck upgrade [--check] [--force]
 
 ### Global Configuration
 
-Global configuration lives in `~/.claude-code-kit/config.toml`:
+Global configuration lives in `~/.claudeops/config.toml`:
 
 ```toml
 [model]
@@ -462,7 +462,7 @@ backupBeforeSync = true
 
 ### Project Configuration
 
-Project-level configuration lives in `.claude-code-kit.yaml`:
+Project-level configuration lives in `.claudeops.yaml`:
 
 ```yaml
 profiles:
@@ -482,7 +482,7 @@ cost:
 
 ### Profile Configuration
 
-Profile files live in `~/.claude-code-kit/profiles/{name}.toml`:
+Profile files live in `~/.claudeops/profiles/{name}.toml`:
 
 ```toml
 [setup]
@@ -511,7 +511,7 @@ disabled = []
 Bare essentials for getting started:
 
 ```bash
-cck setup use minimal
+claudeops setup use minimal
 ```
 
 Includes:
@@ -524,7 +524,7 @@ Includes:
 Full-stack web development (React + Node.js):
 
 ```bash
-cck setup use fullstack
+claudeops setup use fullstack
 ```
 
 Includes:
@@ -540,7 +540,7 @@ Includes:
 Frontend-focused development:
 
 ```bash
-cck setup use frontend
+claudeops setup use frontend
 ```
 
 Optimized for:
@@ -554,7 +554,7 @@ Optimized for:
 Backend-focused development:
 
 ```bash
-cck setup use backend
+claudeops setup use backend
 ```
 
 Optimized for:
@@ -568,7 +568,7 @@ Optimized for:
 Data science and analysis:
 
 ```bash
-cck setup use data
+claudeops setup use data
 ```
 
 Optimized for:
@@ -582,7 +582,7 @@ Optimized for:
 Infrastructure and deployment:
 
 ```bash
-cck setup use devops
+claudeops setup use devops
 ```
 
 Optimized for:
@@ -597,7 +597,7 @@ Optimized for:
 Full-featured for large teams:
 
 ```bash
-cck setup use enterprise
+claudeops setup use enterprise
 ```
 
 Includes:
@@ -612,7 +612,7 @@ Includes:
 
 ## Addon Development
 
-Create custom addons to extend claude-code-kit with hooks and plugins.
+Create custom addons to extend claudeops with hooks and plugins.
 
 ### Addon Structure
 
@@ -671,7 +671,7 @@ export default async function preToolUse(input, context) {
 ### Publish Addon
 
 1. Create addon in local directory
-2. Test with `cck addon install ./my-addon`
+2. Test with `claudeops addon install ./my-addon`
 3. Once working, push to GitHub or registry
 4. Share with community!
 
@@ -683,34 +683,34 @@ export default async function preToolUse(input, context) {
 
 ```bash
 # Create profile for Client A
-cck profile create client-a --setup fullstack --description "Client A project"
-cck profile use client-a
+claudeops profile create client-a --setup fullstack --description "Client A project"
+claudeops profile use client-a
 
 # Create profile for Client B
-cck profile create client-b --setup fullstack --description "Client B project"
+claudeops profile create client-b --setup fullstack --description "Client B project"
 
 # Switch between clients
-cck profile use client-a
-cck sync
+claudeops profile use client-a
+claudeops sync
 
-cck profile use client-b
-cck sync
+claudeops profile use client-b
+claudeops sync
 ```
 
 ### Example 2: Set Up Cost Tracking
 
 ```bash
 # Initialize with cost tracking
-cck config init
+claudeops config init
 
 # Set weekly budget
-cck cost budget --set 75 --period weekly
+claudeops cost budget --set 75 --period weekly
 
 # Check current usage
-cck cost today
+claudeops cost today
 
 # Export weekly report
-cck cost export --period weekly --format csv --output weekly-costs.csv
+claudeops cost export --period weekly --format csv --output weekly-costs.csv
 ```
 
 ### Example 3: Custom Setup with Specific Agents
@@ -718,43 +718,43 @@ cck cost export --period weekly --format csv --output weekly-costs.csv
 Create a custom setup optimized for security work:
 
 ```bash
-cck setup create security-audit \
+claudeops setup create security-audit \
   --description "Security audit configuration" \
   --author "My Team"
 
 # Then configure via profile
-cck profile create security-work --setup security-audit
+claudeops profile create security-work --setup security-audit
 ```
 
 ### Example 4: Install and Configure MCP Servers
 
 ```bash
 # Add multiple MCP servers
-cck mcp add filesystem
-cck mcp add github --config '{"token": "ghp_..."}'
-cck mcp add fetch
+claudeops mcp add filesystem
+claudeops mcp add github --config '{"token": "ghp_..."}'
+claudeops mcp add fetch
 
 # Disable specific server
-cck mcp disable fetch
+claudeops mcp disable fetch
 
 # List current configuration
-cck mcp list --status
+claudeops mcp list --status
 
 # Sync to Claude Code
-cck sync
+claudeops sync
 ```
 
 ### Example 5: Debug Hook Issues
 
 ```bash
 # List all active hooks
-cck hook list
+claudeops hook list
 
 # Debug hook execution in detail
-cck hook debug --verbose
+claudeops hook debug --verbose
 
 # Test a specific hook with sample data
-cck hook test my-addon.preToolUse \
+claudeops hook test my-addon.preToolUse \
   --event preToolUse \
   --input '{"tool":"bash","args":{"command":"ls"}}'
 ```
@@ -795,13 +795,13 @@ npm run lint
 
 ## Troubleshooting
 
-### "Command not found: cck"
+### "Command not found: claudeops"
 
 Ensure installation completed and npm bin is in PATH:
 
 ```bash
 # Verify installation
-npm list -g claude-code-kit
+npm list -g claudeops
 
 # Add npm bin to PATH if needed
 export PATH="$(npm config get prefix)/bin:$PATH"
@@ -812,9 +812,9 @@ export PATH="$(npm config get prefix)/bin:$PATH"
 Check sync status and fix issues:
 
 ```bash
-cck doctor --fix
-cck sync --dry-run  # See what would be synced
-cck sync --backup   # Sync with backup
+claudeops doctor --fix
+claudeops sync --dry-run  # See what would be synced
+claudeops sync --backup   # Sync with backup
 ```
 
 ### Hook not executing
@@ -822,9 +822,9 @@ cck sync --backup   # Sync with backup
 Debug hook configuration:
 
 ```bash
-cck hook list
-cck hook debug --verbose
-cck config show --resolved  # Check merged configuration
+claudeops hook list
+claudeops hook debug --verbose
+claudeops config show --resolved  # Check merged configuration
 ```
 
 ### Cost tracking shows zero usage
@@ -832,8 +832,8 @@ cck config show --resolved  # Check merged configuration
 Cost data is populated when Claude Code API calls are made. Verify:
 
 ```bash
-cck cost pricing        # Check pricing configuration
-cck doctor              # Run diagnostics
+claudeops cost pricing        # Check pricing configuration
+claudeops doctor              # Run diagnostics
 ```
 
 ---

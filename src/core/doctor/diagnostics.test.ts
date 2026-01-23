@@ -21,7 +21,7 @@ import type { DiagnosticCategory } from '@/types/index.js';
 
 // Mock path utilities
 // vi.mock('@/utils/paths.js', () => ({
-//   getGlobalConfigDir: vi.fn(() => '/mock/home/.claude-code-kit'),
+//   getGlobalConfigDir: vi.fn(() => '/mock/home/.claudeops'),
 //   getClaudeDir: vi.fn(() => '/mock/home/.claude'),
 //   getProfilesDir: vi.fn(() => '/mock/home/.claude-kit/profiles'),
 //   getAddonsDir: vi.fn(() => '/mock/home/.claude-kit/addons'),
@@ -97,9 +97,9 @@ describe.skip('Diagnostics', () => {
 
   describe('getCheck', () => {
     it('returns check by ID', () => {
-      const check = getCheck('claude-code-kit-dir');
+      const check = getCheck('claudeops-dir');
       expect(check).toBeDefined();
-      expect(check?.id).toBe('claude-code-kit-dir');
+      expect(check?.id).toBe('claudeops-dir');
     });
 
     it('returns undefined for unknown ID', () => {
@@ -146,11 +146,11 @@ describe.skip('Diagnostics', () => {
       mockIsDirectory.mockResolvedValue(true);
 
       const results = await runDiagnostics({
-        checks: ['claude-code-kit-dir'],
+        checks: ['claudeops-dir'],
       });
 
       expect(results.length).toBe(1);
-      expect(results[0]?.id).toBe('claude-code-kit-dir');
+      expect(results[0]?.id).toBe('claudeops-dir');
     });
 
     it('skips specified checks', async () => {
@@ -167,34 +167,34 @@ describe.skip('Diagnostics', () => {
     });
 
     it('handles dependencies correctly', async () => {
-      // Make claude-kit-dir fail
+      // Make claudeops-dir fail
       mockIsDirectory.mockImplementation(async (path: string) => {
-        if (path.includes('.claude-kit')) {
+        if (path.includes('.claudeops')) {
           return false;
         }
         return true;
       });
 
       const results = await runDiagnostics({
-        checks: ['claude-code-kit-dir', 'config-valid'],
+        checks: ['claudeops-dir', 'config-valid'],
       });
 
-      // config-valid depends on claude-kit-dir
-      // If claude-kit-dir fails, config-valid should be skipped
+      // config-valid depends on claudeops-dir
+      // If claudeops-dir fails, config-valid should be skipped
       const _configResult = results.find((r) => r.id === 'config-valid');
 
       // Note: The actual behavior depends on implementation
       // Either skipped or the dependency should have run first
-      expect(results.find((r) => r.id === 'claude-code-kit-dir')).toBeDefined();
+      expect(results.find((r) => r.id === 'claudeops-dir')).toBeDefined();
     });
   });
 
   describe('individual checks', () => {
-    describe('claude-code-kit-dir', () => {
+    describe('claudeops-dir', () => {
       it('passes when directory exists', async () => {
         mockIsDirectory.mockResolvedValue(true);
 
-        const check = getCheck('claude-code-kit-dir')!;
+        const check = getCheck('claudeops-dir')!;
         const result = await check.run();
 
         expect(result.passed).toBe(true);
@@ -204,7 +204,7 @@ describe.skip('Diagnostics', () => {
       it('fails when directory missing', async () => {
         mockIsDirectory.mockResolvedValue(false);
 
-        const check = getCheck('claude-code-kit-dir')!;
+        const check = getCheck('claudeops-dir')!;
         const result = await check.run();
 
         expect(result.passed).toBe(false);
@@ -333,12 +333,12 @@ version = "1.0.0"
   });
 
   describe('fix implementations', () => {
-    it('claude-kit-dir fix creates directory', async () => {
+    it('claudeops-dir fix creates directory', async () => {
       const { mkdir } = await import('@/utils/fs.js');
       const mockMkdir = mkdir as ReturnType<typeof vi.fn>;
       mockMkdir.mockResolvedValue(undefined);
 
-      const check = getCheck('claude-code-kit-dir')!;
+      const check = getCheck('claudeops-dir')!;
       expect(check.fix).toBeDefined();
 
       const fixResult = await check.fix!();

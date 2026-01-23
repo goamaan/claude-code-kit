@@ -2,7 +2,7 @@
 name = "frontend"
 version = "1.0.0"
 description = "Frontend development with React, Vue, or Svelte"
-author = "claude-code-kit"
+author = "claudeops"
 
 [requires]
 addons = []

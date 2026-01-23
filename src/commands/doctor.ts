@@ -24,24 +24,24 @@ type DiagnosticCheck = () => Promise<DiagnosticResult>;
 
 const checks: Record<string, DiagnosticCheck> = {
   // Installation checks
-  'installation:claude-code-kit-dir': async () => {
+  'installation:claudeops-dir': async () => {
     const start = Date.now();
     const configDir = getGlobalConfigDir();
     const dirExists = await exists(configDir);
 
     return {
-      id: 'installation:claude-code-kit-dir',
-      name: 'claude-code-kit directory',
+      id: 'installation:claudeops-dir',
+      name: 'claudeops directory',
       category: 'installation',
       severity: dirExists ? 'info' : 'warning',
       passed: dirExists,
-      description: 'Check if ~/.claude-code-kit directory exists',
+      description: 'Check if ~/.claudeops directory exists',
       message: dirExists
         ? `Found: ${configDir}`
         : `Missing: ${configDir}`,
       suggestions: dirExists ? undefined : [
         'Run: cck config init',
-        'Or: mkdir -p ~/.claude-code-kit',
+        'Or: mkdir -p ~/.claudeops',
       ],
       fixAvailable: !dirExists,
       fixId: dirExists ? undefined : 'fix:create-config-dir',
@@ -550,7 +550,7 @@ export default defineCommand({
     output.header('System Info');
     output.kv('Platform', report.system.platform);
     output.kv('Node.js', report.system.nodeVersion);
-    output.kv('claude-code-kit', report.system.claudeKitVersion);
+    output.kv('claudeops', report.system.claudeKitVersion);
 
     // Exit with appropriate code
     if (report.status === 'unhealthy') {

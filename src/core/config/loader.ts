@@ -1,6 +1,6 @@
 /**
  * Configuration file discovery and loading
- * Handles the multi-layer configuration system for claude-code-kit
+ * Handles the multi-layer configuration system for claudeops
  */
 
 import { join } from 'node:path';
@@ -50,13 +50,13 @@ import {
  * Configuration file paths
  */
 export interface ConfigPaths {
-  /** Global configuration file (~/.claude-code-kit/config.toml) */
+  /** Global configuration file (~/.claudeops/config.toml) */
   global: string;
-  /** Profile-specific configuration file (~/.claude-code-kit/profiles/{name}/config.toml) */
+  /** Profile-specific configuration file (~/.claudeops/profiles/{name}/config.toml) */
   profile: string;
-  /** Project-level configuration file (.claude-code-kit/config.toml) */
+  /** Project-level configuration file (.claudeops/config.toml) */
   project: string;
-  /** Local configuration file (.claude-code-kit/local.toml) - gitignored */
+  /** Local configuration file (.claudeops/local.toml) - gitignored */
   local: string;
 }
 

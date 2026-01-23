@@ -1,6 +1,6 @@
-# Claude Code Kit Addon System
+# claudeops Addon System
 
-The addon system allows you to extend and customize Claude Code Kit's behavior through extensible plugins. Addons can hook into the tool execution pipeline, provide custom configuration options, and integrate additional functionality into the CLAUDE.md environment.
+The addon system allows you to extend and customize claudeops's behavior through extensible plugins. Addons can hook into the tool execution pipeline, provide custom configuration options, and integrate additional functionality into the CLAUDE.md environment.
 
 ## Table of Contents
 
@@ -21,60 +21,60 @@ The addon system allows you to extend and customize Claude Code Kit's behavior t
 
 ```bash
 # From the public registry
-cck addon install safety-net
+claudeopsaddon install safety-net
 
 # From GitHub
-cck addon install github:user/addon-name
+claudeopsaddon install github:user/addon-name
 
 # From local path
-cck addon install ./my-addon
+claudeopsaddon install ./my-addon
 ```
 
 ### Listing Addons
 
 ```bash
 # List all installed addons
-cck addon list
+claudeopsaddon list
 
 # Show details about a specific addon
-cck addon info safety-net
+claudeopsaddon info safety-net
 
 # Search the registry
-cck addon search "safety"
+claudeopsaddon search "safety"
 ```
 
 ### Enabling/Disabling
 
 ```bash
 # Disable an addon (won't be loaded)
-cck addon disable safety-net
+claudeopsaddon disable safety-net
 
 # Re-enable it
-cck addon enable safety-net
+claudeopsaddon enable safety-net
 ```
 
 ### Removing Addons
 
 ```bash
 # Remove an addon (will prompt for confirmation)
-cck addon remove safety-net
+claudeopsaddon remove safety-net
 
 # Force removal without confirmation
-cck addon remove safety-net --force
+claudeopsaddon remove safety-net --force
 ```
 
 ## Installation Sources
 
-Claude Code Kit supports three installation sources:
+claudeops supports three installation sources:
 
 ### 1. Local Path
 
 Install an addon from your filesystem:
 
 ```bash
-cck addon install ./my-addon
-cck addon install ~/addons/my-addon
-cck addon install /absolute/path/to/addon
+claudeopsaddon install ./my-addon
+claudeopsaddon install ~/addons/my-addon
+claudeopsaddon install /absolute/path/to/addon
 ```
 
 Use this for developing addons locally before publishing.
@@ -85,10 +85,10 @@ Install directly from a GitHub repository:
 
 ```bash
 # Install from main branch
-cck addon install github:owner/repo-name
+claudeopsaddon install github:owner/repo-name
 
 # Install from specific branch
-cck addon install github:owner/repo-name@feature-branch
+claudeopsaddon install github:owner/repo-name@feature-branch
 ```
 
 GitHub repos should contain an `addon.toml` at the root.
@@ -99,10 +99,10 @@ Once the public registry is available, install by name:
 
 ```bash
 # Install latest version
-cck addon install addon-name
+claudeopsaddon install addon-name
 
 # Install specific version
-cck addon install addon-name --version 1.0.0
+claudeopsaddon install addon-name --version 1.0.0
 ```
 
 ## Addon Structure
@@ -139,13 +139,13 @@ The addon manifest is a TOML file named `addon.toml`. Here's a complete example:
 name = "safety-net"
 version = "1.0.0"
 description = "Blocks dangerous git commands that could cause data loss"
-author = "claude-kit"
+author = "claudeops"
 repository = "https://github.com/user/safety-net"
 license = "MIT"
 keywords = ["safety", "protection", "git"]
 
 [requires]
-claude-code-kit = ">=0.1.0"
+claudeops = ">=0.1.0"
 oh-my-claudecode = ">=3.0.0"
 
 [install]
@@ -222,7 +222,7 @@ Version compatibility requirements:
 
 ```toml
 [requires]
-claude-code-kit = ">=0.1.0"
+claudeops = ">=0.1.0"
 oh-my-claudecode = ">=3.0.0"
 ```
 
@@ -497,7 +497,7 @@ enabled = false  # Won't run
 Or disable via CLI:
 
 ```bash
-cck hook disable addon-name bash-hook
+claudeopshook disable addon-name bash-hook
 ```
 
 ## Configuration Options
@@ -554,7 +554,7 @@ default = 300
 
 ### Accessing Configuration in Hooks
 
-Configuration values are stored in `~/.claude-code-kit/addons/{name}/config.json`:
+Configuration values are stored in `~/.claudeops/addons/{name}/config.json`:
 
 ```json
 {
@@ -574,7 +574,7 @@ import { join } from 'path';
 
 const configPath = join(
   homedir(),
-  '.claude-code-kit/addons/my-addon/config.json'
+  '.claudeops/addons/my-addon/config.json'
 );
 const config = JSON.parse(readFileSync(configPath, 'utf-8'));
 
@@ -590,7 +590,7 @@ if (config.strict_mode) {
 Use the CLI to create a new addon:
 
 ```bash
-cck addon create my-addon
+claudeopsaddon create my-addon
 ```
 
 This creates a directory with:
@@ -652,32 +652,32 @@ main().catch(() => process.exit(1));
 
 ```bash
 # Test hook with sample input
-cck hook test ./my-addon/hook.ts -t Bash -i '{"command":"echo test"}'
+claudeopshook test ./my-addon/hook.ts -t Bash -i '{"command":"echo test"}'
 
 # List active hooks (including your addon when installed)
-cck hook list
+claudeopshook list
 
 # Debug hook execution for a tool
-cck hook debug Bash --event PreToolUse
+claudeopshook debug Bash --event PreToolUse
 ```
 
 ### Step 4: Install Locally
 
 ```bash
-cck addon install ./my-addon
+claudeopsaddon install ./my-addon
 ```
 
 ### Step 5: Verify Installation
 
 ```bash
 # Check addon is installed and enabled
-cck addon info my-addon
+claudeopsaddon info my-addon
 
 # See it in the list
-cck addon list
+claudeopsaddon list
 
 # Verify hooks are active
-cck hook list
+claudeopshook list
 ```
 
 ### Step 6: Publish (Optional)
@@ -690,7 +690,7 @@ cck hook list
 
 Users can then install with:
 ```bash
-cck addon install github:user/addon-name
+claudeopsaddon install github:user/addon-name
 ```
 
 #### To Registry
@@ -699,7 +699,7 @@ Once the public registry is available:
 
 1. Submit your addon for review
 2. Upon approval, it's published to the registry
-3. Users can install with: `cck addon install addon-name`
+3. Users can install with: `claudeopsaddon install addon-name`
 
 ## Managing Addons
 
@@ -709,85 +709,85 @@ Once the public registry is available:
 
 ```bash
 # Show all addons
-cck addon list
+claudeopsaddon list
 
 # JSON output
-cck addon list --json
+claudeopsaddon list --json
 
 # Include disabled addons
-cck addon list --all
+claudeopsaddon list --all
 ```
 
 #### Show Addon Details
 
 ```bash
 # Show info about an installed addon
-cck addon info my-addon
+claudeopsaddon info my-addon
 
 # Show info about a registry addon
-cck addon info safety-net
+claudeopsaddon info safety-net
 
 # JSON output
-cck addon info my-addon --json
+claudeopsaddon info my-addon --json
 ```
 
 #### Search Registry
 
 ```bash
 # Search for addons
-cck addon search "safety"
+claudeopsaddon search "safety"
 
 # Limit results
-cck addon search "git" --limit 10
+claudeopsaddon search "git" --limit 10
 
 # JSON output
-cck addon search "security" --json
+claudeopsaddon search "security" --json
 ```
 
 #### Install Addon
 
 ```bash
 # From registry
-cck addon install addon-name
+claudeopsaddon install addon-name
 
 # From GitHub
-cck addon install github:user/repo
+claudeopsaddon install github:user/repo
 
 # From local path
-cck addon install ./my-addon
+claudeopsaddon install ./my-addon
 
 # Specific version
-cck addon install addon-name --version 1.2.0
+claudeopsaddon install addon-name --version 1.2.0
 ```
 
 #### Update Addons
 
 ```bash
 # Update a specific addon
-cck addon update safety-net
+claudeopsaddon update safety-net
 
 # Update all addons
-cck addon update
+claudeopsaddon update
 ```
 
 #### Enable/Disable
 
 ```bash
 # Disable an addon (won't load)
-cck addon disable safety-net
+claudeopsaddon disable safety-net
 
 # Enable an addon
-cck addon enable safety-net
+claudeopsaddon enable safety-net
 ```
 
 #### Remove Addon
 
 ```bash
 # Remove with confirmation
-cck addon remove safety-net
+claudeopsaddon remove safety-net
 
 # Force removal
-cck addon remove safety-net --force
+claudeopsaddon remove safety-net --force
 ```
 
 ### Installation Storage
@@ -795,7 +795,7 @@ cck addon remove safety-net --force
 Addons are installed to:
 
 ```
-~/.claude-code-kit/addons/
+~/.claudeops/addons/
 ├── safety-net/
 │   ├── addon.toml
 │   ├── hook.ts
@@ -810,7 +810,7 @@ Addons are installed to:
 Configuration is stored per addon:
 
 ```
-~/.claude-code-kit/addons/my-addon/config.json
+~/.claudeops/addons/my-addon/config.json
 ```
 
 ## Hook Debugging
@@ -820,7 +820,7 @@ Configuration is stored per addon:
 View all active hooks across all enabled addons:
 
 ```bash
-cck hook list
+claudeopshook list
 ```
 
 Output shows:
@@ -834,10 +834,10 @@ Output shows:
 
 ```bash
 # Show only PreToolUse hooks
-cck hook list --event PreToolUse
+claudeopshook list --event PreToolUse
 
 # Show only PostToolUse hooks
-cck hook list --event PostToolUse
+claudeopshook list --event PostToolUse
 ```
 
 ### Debug Hook Matching
@@ -846,13 +846,13 @@ Find which hooks will run for a specific tool:
 
 ```bash
 # Check what hooks run when Bash is called
-cck hook debug Bash
+claudeopshook debug Bash
 
 # Check for PreToolUse event
-cck hook debug Bash --event PreToolUse
+claudeopshook debug Bash --event PreToolUse
 
 # Check for PostToolUse event
-cck hook debug Bash --event PostToolUse
+claudeopshook debug Bash --event PostToolUse
 ```
 
 Output shows:
@@ -867,13 +867,13 @@ Test a hook script with sample input:
 
 ```bash
 # Test with default input
-cck hook test ./hook.ts
+claudeopshook test ./hook.ts
 
 # Test with specific tool
-cck hook test ./hook.ts --tool Bash
+claudeopshook test ./hook.ts --tool Bash
 
 # Test with custom input
-cck hook test ./hook.ts -t Bash -i '{"command":"echo test"}'
+claudeopshook test ./hook.ts -t Bash -i '{"command":"echo test"}'
 ```
 
 Output shows:
@@ -888,34 +888,34 @@ Output shows:
 
 1. Check addon is enabled:
    ```bash
-   cck addon list
+   claudeopsaddon list
    ```
 
 2. Verify hook is registered:
    ```bash
-   cck hook list
+   claudeopshook list
    ```
 
 3. Check matcher pattern:
    ```bash
-   cck hook debug YourTool
+   claudeopshook debug YourTool
    ```
 
 4. Verify hook file exists and is executable:
    ```bash
-   ls -la ~/.claude-code-kit/addons/your-addon/
+   ls -la ~/.claudeops/addons/your-addon/
    ```
 
 #### Hook Errors
 
 1. Test the hook directly:
    ```bash
-   cck hook test ./hook.ts
+   claudeopshook test ./hook.ts
    ```
 
 2. Check for missing dependencies:
    ```bash
-   cd ~/.claude-code-kit/addons/your-addon
+   cd ~/.claudeops/addons/your-addon
    npm list
    ```
 
@@ -928,7 +928,7 @@ Output shows:
 
 1. Check hook execution time:
    ```bash
-   cck hook test ./hook.ts
+   claudeopshook test ./hook.ts
    ```
 
 2. Reduce priority if hook is too slow:
@@ -941,7 +941,7 @@ Output shows:
 
 3. Consider disabling non-critical hooks:
    ```bash
-   cck addon disable logging-addon
+   claudeopsaddon disable logging-addon
    ```
 
 ## Examples
@@ -1210,4 +1210,4 @@ main().catch(() => process.exit(1));
 
 ---
 
-For more information, see the [Hook Debugging](#hook-debugging) section or run `cck addon --help` for CLI documentation.
+For more information, see the [Hook Debugging](#hook-debugging) section or run `claudeopsaddon --help` for CLI documentation.

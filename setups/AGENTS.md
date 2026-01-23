@@ -24,7 +24,7 @@ Pre-packaged configuration templates for common development workflows. Each setu
 ### Working In This Directory
 
 - **Setup structure**: Each setup contains `manifest.toml` (metadata) + `CLAUDE.md` (Claude instructions) + optional addons
-- **Installation**: Setups installed via `claude-code-kit setup install <name>`
+- **Installation**: Setups installed via `claudeops setup install <name>`
 - **Customization**: Users can modify CLAUDE.md after installation
 - **Inheritance**: Setups can inherit from other setups (e.g., fullstack inherits frontend + backend)
 

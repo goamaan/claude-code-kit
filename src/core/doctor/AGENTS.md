@@ -21,12 +21,12 @@ Installation health diagnostics and auto-repair system. Provides 11 diagnostic c
 ### Working In This Directory
 
 - **Check categories**: Directories, Permissions, Configuration, Profiles, Sync State
-- **11 diagnostic checks**: claude-code-kit-dir, profile-dir, config-valid, active-profile, profile-exists, default-profile, permissions-read, permissions-write, sync-state, mcp-servers, addons-state
+- **11 diagnostic checks**: claudeops-dir, profile-dir, config-valid, active-profile, profile-exists, default-profile, permissions-read, permissions-write, sync-state, mcp-servers, addons-state
 - **Severity levels**: Critical (system broken), Error (major feature broken), Warning (degraded), Info (advisory)
 - **Fix availability**: Each check can optionally provide `fixAvailable: true` with corresponding fix function
 - **Doctor interface**: `diagnose()`, `fix()`, `fixAll()`, `report()`, `healthCheck()`
 - **Report format**: Structured `DiagnosticReport` with summary, results, available fixes, system info, duration
-- **System info**: Collects platform, Node version, claude-code-kit version, Claude Code version (from `claude --version`)
+- **System info**: Collects platform, Node version, claudeops version, Claude Code version (from `claude --version`)
 - **Health status**: 'healthy' (all pass), 'degraded' (warnings only), 'unhealthy' (errors/critical)
 
 ### Testing Requirements

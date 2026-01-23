@@ -22,7 +22,7 @@ describe('Addon Integration', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(tmpdir(), `claude-code-kit-integration-${randomUUID()}`);
+    testDir = join(tmpdir(), `claudeops-integration-${randomUUID()}`);
     await mkdir(testDir, { recursive: true });
   });
 

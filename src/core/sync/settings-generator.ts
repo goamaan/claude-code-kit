@@ -204,7 +204,7 @@ export function generateSettings(
   // Add metadata for tracking
   settings.metadata = {
     ...settings.metadata,
-    'claude-code-kit': {
+    'claudeops': {
       version: '0.1.0',  // TODO: Get from package.json
       profile: config.profile.name,
       setup: setup.name,
@@ -427,7 +427,7 @@ export function createDefaultSettings(): GeneratedSettings {
   return {
     model: MODEL_MAP.sonnet,
     metadata: {
-      'claude-code-kit': {
+      'claudeops': {
         version: '0.1.0',
         generatedAt: new Date().toISOString(),
       },

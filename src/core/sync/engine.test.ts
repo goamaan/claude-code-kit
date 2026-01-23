@@ -68,9 +68,9 @@ describe('engine', () => {
   let configDir: string;
 
   beforeEach(async () => {
-    testDir = join(tmpdir(), `claude-code-kit-test-${randomUUID()}`);
+    testDir = join(tmpdir(), `claudeops-test-${randomUUID()}`);
     claudeDir = join(testDir, '.claude');
-    configDir = join(testDir, '.claude-code-kit');
+    configDir = join(testDir, '.claudeops');
     await mkdir(claudeDir, { recursive: true });
     await mkdir(configDir, { recursive: true });
   });
@@ -158,7 +158,7 @@ describe('engine', () => {
       const state = await engine.loadState();
 
       expect(state.claudeMd).toBeDefined();
-      expect(state.claudeMd.content).toContain('claude-code-kit:managed');
+      expect(state.claudeMd.content).toContain('claudeops:managed');
     });
   });
 

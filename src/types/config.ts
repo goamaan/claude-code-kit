@@ -1,6 +1,6 @@
 /**
  * Configuration types with Zod schemas
- * Defines all configuration structures for claude-code-kit
+ * Defines all configuration structures for claudeops
  */
 
 import { z } from 'zod';
@@ -72,7 +72,7 @@ export const TeamConfigSchema = z.object({
 export type TeamConfig = z.infer<typeof TeamConfigSchema>;
 
 // =============================================================================
-// Main Configuration (config.yaml at ~/.claude-code-kit/)
+// Main Configuration (config.yaml at ~/.claudeops/)
 // =============================================================================
 
 export const MainConfigSchema = z.object({
@@ -122,7 +122,7 @@ export const ProfileFileConfigSchema = z.object({
 export type ProfileFileConfig = z.infer<typeof ProfileFileConfigSchema>;
 
 // =============================================================================
-// Project Configuration (.claude-code-kit.yaml in project root)
+// Project Configuration (.claudeops.yaml in project root)
 // =============================================================================
 
 export const ProjectConfigSchema = z.object({

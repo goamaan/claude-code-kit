@@ -118,7 +118,7 @@ describe('settings-generator', () => {
       const result = generateSettings(config, setup, addons, hooks);
 
       expect(result.metadata).toBeDefined();
-      const claudeKitMeta = result.metadata!['claude-code-kit'] as Record<string, unknown>;
+      const claudeKitMeta = result.metadata!['claudeops'] as Record<string, unknown>;
       expect(claudeKitMeta['profile']).toBe('my-profile');
       expect(claudeKitMeta['setup']).toBe('my-setup');
     });
@@ -441,7 +441,7 @@ describe('settings-generator', () => {
       const result = createDefaultSettings();
 
       expect(result.metadata).toBeDefined();
-      expect(result.metadata!['claude-code-kit']).toBeDefined();
+      expect(result.metadata!['claudeops']).toBeDefined();
     });
   });
 });

@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.0] - 2026-01-22
 
-Initial release of Claude Code Kit - a configuration and setup management layer for Claude Code.
+Initial release of claudeops - a configuration and setup management layer for Claude Code.
 
 ### Added
 
@@ -122,71 +122,71 @@ Initial release of Claude Code Kit - a configuration and setup management layer 
 #### CLI Commands
 
 - **Profile Commands**
-  - `ck profile list` - List all profiles with status
-  - `ck profile use <name>` - Switch active profile
-  - `ck profile create <name>` - Create new profile
-  - `ck profile create <name> --from <base>` - Create from template
-  - `ck profile delete <name>` - Remove profile
-  - `ck profile export <name>` - Export for sharing
-  - `ck profile import <url|file>` - Import profile
+  - `co profile list` - List all profiles with status
+  - `co profile use <name>` - Switch active profile
+  - `co profile create <name>` - Create new profile
+  - `co profile create <name> --from <base>` - Create from template
+  - `co profile delete <name>` - Remove profile
+  - `co profile export <name>` - Export for sharing
+  - `co profile import <url|file>` - Import profile
 
 - **Setup Commands**
-  - `ck setup list` - List available setups
-  - `ck setup info <name>` - Show setup details
-  - `ck setup use <name>` - Apply setup
-  - `ck setup use <name> --extend <other>` - Apply with extensions
-  - `ck setup create <name>` - Create custom setup
-  - `ck setup create <name> --from <a> <b>` - Combine setups
-  - `ck setup export <name>` - Export setup
-  - `ck setup import <url|file>` - Import setup
+  - `co setup list` - List available setups
+  - `co setup info <name>` - Show setup details
+  - `co setup use <name>` - Apply setup
+  - `co setup use <name> --extend <other>` - Apply with extensions
+  - `co setup create <name>` - Create custom setup
+  - `co setup create <name> --from <a> <b>` - Combine setups
+  - `co setup export <name>` - Export setup
+  - `co setup import <url|file>` - Import setup
 
 - **Addon Commands**
-  - `ck addon list` - List installed addons
-  - `ck addon search <query>` - Search registry
-  - `ck addon info <name>` - Show addon details
-  - `ck addon install <name|github:repo|path>` - Install addon
-  - `ck addon update <name>` - Update addon
-  - `ck addon update --all` - Update all addons
-  - `ck addon remove <name>` - Uninstall addon
-  - `ck addon create <name>` - Scaffold new addon
-  - `ck addon publish <name>` - Publish to registry
+  - `co addon list` - List installed addons
+  - `co addon search <query>` - Search registry
+  - `co addon info <name>` - Show addon details
+  - `co addon install <name|github:repo|path>` - Install addon
+  - `co addon update <name>` - Update addon
+  - `co addon update --all` - Update all addons
+  - `co addon remove <name>` - Uninstall addon
+  - `co addon create <name>` - Scaffold new addon
+  - `co addon publish <name>` - Publish to registry
 
 - **Configuration Commands**
-  - `ck config init` - Interactive setup wizard
-  - `ck config edit` - Open config in $EDITOR
-  - `ck config show` - Display merged config
-  - `ck config validate` - Validate all configs
-  - `ck config export --format json|toml|csv` - Export config
+  - `co config init` - Interactive setup wizard
+  - `co config edit` - Open config in $EDITOR
+  - `co config show` - Display merged config
+  - `co config validate` - Validate all configs
+  - `co config export --format json|toml|csv` - Export config
 
 - **MCP Commands**
-  - `ck mcp list` - List MCP servers
-  - `ck mcp enable <name>` - Enable server
-  - `ck mcp disable <name>` - Disable server
-  - `ck mcp install <package>` - Install new MCP
-  - `ck mcp budget` - Show context budget
+  - `co mcp list` - List MCP servers
+  - `co mcp enable <name>` - Enable server
+  - `co mcp disable <name>` - Disable server
+  - `co mcp install <package>` - Install new MCP
+  - `co mcp budget` - Show context budget
 
 - **Cost Commands**
-  - `ck cost` - Today's cost summary
-  - `ck cost today` - Detailed today's usage
-  - `ck cost week` - Weekly breakdown
-  - `ck cost month` - Monthly breakdown
-  - `ck cost budget set <amount>` - Set daily budget
-  - `ck cost export --format csv|json` - Export cost data
+  - `co cost` - Today's cost summary
+  - `co cost today` - Detailed today's usage
+  - `co cost week` - Weekly breakdown
+  - `co cost month` - Monthly breakdown
+  - `co cost budget set <amount>` - Set daily budget
+  - `co cost export --format csv|json` - Export cost data
 
 - **Hook Commands**
-  - `ck hook list` - List active hooks
-  - `ck hook debug <event>` - Debug hook execution
-  - `ck hook template list` - List hook templates
-  - `ck hook template apply <name>` - Apply template
+  - `co hook list` - List active hooks
+  - `co hook debug <event>` - Debug hook execution
+  - `co hook template list` - List hook templates
+  - `co hook template apply <name>` - Apply template
 
 - **System Commands**
-  - `ck sync` - Sync config to ~/.claude
-  - `ck sync --dry-run` - Preview changes
-  - `ck doctor` - Run diagnostic checks
-  - `ck doctor --fix` - Auto-fix issues
-  - `ck install` - Full installation
-  - `ck upgrade` - Upgrade to latest version
-  - `ck uninstall` - Clean uninstall
+  - `co sync` - Sync config to ~/.claude
+  - `co sync --dry-run` - Preview changes
+  - `co doctor` - Run diagnostic checks
+  - `co doctor --fix` - Auto-fix issues
+  - `co install` - Full installation
+  - `co upgrade` - Upgrade to latest version
+  - `co uninstall` - Clean uninstall
 
 #### Architecture & Infrastructure
 
@@ -198,9 +198,9 @@ Initial release of Claude Code Kit - a configuration and setup management layer 
 
 - **Configuration System**
   - Layered configuration merging:
-    - Global (~/.claude-kit/config.toml)
-    - Profile-specific (~/.claude-kit/profiles/<name>/config.toml)
-    - Project-level (.claude-kit/config.toml)
+    - Global (~/.claudeops/config.toml)
+    - Profile-specific (~/.claudeops/profiles/<name>/config.toml)
+    - Project-level (.claudeops/config.toml)
     - Environment variable overrides
   - TOML configuration format with @ltd/j-toml parser
   - Configuration inheritance and extends support
@@ -211,9 +211,9 @@ Initial release of Claude Code Kit - a configuration and setup management layer 
   - tsdown bundler (Rolldown-powered)
   - ESM-first module output
   - CLI entry points:
-    - `claude-code-kit` - Full command
-    - `cck` - Short alias
-    - `ck` - Ultra-short alias
+    - `claudeops` - Full command
+    - `cops` - Short alias
+    - `co` - Ultra-short alias
   - Binary distribution ready
   - npm package publishing
 
@@ -225,7 +225,7 @@ Initial release of Claude Code Kit - a configuration and setup management layer 
   - 80%+ code coverage threshold
 
 - **Storage Structure**
-  - Global configuration at `~/.claude-kit/`
+  - Global configuration at `~/.claudeops/`
     - `config.toml` - Main settings
     - `active-profile` - Current profile tracking
     - `profiles/` - Profile configurations
@@ -233,7 +233,7 @@ Initial release of Claude Code Kit - a configuration and setup management layer 
     - `addons/` - Installed addons
     - `cache/` - Cached registry and costs
     - `secrets.toml` - Sensitive credentials (gitignored)
-  - Project-level at `.claude-kit/`
+  - Project-level at `.claudeops/`
     - `config.toml` - Project overrides
     - `team.toml` - Team shared configuration
     - `local.toml` - Personal project config (gitignored)

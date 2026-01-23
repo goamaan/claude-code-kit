@@ -5,7 +5,7 @@
 
 ## Purpose
 
-Main source code for claude-code-kit. Contains CLI commands, core infrastructure, domain logic, type definitions, UI components, and utilities organized in a layered architecture.
+Main source code for claudeops. Contains CLI commands, core infrastructure, domain logic, type definitions, UI components, and utilities organized in a layered architecture.
 
 ## Key Files
 

@@ -1,5 +1,5 @@
 /**
- * Filesystem utilities for claude-code-kit
+ * Filesystem utilities for claudeops
  * Provides async wrappers around Node.js fs operations
  */
 

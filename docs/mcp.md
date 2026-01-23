@@ -2,7 +2,7 @@
 
 ## Overview
 
-**MCP** (Model Context Protocol) enables Claude Code to interact with external tools and services through standardized servers. This guide covers configuring, managing, and optimizing MCP servers in your claude-code-kit environment.
+**MCP** (Model Context Protocol) enables Claude Code to interact with external tools and services through standardized servers. This guide covers configuring, managing, and optimizing MCP servers in your claudeops environment.
 
 ### What is MCP?
 
@@ -13,12 +13,12 @@ Model Context Protocol is a standard that allows Claude to:
 - Integrate with external services
 - Extend Claude's capabilities beyond its base knowledge
 
-## Quick Start
+## QuicoStart
 
 ### List All MCP Servers
 
 ```bash
-ck mcp list
+comcp list
 ```
 
 Shows all configured MCP servers with their status and commands.
@@ -26,7 +26,7 @@ Shows all configured MCP servers with their status and commands.
 ### Get Server Information
 
 ```bash
-ck mcp info <server-name>
+comcp info <server-name>
 ```
 
 Display detailed information about a specific server, including command, arguments, and environment variables.
@@ -34,7 +34,7 @@ Display detailed information about a specific server, including command, argumen
 ### View Context Budget
 
 ```bash
-ck mcp budget
+comcp budget
 ```
 
 See estimated context token usage across all enabled servers.
@@ -64,7 +64,7 @@ MCP servers are stored in Claude's settings file at `~/.claude/claude_desktop_co
 
 ### Profile Configuration
 
-Enable or disable servers per profile in `~/.claude-code-kit/profiles/{name}.toml`:
+Enable or disable servers per profile in `~/.claudeops/profiles/{name}.toml`:
 
 ```toml
 [mcp]
@@ -74,7 +74,7 @@ disabled = ["postgres"]
 
 ### Project Configuration
 
-Override MCP settings for a specific project in `.claude-code-kit.yaml`:
+Override MCP settings for a specific project in `.claudeops.yaml`:
 
 ```yaml
 mcp:
@@ -90,8 +90,8 @@ mcp:
 
 MCP configuration is merged across layers (highest to lowest priority):
 
-1. **Project** (`.claude-code-kit.yaml`) - Most specific
-2. **Profile** (`~/.claude-code-kit/profiles/{name}.toml`)
+1. **Project** (`.claudeops.yaml`) - Most specific
+2. **Profile** (`~/.claudeops/profiles/{name}.toml`)
 3. **Global** (`~/.claude/claude_desktop_config.json`) - Least specific
 
 Settings from higher priority layers override lower ones.
@@ -101,13 +101,13 @@ Settings from higher priority layers override lower ones.
 ### Add via CLI
 
 ```bash
-ck mcp add <name> --command <cmd> [--args arg1 arg2 ...]
+comcp add <name> --command <cmd> [--args arg1 arg2 ...]
 ```
 
 Example - Add SQLite server:
 
 ```bash
-ck mcp add sqlite \
+comcp add sqlite \
   --command npx \
   --args -y @modelcontextprotocol/server-sqlite /path/to/db.sqlite
 ```
@@ -289,10 +289,10 @@ Each MCP server has a lifecycle state:
 | **error** | Server failed to start or encountered an error |
 | **disabled** | Server explicitly disabled in config |
 
-Check status with:
+Checostatus with:
 
 ```bash
-ck mcp list
+comcp list
 ```
 
 ## Context Budget and Performance
@@ -307,7 +307,7 @@ Each enabled MCP server consumes context tokens. This affects:
 ### Viewing Budget
 
 ```bash
-ck mcp budget
+comcp budget
 ```
 
 Shows:
@@ -331,7 +331,7 @@ Typical costs per server (including overhead):
 | filesystem | ~1000 |
 | puppeteer | ~1500 |
 | postgres | ~1500 |
-| slack | ~1800 |
+| slaco| ~1800 |
 | github | ~2000 |
 | context7 | ~3000 |
 
@@ -342,7 +342,7 @@ Typical costs per server (including overhead):
 1. **Disable unused servers** - Only enable servers you actively use
 2. **Profile-specific servers** - Use profiles to enable servers only when needed
 3. **Monitor total cost** - Keep total under 15-20% of context window
-4. **Review regularly** - Check budget when adding new servers
+4. **Review regularly** - Checobudget when adding new servers
 
 **Example**: If using Opus (200k context), aim for 30-40k tokens max for MCP.
 
@@ -368,7 +368,7 @@ enabled = true
 
 ---
 
-### Example: Full-Stack Development
+### Example: Full-StacoDevelopment
 
 For web development with databases:
 
@@ -430,9 +430,9 @@ enabled = true
 
 ## Setup Integration
 
-claude-code-kit includes setup templates that recommend relevant MCP servers:
+claudeops includes setup templates that recommend relevant MCP servers:
 
-### Fullstack Setup
+### FullstacoSetup
 
 ```toml
 [mcp]
@@ -483,9 +483,9 @@ Recommended for large-scale projects with databases.
 
 If a server fails to start:
 
-1. **Check configuration**
+1. **Checoconfiguration**
    ```bash
-   ck mcp info <server-name>
+   comcp info <server-name>
    ```
    Verify command and arguments are correct.
 
@@ -495,7 +495,7 @@ If a server fails to start:
    ```
    Run the command manually to catch errors.
 
-3. **Check environment variables**
+3. **Checoenvironment variables**
    Verify all required environment variables are set and accessible.
 
 4. **Review server logs**
@@ -511,7 +511,7 @@ For servers requiring credentials:
    echo $API_KEY
    ```
 
-2. **Check file permissions**
+2. **Checofile permissions**
    If reading from files, ensure Claude Code process can access them.
 
 3. **Test connectivity**
@@ -526,7 +526,7 @@ If using too many servers:
 
 1. **Review active servers**
    ```bash
-   ck mcp list
+   comcp list
    ```
 
 2. **Disable unnecessary servers**
@@ -545,7 +545,7 @@ For servers that take longer to initialize:
    timeout = 60000  # 60 seconds
    ```
 
-2. **Check resource constraints**
+2. **Checoresource constraints**
    Some servers (like Puppeteer) require significant resources. Verify your system has sufficient memory and CPU.
 
 3. **Reduce concurrent servers**
@@ -596,7 +596,7 @@ Default timeout is 10 seconds. Increase for servers that need more startup time.
 1. **Never commit credentials** to version control
 2. **Use environment variables** for API keys and passwords
 3. **Limit file access** with filesystem server restricted paths
-4. **Disable unused servers** to reduce attack surface
+4. **Disable unused servers** to reduce attacosurface
 
 ### File System Server Security
 
@@ -640,7 +640,7 @@ For database servers:
 Create a development profile with all needed servers:
 
 ```toml
-# ~/.claude-code-kit/profiles/dev.toml
+# ~/.claudeops/profiles/dev.toml
 
 name = "dev"
 description = "Development profile with full access"
@@ -653,8 +653,8 @@ disabled = []
 Use it with:
 
 ```bash
-ck profile switch dev
-ck sync
+coprofile switch dev
+cosync
 ```
 
 ### Production-Safe Profile
@@ -662,7 +662,7 @@ ck sync
 Create a minimal profile for production work:
 
 ```toml
-# ~/.claude-code-kit/profiles/prod.toml
+# ~/.claudeops/profiles/prod.toml
 
 name = "prod"
 description = "Production profile with limited access"
@@ -675,13 +675,13 @@ disabled = ["fetch", "sqlite"]
 Switch with:
 
 ```bash
-ck profile switch prod
-ck sync
+coprofile switch prod
+cosync
 ```
 
 ### Project-Specific Configuration
 
-Create a `.claude-code-kit.yaml` in your project:
+Create a `.claudeops.yaml` in your project:
 
 ```yaml
 mcp:
@@ -702,7 +702,7 @@ This configuration applies only when working in that project directory.
 After modifying MCP configuration, sync to apply changes:
 
 ```bash
-ck sync
+cosync
 ```
 
 This:
@@ -711,12 +711,12 @@ This:
 - Validates server configurations
 - Updates `~/.claude/claude_desktop_config.json`
 
-### Check Configuration
+### ChecoConfiguration
 
 Verify your merged configuration:
 
 ```bash
-ck config get
+coconfig get
 ```
 
 Shows the final merged configuration after applying all layers.
@@ -737,7 +737,7 @@ A: Yes, MCP servers are initialized when Claude Code starts. After modifying `~/
 
 **Q: Can I enable servers only for specific projects?**
 
-A: Yes. Use project-level `.claude-code-kit.yaml` configuration or create profiles and switch between them.
+A: Yes. Use project-level `.claudeops.yaml` configuration or create profiles and switch between them.
 
 ---
 
@@ -749,7 +749,7 @@ A: Claude Code will catch the error and you'll see an error message. Fix the ser
 
 **Q: How do I measure actual token usage?**
 
-A: Use `ck mcp budget` for estimates. For precise tracking, enable cost tracking in your configuration and review logs.
+A: Use `comcp budget` for estimates. For precise tracking, enable cost tracking in your configuration and review logs.
 
 ---
 

@@ -110,9 +110,9 @@ describe('Sync Integration', () => {
   let configDir: string;
 
   beforeEach(async () => {
-    testDir = join(tmpdir(), `claude-code-kit-integration-${randomUUID()}`);
+    testDir = join(tmpdir(), `claudeops-integration-${randomUUID()}`);
     claudeDir = join(testDir, '.claude');
-    configDir = join(testDir, '.claude-code-kit');
+    configDir = join(testDir, '.claudeops');
     await mkdir(claudeDir, { recursive: true });
     await mkdir(configDir, { recursive: true });
   });
@@ -148,11 +148,11 @@ describe('Sync Integration', () => {
       const settings = JSON.parse(settingsContent);
       expect(settings.model).toBeDefined();
       expect(settings.metadata).toBeDefined();
-      expect(settings.metadata['claude-code-kit'].profile).toBe('integration-profile');
+      expect(settings.metadata['claudeops'].profile).toBe('integration-profile');
 
       // Check CLAUDE.md was created
       const claudeMdContent = await readFile(join(claudeDir, 'CLAUDE.md'), 'utf-8');
-      expect(claudeMdContent).toContain('claude-code-kit:managed:start');
+      expect(claudeMdContent).toContain('claudeops:managed:start');
       expect(claudeMdContent).toContain('Integration Test Setup');
       expect(claudeMdContent).toContain('sonnet');
     });
@@ -259,9 +259,9 @@ describe('Sync Integration', () => {
 
 Some important user notes here.
 
-<!-- claude-code-kit:managed:start -->
+<!-- claudeops:managed:start -->
 Old managed content
-<!-- claude-code-kit:managed:end -->
+<!-- claudeops:managed:end -->
 
 # More User Notes
 

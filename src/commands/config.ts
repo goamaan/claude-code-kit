@@ -42,7 +42,7 @@ const initCommand = defineCommand({
     },
   },
   async run({ args }) {
-    prompts.intro('claude-code-kit configuration wizard');
+    prompts.intro('claudeops configuration wizard');
 
     const isGlobal = args.global;
     const configDir = isGlobal ? getGlobalConfigDir() : getProjectConfigDir();
@@ -173,7 +173,7 @@ const editCommand = defineCommand({
 
     // Create file if it doesn't exist
     if (!(await exists(configPath))) {
-      await writeFile(configPath, '# claude-code-kit configuration\n\n');
+      await writeFile(configPath, '# claudeops configuration\n\n');
     }
 
     output.info(`Opening ${configPath} in ${editor}...`);

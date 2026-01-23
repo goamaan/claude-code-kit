@@ -2,7 +2,7 @@
 name = "enterprise"
 version = "1.0.0"
 description = "Enterprise development with strict compliance and security"
-author = "claude-code-kit"
+author = "claudeops"
 
 [requires]
 addons = []

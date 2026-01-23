@@ -240,7 +240,7 @@ export interface DoctorOptions {
 
 export const DIAGNOSTIC_CHECKS = {
   // Installation checks
-  CLAUDE_KIT_INSTALLED: 'installation:claude-code-kit-installed',
+  CLAUDE_KIT_INSTALLED: 'installation:claudeops-installed',
   OMC_INSTALLED: 'installation:omc-installed',
   CLAUDE_CODE_INSTALLED: 'installation:claude-code-installed',
   CLAUDE_INSTALLED: 'installation:claude-installed',

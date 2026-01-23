@@ -1,6 +1,6 @@
-# Contributing to claude-code-kit
+# Contributing to claudeops
 
-Thank you for your interest in contributing to claude-code-kit! This document provides guidelines and instructions for participating in the project.
+Thank you for your interest in contributing to claudeops! This document provides guidelines and instructions for participating in the project.
 
 ## Table of Contents
 
@@ -27,8 +27,8 @@ Thank you for your interest in contributing to claude-code-kit! This document pr
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/your-org/claude-code-kit.git
-cd claude-code-kit
+git clone https://github.com/your-org/claudeops.git
+cd claudeops
 ```
 
 2. Install dependencies using Bun:
@@ -93,7 +93,7 @@ bun run verify
 ### Project Structure
 
 ```
-claude-code-kit/
+claudeops/
 ├── src/
 │   ├── cli.ts                 # CLI entry point (citty commands)
 │   ├── commands/              # Command implementations
@@ -544,7 +544,7 @@ templates = [
 
 ### Managed Sections in Generated Files
 
-When claude-code-kit syncs configuration, it manages specific sections in generated files:
+When claudeops syncs configuration, it manages specific sections in generated files:
 
 ```markdown
 <!-- BEGIN CLAUDE-CODE-KIT: SETUP -->
@@ -904,4 +904,4 @@ export async function handle(input: PreToolUseInput): Promise<HookResult> {
 - Open a discussion or issue with your question
 - Ask in code review for clarification
 
-Thank you for contributing to claude-code-kit!
+Thank you for contributing to claudeops!

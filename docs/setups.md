@@ -28,7 +28,7 @@ The clean slate setup - use this as a base for custom configurations.
 
 **Example**:
 ```bash
-cck setup use minimal
+claudeopssetup use minimal
 ```
 
 ---
@@ -73,7 +73,7 @@ Complete setup for full-stack web application development with React and Node.js
 
 **Example**:
 ```bash
-cck setup use fullstack
+claudeopssetup use fullstack
 ```
 
 ---
@@ -119,7 +119,7 @@ Specialized setup for frontend-focused development with design and UI emphasis.
 
 **Example**:
 ```bash
-cck setup use frontend
+claudeopssetup use frontend
 ```
 
 ---
@@ -165,7 +165,7 @@ Specialized setup for backend/API development with security and architecture foc
 
 **Example**:
 ```bash
-cck setup use backend
+claudeopssetup use backend
 ```
 
 ---
@@ -210,7 +210,7 @@ Specialized setup for data science, analytics, and machine learning projects.
 
 **Example**:
 ```bash
-cck setup use data
+claudeopssetup use data
 ```
 
 ---
@@ -254,7 +254,7 @@ Specialized setup for infrastructure as code, containerization, and CI/CD.
 
 **Example**:
 ```bash
-cck setup use devops
+claudeopssetup use devops
 ```
 
 ---
@@ -307,7 +307,7 @@ Specialized setup for enterprise development with strict compliance, security, a
 
 **Example**:
 ```bash
-cck setup use enterprise
+claudeopssetup use enterprise
 ```
 
 ---
@@ -319,7 +319,7 @@ cck setup use enterprise
 View all available built-in and custom setups:
 
 ```bash
-cck setup list
+claudeopssetup list
 ```
 
 **Options**:
@@ -334,7 +334,7 @@ cck setup list
 Get detailed information about a specific setup:
 
 ```bash
-cck setup info <name>
+claudeopssetup info <name>
 ```
 
 **Arguments**:
@@ -351,8 +351,8 @@ cck setup info <name>
 
 **Example**:
 ```bash
-cck setup info fullstack
-cck setup info backend --json
+claudeopssetup info fullstack
+claudeopssetup info backend --json
 ```
 
 ---
@@ -362,7 +362,7 @@ cck setup info backend --json
 Generate CLAUDE.md by applying a setup configuration:
 
 ```bash
-cck setup use <name> [--extend <setup1,setup2>] [--output <path>] [--force] [--dry-run]
+claudeopssetup use <name> [--extend <setup1,setup2>] [--output <path>] [--force] [--dry-run]
 ```
 
 **Arguments**:
@@ -377,19 +377,19 @@ cck setup use <name> [--extend <setup1,setup2>] [--output <path>] [--force] [--d
 **Example**:
 ```bash
 # Apply fullstack setup to CLAUDE.md in current directory
-cck setup use fullstack
+claudeopssetup use fullstack
 
 # Apply with custom output path
-cck setup use backend --output ~/.claude-code-kit/CLAUDE.md
+claudeopssetup use backend --output ~/.claudeops/CLAUDE.md
 
 # Extend frontend with data science setup
-cck setup use frontend --extend data
+claudeopssetup use frontend --extend data
 
 # Preview output before applying
-cck setup use enterprise --dry-run
+claudeopssetup use enterprise --dry-run
 
 # Force overwrite without confirmation
-cck setup use fullstack --force
+claudeopssetup use fullstack --force
 ```
 
 ---
@@ -399,7 +399,7 @@ cck setup use fullstack --force
 Create a new custom setup based on existing setup(s):
 
 ```bash
-cck setup create <name> [--from <setup1,setup2>] [--description <text>]
+claudeopssetup create <name> [--from <setup1,setup2>] [--description <text>]
 ```
 
 **Arguments**:
@@ -412,16 +412,16 @@ cck setup create <name> [--from <setup1,setup2>] [--description <text>]
 **Example**:
 ```bash
 # Create setup extending frontend
-cck setup create my-react --from frontend --description "My React setup"
+claudeopssetup create my-react --from frontend --description "My React setup"
 
 # Create setup extending multiple setups
-cck setup create my-fullstack --from fullstack,enterprise
+claudeopssetup create my-fullstack --from fullstack,enterprise
 
 # Create from scratch
-cck setup create minimal-custom
+claudeopssetup create minimal-custom
 ```
 
-**Output**: New setup created in `~/.claude-code-kit/setups/<name>/`
+**Output**: New setup created in `~/.claudeops/setups/<name>/`
 
 ---
 
@@ -430,7 +430,7 @@ cck setup create minimal-custom
 Export a setup as a shareable tar.gz archive:
 
 ```bash
-cck setup export <name> [--output <path>]
+claudeopssetup export <name> [--output <path>]
 ```
 
 **Arguments**:
@@ -442,10 +442,10 @@ cck setup export <name> [--output <path>]
 **Example**:
 ```bash
 # Export fullstack setup
-cck setup export fullstack
+claudeopssetup export fullstack
 
 # Export to custom location
-cck setup export my-setup --output ./exported-setup.tar.gz
+claudeopssetup export my-setup --output ./exported-setup.tar.gz
 ```
 
 **Output**: Compressed archive containing the setup manifest and content
@@ -457,7 +457,7 @@ cck setup export my-setup --output ./exported-setup.tar.gz
 Import a setup from file, URL, or archive:
 
 ```bash
-cck setup import <source> [--name <name>]
+claudeopssetup import <source> [--name <name>]
 ```
 
 **Arguments**:
@@ -469,13 +469,13 @@ cck setup import <source> [--name <name>]
 **Example**:
 ```bash
 # Import from local file
-cck setup import ./my-setup.tar.gz
+claudeopssetup import ./my-setup.tar.gz
 
 # Import from URL
-cck setup import https://example.com/setups/custom-setup.tar.gz
+claudeopssetup import https://example.com/setups/custom-setup.tar.gz
 
 # Import with specific name
-cck setup import ./setup.tar.gz --name my-imported-setup
+claudeopssetup import ./setup.tar.gz --name my-imported-setup
 ```
 
 ---
@@ -485,7 +485,7 @@ cck setup import ./setup.tar.gz --name my-imported-setup
 Delete a custom user setup:
 
 ```bash
-cck setup delete <name> [--force]
+claudeopssetup delete <name> [--force]
 ```
 
 **Arguments**:
@@ -497,10 +497,10 @@ cck setup delete <name> [--force]
 **Example**:
 ```bash
 # Delete with confirmation
-cck setup delete my-setup
+claudeopssetup delete my-setup
 
 # Force delete without confirmation
-cck setup delete my-setup --force
+claudeopssetup delete my-setup --force
 ```
 
 **Note**: Built-in setups (minimal, fullstack, frontend, backend, data, devops, enterprise) cannot be deleted.
@@ -509,7 +509,7 @@ cck setup delete my-setup --force
 
 ## Setup Manifest Structure
 
-Setup manifests are TOML files located in `~/.claude-code-kit/setups/<name>/manifest.toml`.
+Setup manifests are TOML files located in `~/.claudeops/setups/<name>/manifest.toml`.
 
 ### Basic Metadata
 
@@ -643,10 +643,10 @@ Apply multiple setups in one command:
 
 ```bash
 # Start with frontend, extend with data science capabilities
-cck setup use frontend --extend data
+claudeopssetup use frontend --extend data
 
 # Start with backend, add both enterprise and data features
-cck setup use backend --extend enterprise,data
+claudeopssetup use backend --extend enterprise,data
 ```
 
 When extending:
@@ -663,45 +663,45 @@ When extending:
 
 ```bash
 # Use frontend setup (already optimized for React)
-cck setup use frontend
+claudeopssetup use frontend
 
 # Or extend with testing capabilities
-cck setup use frontend --extend fullstack
+claudeopssetup use frontend --extend fullstack
 ```
 
 ### Example 2: Python Data Analysis Project
 
 ```bash
 # Use data science setup with Python tools
-cck setup use data
+claudeopssetup use data
 ```
 
 ### Example 3: Enterprise REST API
 
 ```bash
 # Backend setup with enterprise compliance
-cck setup use backend --extend enterprise
+claudeopssetup use backend --extend enterprise
 ```
 
 ### Example 4: Full-Stack with ML Features
 
 ```bash
 # Full-stack frontend and backend with data science
-cck setup use fullstack --extend data
+claudeopssetup use fullstack --extend data
 ```
 
 ### Example 5: Custom Multi-Team Setup
 
 ```bash
 # Create custom setup combining multiple specialties
-cck setup create team-setup --from fullstack
+claudeopssetup create team-setup --from fullstack
 
 # Edit the manifest to customize further
 # Then use it across the team
-cck setup export team-setup
+claudeopssetup export team-setup
 
 # Team members can import it
-cck setup import team-setup.tar.gz
+claudeopssetup import team-setup.tar.gz
 ```
 
 ---
@@ -713,7 +713,7 @@ cck setup import team-setup.tar.gz
 1. **Match your primary stack**: Start with the setup closest to your main technology
 2. **Consider your team**: Enterprise setup adds compliance requirements
 3. **Plan extension**: Use `--extend` to combine capabilities
-4. **Review the content**: Check `cck setup info <name>` to see what's included
+4. **Review the content**: Check `claudeopssetup info <name>` to see what's included
 
 ### Managing Custom Setups
 
@@ -725,10 +725,10 @@ cck setup import team-setup.tar.gz
 
 ### Collaboration
 
-1. **Export team setups**: Use `cck setup export` to share
+1. **Export team setups**: Use `claudeopssetup export` to share
 2. **Version control**: Track custom setups in git
 3. **Document overrides**: Explain why you disabled or modified defaults
-4. **Regular updates**: Sync with claude-code-kit updates
+4. **Regular updates**: Sync with claudeops updates
 
 ---
 
@@ -740,7 +740,7 @@ cck setup import team-setup.tar.gz
 Setup not found: mysetup
 ```
 
-**Solution**: List available setups with `cck setup list`
+**Solution**: List available setups with `claudeopssetup list`
 
 ### File Already Exists
 

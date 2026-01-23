@@ -5,7 +5,7 @@
 
 ## Purpose
 
-Bidirectional state synchronization engine. Orchestrates sync between claude-code-kit configuration and Claude Code settings (~/.claude/settings.json and CLAUDE.md), with content preservation, backup management, and diff tracking.
+Bidirectional state synchronization engine. Orchestrates sync between claudeops configuration and Claude Code settings (~/.claude/settings.json and CLAUDE.md), with content preservation, backup management, and diff tracking.
 
 ## Key Files
 

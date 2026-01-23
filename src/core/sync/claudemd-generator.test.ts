@@ -73,9 +73,9 @@ describe('claudemd-generator', () => {
 
 Some user text here.
 
-<!-- claude-code-kit:managed:start -->
+<!-- claudeops:managed:start -->
 Managed content
-<!-- claude-code-kit:managed:end -->
+<!-- claudeops:managed:end -->
 `;
 
       const result = extractUserContent(content);
@@ -85,9 +85,9 @@ Managed content
     });
 
     it('should extract content after managed section', () => {
-      const content = `<!-- claude-code-kit:managed:start -->
+      const content = `<!-- claudeops:managed:start -->
 Managed content
-<!-- claude-code-kit:managed:end -->
+<!-- claudeops:managed:end -->
 
 # User Notes
 
@@ -102,9 +102,9 @@ My custom notes here.`;
     it('should extract both before and after content', () => {
       const content = `# Before Content
 
-<!-- claude-code-kit:managed:start -->
+<!-- claudeops:managed:start -->
 Managed
-<!-- claude-code-kit:managed:end -->
+<!-- claudeops:managed:end -->
 
 # After Content`;
 
@@ -144,8 +144,8 @@ No managed section here.`;
 
       const result = generateClaudeMd(setup, config);
 
-      expect(result.content).toContain('<!-- claude-code-kit:managed:start -->');
-      expect(result.content).toContain('<!-- claude-code-kit:managed:end -->');
+      expect(result.content).toContain('<!-- claudeops:managed:start -->');
+      expect(result.content).toContain('<!-- claudeops:managed:end -->');
     });
 
     it('should include profile information when enabled', () => {
@@ -250,9 +250,9 @@ No managed section here.`;
 
 My important notes.
 
-<!-- claude-code-kit:managed:start -->
+<!-- claudeops:managed:start -->
 Old managed content
-<!-- claude-code-kit:managed:end -->`;
+<!-- claudeops:managed:end -->`;
 
       const result = generateClaudeMd(setup, config, {
         existingContent: existing,
@@ -281,9 +281,9 @@ Old managed content
 
   describe('hasManagedSection', () => {
     it('should return true when managed section exists', () => {
-      const content = `<!-- claude-code-kit:managed:start -->
+      const content = `<!-- claudeops:managed:start -->
 Content
-<!-- claude-code-kit:managed:end -->`;
+<!-- claudeops:managed:end -->`;
 
       expect(hasManagedSection(content)).toBe(true);
     });
@@ -295,13 +295,13 @@ Content
     });
 
     it('should return false when only start marker', () => {
-      const content = '<!-- claude-code-kit:managed:start -->';
+      const content = '<!-- claudeops:managed:start -->';
 
       expect(hasManagedSection(content)).toBe(false);
     });
 
     it('should return false when only end marker', () => {
-      const content = '<!-- claude-code-kit:managed:end -->';
+      const content = '<!-- claudeops:managed:end -->';
 
       expect(hasManagedSection(content)).toBe(false);
     });
@@ -314,9 +314,9 @@ Content
   describe('getManagedSection', () => {
     it('should return managed section content', () => {
       const content = `Before
-<!-- claude-code-kit:managed:start -->
+<!-- claudeops:managed:start -->
 Managed Content Here
-<!-- claude-code-kit:managed:end -->
+<!-- claudeops:managed:end -->
 After`;
 
       const result = getManagedSection(content);
@@ -331,8 +331,8 @@ After`;
     });
 
     it('should handle empty managed section', () => {
-      const content = `<!-- claude-code-kit:managed:start -->
-<!-- claude-code-kit:managed:end -->`;
+      const content = `<!-- claudeops:managed:start -->
+<!-- claudeops:managed:end -->`;
 
       const result = getManagedSection(content);
 
@@ -347,9 +347,9 @@ After`;
   describe('replaceManagedSection', () => {
     it('should replace existing managed section', () => {
       const existing = `Before
-<!-- claude-code-kit:managed:start -->
+<!-- claudeops:managed:start -->
 Old Content
-<!-- claude-code-kit:managed:end -->
+<!-- claudeops:managed:end -->
 After`;
 
       const result = replaceManagedSection(existing, 'New Content');
@@ -366,9 +366,9 @@ After`;
       const result = replaceManagedSection(existing, 'Managed');
 
       expect(result).toContain('# User Content');
-      expect(result).toContain('<!-- claude-code-kit:managed:start -->');
+      expect(result).toContain('<!-- claudeops:managed:start -->');
       expect(result).toContain('Managed');
-      expect(result).toContain('<!-- claude-code-kit:managed:end -->');
+      expect(result).toContain('<!-- claudeops:managed:end -->');
     });
   });
 
@@ -384,7 +384,7 @@ After`;
       const result = createMinimalClaudeMd(setup, config);
 
       expect(result).toContain('Model Configuration');
-      expect(result).toContain('<!-- claude-code-kit:managed:start -->');
+      expect(result).toContain('<!-- claudeops:managed:start -->');
     });
 
     it('should not include profile, agents, skills, or hooks', () => {
@@ -409,9 +409,9 @@ After`;
 
   describe('parseClaudeMdInfo', () => {
     it('should detect managed section', () => {
-      const content = `<!-- claude-code-kit:managed:start -->
+      const content = `<!-- claudeops:managed:start -->
 Content
-<!-- claude-code-kit:managed:end -->`;
+<!-- claudeops:managed:end -->`;
 
       const result = parseClaudeMdInfo(content);
 

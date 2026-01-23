@@ -597,7 +597,7 @@ Optional timeout in milliseconds (if hook takes longer, treated as error):
 Show all hooks from addons and settings, grouped by event type:
 
 ```bash
-cck hook list
+claudeops hooklist
 ```
 
 Output:
@@ -625,13 +625,13 @@ Stop
 Filter by event:
 
 ```bash
-cck hook list --event PreToolUse
+claudeops hooklist --event PreToolUse
 ```
 
 JSON output:
 
 ```bash
-cck hook list --json
+claudeops hooklist --json
 ```
 
 ### Debug Hook Execution
@@ -639,7 +639,7 @@ cck hook list --json
 See which hooks will run for a specific tool:
 
 ```bash
-cck hook debug Bash
+claudeops hookdebug Bash
 ```
 
 Output:
@@ -670,7 +670,7 @@ Execution Order
 Debug specific event:
 
 ```bash
-cck hook debug Read --event PostToolUse
+claudeops hookdebug Read --event PostToolUse
 ```
 
 ### Test Hook Handlers
@@ -678,19 +678,19 @@ cck hook debug Read --event PostToolUse
 Run a hook handler manually with sample input:
 
 ```bash
-cck hook test ./hooks/my-guard.ts
+claudeops hooktest ./hooks/my-guard.ts
 ```
 
 With custom tool name:
 
 ```bash
-cck hook test ./hooks/my-guard.ts --tool Write
+claudeops hooktest ./hooks/my-guard.ts --tool Write
 ```
 
 With custom input JSON:
 
 ```bash
-cck hook test ./hooks/my-guard.ts --tool Bash \
+claudeops hooktest ./hooks/my-guard.ts --tool Bash \
   --input '{"command":"echo test"}'
 ```
 
@@ -781,7 +781,7 @@ User settings.json       (overrides everything)
 2. **Handle errors gracefully** - Use try-catch
 3. **Log carefully** - Don't log sensitive data
 4. **Exit cleanly** - Always exit with valid code
-5. **Test thoroughly** - Use `cck hook test`
+5. **Test thoroughly** - Use `claudeops hooktest`
 6. **Document patterns** - Explain what you block/allow
 
 ### For Hook Operators
@@ -808,7 +808,7 @@ User settings.json       (overrides everything)
 Create an addon with hooks:
 
 ```bash
-cck addon create my-hooks
+claudeops addoncreate my-hooks
 cd my-hooks
 ```
 
@@ -926,12 +926,12 @@ async function main() {
 
 1. Check matcher pattern matches tool name exactly:
    ```bash
-   cck hook debug Bash
+   claudeops hookdebug Bash
    ```
 
 2. Verify hook is enabled in config:
    ```bash
-   cck hook list --json | grep -i enabled
+   claudeops hooklist --json | grep -i enabled
    ```
 
 3. Check hook file path is correct:
@@ -943,7 +943,7 @@ async function main() {
 
 1. Test the hook manually:
    ```bash
-   cck hook test ./hook.ts --tool Bash
+   claudeops hooktest ./hook.ts --tool Bash
    ```
 
 2. Check exit codes:
@@ -954,14 +954,14 @@ async function main() {
 
 3. Add debug logging:
    ```bash
-   cck hook test ./hook.ts --tool Bash 2>&1 | cat
+   claudeops hooktest ./hook.ts --tool Bash 2>&1 | cat
    ```
 
 ### Hook too slow
 
 1. Check execution time:
    ```bash
-   time cck hook test ./hook.ts
+   time claudeops hooktest ./hook.ts
    ```
 
 2. Reduce hook complexity
@@ -1057,23 +1057,23 @@ echo $?  # Should be 0
 
 ```bash
 # List all active hooks
-cck hook list
+claudeops hooklist
 
 # Filter by event type
-cck hook list --event PreToolUse
+claudeops hooklist --event PreToolUse
 
 # Debug which hooks run for a tool
-cck hook debug Bash
-cck hook debug Read --event PostToolUse
+claudeops hookdebug Bash
+claudeops hookdebug Read --event PostToolUse
 
 # Test a hook handler
-cck hook test ./hooks/my-hook.ts
-cck hook test ./hooks/my-hook.ts --tool Write
-cck hook test ./hooks/my-hook.ts --tool Bash --input '{"command":"ls"}'
+claudeops hooktest ./hooks/my-hook.ts
+claudeops hooktest ./hooks/my-hook.ts --tool Write
+claudeops hooktest ./hooks/my-hook.ts --tool Bash --input '{"command":"ls"}'
 
 # JSON output for parsing
-cck hook list --json
-cck hook debug Bash --json
+claudeops hooklist --json
+claudeops hookdebug Bash --json
 ```
 
 ### Built-in Addons with Hooks
@@ -1086,9 +1086,9 @@ Claude Code includes several security-focused addons:
 
 Enable them with:
 ```bash
-cck addon enable rm-rf-guard
-cck addon enable safety-net
-cck addon enable claude-ignore
+claudeops addonenable rm-rf-guard
+claudeops addonenable safety-net
+claudeops addonenable claude-ignore
 ```
 
 ## Summary

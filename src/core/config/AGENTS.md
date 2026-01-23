@@ -5,7 +5,7 @@
 
 ## Purpose
 
-Multi-layer configuration system for claude-code-kit. Implements 4-layer config hierarchy (global → profile → project → local) with TOML parsing, Zod validation, profile inheritance, and configuration merging with precedence rules.
+Multi-layer configuration system for claudeops. Implements 4-layer config hierarchy (global → profile → project → local) with TOML parsing, Zod validation, profile inheritance, and configuration merging with precedence rules.
 
 ## Key Files
 
@@ -22,12 +22,12 @@ Multi-layer configuration system for claude-code-kit. Implements 4-layer config 
 
 ### Working In This Directory
 
-- **4-layer system**: Global (~/.claude-code-kit/config.toml) → Profile (~/.claude-code-kit/profiles/{name}/config.toml) → Project (.claude-code-kit/config.toml) → Local (.claude-code-kit/local.toml, gitignored)
+- **4-layer system**: Global (~/.claudeops/config.toml) → Profile (~/.claudeops/profiles/{name}/config.toml) → Project (.claudeops/config.toml) → Local (.claudeops/local.toml, gitignored)
 - **Layer precedence**: Local > Project > Profile > Global > Defaults (later layers override earlier)
 - **Profile inheritance**: Profiles can extend other profiles via `extends` field, resolved recursively with circular detection (MAX_INHERITANCE_DEPTH = 10)
 - **Merge strategy**: Objects deep merge, arrays replace (not concatenate), `enabled`/`disabled` arrays have special merging logic
 - **Schema validation**: All configs validated against Zod schemas from `@/types/config`
-- **Active profile**: Tracked in `~/.claude-code-kit/profile` file (single line with profile name)
+- **Active profile**: Tracked in `~/.claudeops/profile` file (single line with profile name)
 - **TOML format**: Uses `@ltd/j-toml` library for parsing and serialization
 
 ### Testing Requirements

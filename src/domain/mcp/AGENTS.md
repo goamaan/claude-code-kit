@@ -21,7 +21,7 @@ MCP (Model Context Protocol) server management. Provides CRUD operations for MCP
 
 - **Server config**: `{ command: string, args: string[], env?: Record<string, string> }`
 - **Server state**: `{ name, status: 'running' | 'stopped' | 'disabled' | 'error', requestCount, pid?, startedAt?, error?, lastRequestAt?, uptimeMs? }`
-- **Storage locations**: Settings in `~/.claude/settings.json` (mcpServers section), state tracking in `~/.claude-code-kit/cache/mcp-servers.json`
+- **Storage locations**: Settings in `~/.claude/settings.json` (mcpServers section), state tracking in `~/.claudeops/cache/mcp-servers.json`
 - **Status lifecycle**: stopped → running (started by Claude Code) → error (if failed), or manually set to disabled
 - **Budget calculation**: Estimates context window usage per server, aggregates total budget
 - **Enable/disable**: State tracking separate from config, allows toggling without removing server definition
@@ -44,7 +44,7 @@ MCP (Model Context Protocol) server management. Provides CRUD operations for MCP
 - **Manager interface**: `list()`, `get()`, `enable()`, `disable()`, `configure()`, `add()`, `remove()`, `budget()`, `budgetPerServer()`
 - **State building**: `buildServerState(name, config, trackedState)` merges config with runtime state
 - **Settings loading**: `loadSettings()` → parse `~/.claude/settings.json` → extract mcpServers section
-- **State persistence**: `loadState()` / `saveState()` manage `~/.claude-code-kit/cache/mcp-servers.json`
+- **State persistence**: `loadState()` / `saveState()` manage `~/.claudeops/cache/mcp-servers.json`
 - **Error types**: `McpServerNotFoundError`, `McpServerExistsError`, `McpConfigError`
 - **Status override**: Tracked state status overrides default "stopped" from config
 - **Budget summary**: `{ totalBudget, perServerBudgets: { name, budget }[] }`

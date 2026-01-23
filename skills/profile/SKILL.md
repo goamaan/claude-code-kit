@@ -1,6 +1,6 @@
 ---
 name: profile
-description: Manage Claude-Kit profiles for different environments and workflows
+description: Manage ClaudeOps profiles for different environments and workflows
 auto_trigger:
   - profile
   - switch profile
@@ -47,7 +47,7 @@ A profile is a named configuration that includes:
 ### Profile Storage
 
 ```
-~/.claude-kit/
+~/.claudeops/
   profiles/
     default.toml
     work.toml
@@ -89,7 +89,7 @@ code_style = "functional"
 ### List Profiles
 
 ```bash
-claude-kit profile list
+claudeops profile list
 ```
 
 Output:
@@ -112,7 +112,7 @@ Available Profiles:
 ### Show Current Profile
 
 ```bash
-claude-kit profile show
+claudeops profile show
 ```
 
 Output:
@@ -135,7 +135,7 @@ Behavior:
 ### Create Profile
 
 ```bash
-claude-kit profile create <name>
+claudeops profile create <name>
 ```
 
 Interactive creation:
@@ -160,7 +160,7 @@ Profile 'work' created!
 ### Switch Profile
 
 ```bash
-claude-kit profile use <name>
+claudeops profile use <name>
 ```
 
 Output:
@@ -177,7 +177,7 @@ Active settings:
 ### Edit Profile
 
 ```bash
-claude-kit profile edit <name>
+claudeops profile edit <name>
 ```
 
 Opens profile in editor or interactive modification.
@@ -185,7 +185,7 @@ Opens profile in editor or interactive modification.
 ### Delete Profile
 
 ```bash
-claude-kit profile delete <name>
+claudeops profile delete <name>
 ```
 
 With confirmation:
@@ -197,7 +197,7 @@ Profile 'old-project' deleted.
 ### Copy Profile
 
 ```bash
-claude-kit profile copy <source> <new-name>
+claudeops profile copy <source> <new-name>
 ```
 
 Output:

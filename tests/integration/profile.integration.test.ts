@@ -16,7 +16,7 @@ describe('Profile Integration', () => {
   let tempDir: string;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'claude-code-kit-integration-'));
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'claudeops-integration-'));
   });
 
   afterEach(async () => {

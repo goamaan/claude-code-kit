@@ -2,7 +2,7 @@
 name = "backend"
 version = "1.0.0"
 description = "Backend API development with security focus"
-author = "claude-code-kit"
+author = "claudeops"
 
 [requires]
 addons = []

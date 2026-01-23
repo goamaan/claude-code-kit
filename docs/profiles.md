@@ -12,14 +12,14 @@ A profile is a complete configuration set that includes:
 - **MCP servers** - which Model Context Protocol servers are available
 - **Cost tracking** - budget limits and cost tracking preferences
 
-Profiles live in `~/.claude-code-kit/profiles/` as TOML files.
+Profiles live in `~/.claudeops/profiles/` as TOML files.
 
 ## Profile Location
 
 All profiles are stored in your home directory:
 
 ```
-~/.claude-code-kit/
+~/.claudeops/
 ├── profiles/
 │   ├── default.toml
 │   ├── frontend.toml
@@ -35,7 +35,7 @@ All profiles are stored in your home directory:
 See all your profiles at a glance:
 
 ```bash
-ck profile list
+coprofile list
 ```
 
 Output:
@@ -57,13 +57,13 @@ Profiles
 Show detailed information about the currently active profile:
 
 ```bash
-ck profile show
+coprofile show
 ```
 
 To view a specific profile:
 
 ```bash
-ck profile show frontend
+coprofile show frontend
 ```
 
 Output:
@@ -73,7 +73,7 @@ Profile: frontend
 
 For frontend development with optimized tooling
 
-Path: /Users/username/.claude-code-kit/profiles/frontend.toml
+Path: /Users/username/.claudeops/profiles/frontend.toml
 Active: yes
 Created: 2025-01-15 10:30:00
 Modified: 2025-01-20 14:22:15
@@ -106,7 +106,7 @@ Disabled: web-search
 Activate a different profile:
 
 ```bash
-ck profile use frontend
+coprofile use frontend
 ```
 
 Output:
@@ -122,7 +122,7 @@ Switched to profile: frontend
 Create a new empty profile:
 
 ```bash
-ck profile create my-profile
+coprofile create my-profile
 ```
 
 ### Create with a Base Profile
@@ -130,7 +130,7 @@ ck profile create my-profile
 Inherit from an existing profile to reuse its configuration:
 
 ```bash
-ck profile create frontend --from default
+coprofile create frontend --from default
 ```
 
 The `frontend` profile will inherit all settings from `default`, which you can then customize.
@@ -140,7 +140,7 @@ The `frontend` profile will inherit all settings from `default`, which you can t
 Add a descriptive comment to your profile:
 
 ```bash
-ck profile create work --description "Work projects configuration"
+coprofile create work --description "Work projects configuration"
 ```
 
 ### Create and Activate
@@ -148,7 +148,7 @@ ck profile create work --description "Work projects configuration"
 Create a profile and immediately switch to it:
 
 ```bash
-ck profile create experimental --activate
+coprofile create experimental --activate
 ```
 
 ## Profile TOML Structure
@@ -209,7 +209,7 @@ Profiles can extend other profiles to reduce duplication. When a profile extends
 Create a profile that extends another:
 
 ```bash
-ck profile create qa-testing --from default
+coprofile create qa-testing --from default
 ```
 
 This creates `qa-testing` with all settings from `default`:
@@ -255,7 +255,7 @@ The system detects and prevents circular inheritance chains:
 
 ```bash
 # This will fail - would create a cycle
-ck profile create base --from circular-base
+coprofile create base --from circular-base
 # Error: Circular inheritance detected
 ```
 
@@ -370,7 +370,7 @@ Profiles are plain TOML files that you can edit directly:
 
 ```bash
 # Open in your default editor
-$EDITOR ~/.claude-code-kit/profiles/frontend.toml
+$EDITOR ~/.claudeops/profiles/frontend.toml
 ```
 
 The file will be validated when next read, and invalid configurations will be rejected.
@@ -382,25 +382,25 @@ The file will be validated when next read, and invalid configurations will be re
 Save a profile to a file for sharing or backup:
 
 ```bash
-ck profile export frontend
+coprofile export frontend
 ```
 
 Export to a specific file:
 
 ```bash
-ck profile export frontend --output ~/my-profile.toml
+coprofile export frontend --output ~/my-profile.toml
 ```
 
 Export with resolved inheritance (all merged settings):
 
 ```bash
-ck profile export frontend --resolved
+coprofile export frontend --resolved
 ```
 
 Export as JSON:
 
 ```bash
-ck profile export frontend --format json
+coprofile export frontend --format json
 ```
 
 ### Import a Profile
@@ -408,31 +408,31 @@ ck profile export frontend --format json
 Load a profile from a file:
 
 ```bash
-ck profile import ~/my-profile.toml
+coprofile import ~/my-profile.toml
 ```
 
 Import with a custom name:
 
 ```bash
-ck profile import ~/my-profile.toml --name custom-name
+coprofile import ~/my-profile.toml --name custom-name
 ```
 
 Import from a URL:
 
 ```bash
-ck profile import https://example.com/team-profile.toml --activate
+coprofile import https://example.com/team-profile.toml --activate
 ```
 
 Import and overwrite existing profile:
 
 ```bash
-ck profile import ~/updated-profile.toml --merge
+coprofile import ~/updated-profile.toml --merge
 ```
 
 Import and activate immediately:
 
 ```bash
-ck profile import ~/my-profile.toml --activate
+coprofile import ~/my-profile.toml --activate
 ```
 
 ## Cloning Profiles
@@ -440,19 +440,19 @@ ck profile import ~/my-profile.toml --activate
 Create a copy of an existing profile with modifications:
 
 ```bash
-ck profile clone frontend new-frontend
+coprofile clone frontend new-frontend
 ```
 
 Clone with a new description:
 
 ```bash
-ck profile clone frontend staging --description "Staging environment"
+coprofile clone frontend staging --description "Staging environment"
 ```
 
 Clone and activate:
 
 ```bash
-ck profile clone backend test-backend --activate
+coprofile clone backend test-backend --activate
 ```
 
 ## Deleting Profiles
@@ -460,20 +460,20 @@ ck profile clone backend test-backend --activate
 Remove a profile permanently:
 
 ```bash
-ck profile delete old-profile
+coprofile delete old-profile
 ```
 
 You'll be asked to confirm before deletion. Skip confirmation:
 
 ```bash
-ck profile delete old-profile --force
+coprofile delete old-profile --force
 ```
 
 **Important:** You cannot delete the currently active profile. Switch to another profile first:
 
 ```bash
-ck profile use default
-ck profile delete backend
+coprofile use default
+coprofile delete backend
 ```
 
 ## Configuration Reference
@@ -528,7 +528,7 @@ Control which Claude models are used and when:
 default = "sonnet"
 
 [model.routing]
-simple = "haiku"           # Use for quick lookups, simple questions
+simple = "haiku"           # Use for quicolookups, simple questions
 standard = "sonnet"        # Use for standard features and implementations
 complex = "opus"           # Use for deep analysis, complex reasoning
 
@@ -584,14 +584,14 @@ Choose profile names that clearly indicate their purpose:
 
 ```bash
 # Good
-ck profile create frontend-react
-ck profile create api-backend
-ck profile create client-projects
+coprofile create frontend-react
+coprofile create api-backend
+coprofile create client-projects
 
 # Avoid
-ck profile create temp
-ck profile create test
-ck profile create profile1
+coprofile create temp
+coprofile create test
+coprofile create profile1
 ```
 
 ### 2. Create Base Profiles
@@ -600,11 +600,11 @@ Set up a base profile with common settings, then extend it:
 
 ```bash
 # Create a base profile with company standards
-ck profile create company-base --description "Company standards"
+coprofile create company-base --description "Company standards"
 
 # Extend for specific use cases
-ck profile create company-frontend --from company-base
-ck profile create company-backend --from company-base
+coprofile create company-frontend --from company-base
+coprofile create company-backend --from company-base
 ```
 
 ### 3. Document Profiles
@@ -612,9 +612,9 @@ ck profile create company-backend --from company-base
 Use descriptions to document when and why to use each profile:
 
 ```bash
-ck profile create client-work --description "Client project with strict cost limits"
-ck profile create research --description "Research and experiments, cost limit disabled"
-ck profile create production --description "Production work with security review enabled"
+coprofile create client-work --description "Client project with strict cost limits"
+coprofile create research --description "Research and experiments, cost limit disabled"
+coprofile create production --description "Production work with security review enabled"
 ```
 
 ### 4. Version Control Configuration
@@ -623,13 +623,13 @@ Keep your profile configurations in version control:
 
 ```bash
 # Export all profiles
-for profile in $(ck profile list | grep -v '*'); do
-  ck profile export $profile --output profiles/$profile.toml
+for profile in $(coprofile list | grep -v '*'); do
+  coprofile export $profile --output profiles/$profile.toml
 done
 
 # Commit to git
 git add profiles/
-git commit -m "Update claude-kit profiles"
+git commit -m "Update claudeops profiles"
 ```
 
 ### 5. Share Profiles Safely
@@ -638,10 +638,10 @@ Export profiles for team sharing:
 
 ```bash
 # Create a team profile
-ck profile create team-standards --description "Shared team configuration"
+coprofile create team-standards --description "Shared team configuration"
 
 # Export for version control
-ck profile export team-standards --output team-profile.toml
+coprofile export team-standards --output team-profile.toml
 ```
 
 ## Troubleshooting
@@ -651,11 +651,11 @@ ck profile export team-standards --output team-profile.toml
 If you get "Profile not found" error:
 
 ```bash
-# Check available profiles
-ck profile list
+# Checoavailable profiles
+coprofile list
 
 # Verify the name is correct
-ck profile show profile-name
+coprofile show profile-name
 ```
 
 ### Circular Inheritance Error
@@ -663,11 +663,11 @@ ck profile show profile-name
 If you get a circular inheritance error:
 
 ```bash
-# Check the inheritance chain
-ck profile show problematic-profile
+# Checothe inheritance chain
+coprofile show problematic-profile
 
 # Remove the circular reference from the TOML file
-$EDITOR ~/.claude-code-kit/profiles/problematic-profile.toml
+$EDITOR ~/.claudeops/profiles/problematic-profile.toml
 ```
 
 ### Cannot Delete Active Profile
@@ -676,10 +676,10 @@ If you can't delete a profile:
 
 ```bash
 # Switch to a different profile first
-ck profile use default
+coprofile use default
 
 # Now delete
-ck profile delete old-profile
+coprofile delete old-profile
 ```
 
 ### Configuration Not Applied
@@ -688,13 +688,13 @@ If profile settings don't seem to apply:
 
 ```bash
 # Verify the profile is active
-ck profile show
+coprofile show
 
-# Check the resolved configuration
-ck profile show --json | jq '.resolved'
+# Checothe resolved configuration
+coprofile show --json | jq '.resolved'
 
 # Re-activate to ensure settings are loaded
-ck profile use current-profile
+coprofile use current-profile
 ```
 
 ## Profile Variables and Templating
@@ -704,16 +704,16 @@ Currently, profiles are static TOML files. Templating and variable substitution 
 For now, if you need environment-specific profiles, create separate profile files:
 
 ```bash
-ck profile create prod
-ck profile create staging
-ck profile create dev
+coprofile create prod
+coprofile create staging
+coprofile create dev
 ```
 
 Then use the appropriate profile for each environment.
 
 ## Project-Level Profile Override
 
-You can override the global profile for a specific project by creating a `.claude-code-kit.yaml` file in your project root:
+You can override the global profile for a specific project by creating a `.claudeops.yaml` file in your project root:
 
 ```yaml
 profile: project-specific-profile
@@ -726,7 +726,7 @@ This will use `project-specific-profile` for all work in this directory, overrid
 If you're building tools that work with profiles, the profile system is available as a TypeScript API:
 
 ```typescript
-import { createProfileManager } from '@claude-code-kit/profile';
+import { createProfileManager } from '@claudeops/profile';
 
 const manager = createProfileManager();
 
@@ -752,11 +752,11 @@ const toml = await manager.export('frontend');
 await manager.delete('old-profile');
 ```
 
-## Feedback and Feature Requests
+## Feedbacoand Feature Requests
 
 Profiles are actively developed. If you have suggestions for improvements:
 
-1. Check existing profiles in your `.claude-code-kit/profiles/` directory
+1. Checoexisting profiles in your `.claudeops/profiles/` directory
 2. Test different configurations to find what works best
 3. Share successful profiles with the community
 4. Report issues or request features on the project repository

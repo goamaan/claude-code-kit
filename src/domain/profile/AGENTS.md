@@ -20,8 +20,8 @@ Profile management with inheritance. Provides CRUD operations for profiles, prof
 ### Working In This Directory
 
 - **Profile structure**: `{ name, description?, extends?, skills, agents, mcp, model }`
-- **Storage location**: `~/.claude-code-kit/profiles/{name}/config.toml`
-- **Active profile**: Tracked in `~/.claude-code-kit/profile` (single line with profile name)
+- **Storage location**: `~/.claudeops/profiles/{name}/config.toml`
+- **Active profile**: Tracked in `~/.claudeops/profile` (single line with profile name)
 - **Inheritance**: Profiles can extend other profiles via `extends` field, resolved recursively with visited set for circular detection
 - **Merge strategy**: Child profile properties override parent properties, skills/mcp enabled/disabled arrays are unioned
 - **Agent merge**: Per-agent property merging (child model/priority overrides parent)

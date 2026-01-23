@@ -21,7 +21,7 @@ Cost tracking for API usage. Records token consumption per model/operation/profi
 
 - **Entry structure**: `{ id, timestamp, sessionId, model, operation, tokens: { input, output, cacheRead?, cacheWrite?, total }, cost: { input, output, cache?, total }, profile?, project? }`
 - **Token costs**: Calculated from pricing tables (per 1M tokens): inputPer1M, outputPer1M, cacheReadPer1M, cacheWritePer1M
-- **Storage format**: Line-delimited JSON files organized by date (YYYY-MM-DD.jsonl) in `~/.claude-code-kit/cost/`
+- **Storage format**: Line-delimited JSON files organized by date (YYYY-MM-DD.jsonl) in `~/.claudeops/cost/`
 - **Budget tracking**: Store limits in `cost-budget.json` (daily, weekly, monthly), check against actual usage
 - **Pricing config**: Custom pricing overrides in `cost-pricing.json`, merge with DEFAULT_PRICING
 - **Aggregation periods**: Today, this week (Sunday-Saturday), this month (1st-last day)

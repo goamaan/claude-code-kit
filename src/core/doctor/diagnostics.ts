@@ -1,6 +1,6 @@
 /**
  * Diagnostic Checks Module
- * Defines and runs diagnostic checks for claude-code-kit installation health
+ * Defines and runs diagnostic checks for claudeops installation health
  */
 
 import { join } from 'node:path';
@@ -69,10 +69,10 @@ export const CHECKS: DiagnosticCheck[] = [
   // Installation Checks
   // =========================================================================
   {
-    id: 'claude-code-kit-dir',
-    name: 'Check ~/.claude-code-kit exists',
+    id: 'claudeops-dir',
+    name: 'Check ~/.claudeops exists',
     category: 'installation',
-    description: 'Verify the claude-code-kit configuration directory exists',
+    description: 'Verify the claudeops configuration directory exists',
     enabledByDefault: true,
     async run() {
       const start = performance.now();
@@ -86,7 +86,7 @@ export const CHECKS: DiagnosticCheck[] = [
           : `Configuration directory not found at ${configDir}`,
         suggestions: dirExists ? undefined : ['Run "cck init" to create the directory'],
         fixAvailable: !dirExists,
-        fixId: 'claude-code-kit-dir',
+        fixId: 'claudeops-dir',
         duration: performance.now() - start,
       });
     },
@@ -97,7 +97,7 @@ export const CHECKS: DiagnosticCheck[] = [
       try {
         await mkdir(configDir, { recursive: true });
         return {
-          fixId: 'claude-code-kit-dir',
+          fixId: 'claudeops-dir',
           success: true,
           description: `Created directory ${configDir}`,
           actions: [{ action: 'mkdir', success: true, details: configDir }],
@@ -105,7 +105,7 @@ export const CHECKS: DiagnosticCheck[] = [
         };
       } catch (error) {
         return {
-          fixId: 'claude-code-kit-dir',
+          fixId: 'claudeops-dir',
           success: false,
           description: 'Failed to create directory',
           error: error instanceof Error ? error.message : String(error),
@@ -122,7 +122,7 @@ export const CHECKS: DiagnosticCheck[] = [
     category: 'configuration',
     description: 'Verify the main configuration file is valid',
     enabledByDefault: true,
-    dependsOn: ['claude-code-kit-dir'],
+    dependsOn: ['claudeops-dir'],
     async run() {
       const start = performance.now();
       const configPath = join(getGlobalConfigDir(), CONFIG_FILE);
@@ -177,7 +177,7 @@ export const CHECKS: DiagnosticCheck[] = [
     category: 'profiles',
     description: 'Verify the active profile directory exists',
     enabledByDefault: true,
-    dependsOn: ['claude-code-kit-dir'],
+    dependsOn: ['claudeops-dir'],
     async run() {
       const start = performance.now();
       const profileFilePath = join(getGlobalConfigDir(), PROFILE_FILE);
@@ -365,7 +365,7 @@ description = "Default claude-kit profile"
           message: 'Bun is not installed or not in PATH',
           suggestions: [
             'Install Bun: curl -fsSL https://bun.sh/install | bash',
-            'claude-code-kit can run with Node.js but Bun is recommended',
+            'claudeops can run with Node.js but Bun is recommended',
           ],
           duration: performance.now() - start,
         });
@@ -380,7 +380,7 @@ description = "Default claude-kit profile"
     id: 'claude-dir-sync',
     name: 'Check ~/.claude in sync',
     category: 'sync',
-    description: 'Verify claude-code-kit state is synced to ~/.claude',
+    description: 'Verify claudeops state is synced to ~/.claude',
     enabledByDefault: true,
     async run() {
       const start = performance.now();
@@ -466,7 +466,7 @@ description = "Default claude-kit profile"
     category: 'hooks',
     description: 'Verify hook handler files exist',
     enabledByDefault: true,
-    dependsOn: ['claude-code-kit-dir'],
+    dependsOn: ['claudeops-dir'],
     async run() {
       const start = performance.now();
 
@@ -504,7 +504,7 @@ description = "Default claude-kit profile"
     category: 'addons',
     description: 'Verify all installed addon manifests are valid',
     enabledByDefault: true,
-    dependsOn: ['claude-code-kit-dir'],
+    dependsOn: ['claudeops-dir'],
     async run() {
       const start = performance.now();
       const addonsDir = getAddonsDir();

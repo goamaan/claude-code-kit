@@ -1,5 +1,5 @@
 /**
- * Path resolution utilities for claude-code-kit
+ * Path resolution utilities for claudeops
  */
 
 import { homedir } from 'node:os';
@@ -21,8 +21,8 @@ export function getHomeDir(): string {
 }
 
 /**
- * Get the global claude-code-kit configuration directory
- * @returns ~/.claude-code-kit
+ * Get the global claudeops configuration directory
+ * @returns ~/.claudeops
  */
 export function getGlobalConfigDir(): string {
   return join(getHomeDir(), GLOBAL_CONFIG_DIR);
@@ -39,7 +39,7 @@ export function getClaudeDir(): string {
 /**
  * Get the project-level configuration directory
  * @param projectRoot - Optional project root path (defaults to cwd)
- * @returns <projectRoot>/.claude-code-kit
+ * @returns <projectRoot>/.claudeops
  */
 export function getProjectConfigDir(projectRoot?: string): string {
   const root = projectRoot ?? process.cwd();
@@ -48,7 +48,7 @@ export function getProjectConfigDir(projectRoot?: string): string {
 
 /**
  * Get the profiles directory
- * @returns ~/.claude-code-kit/profiles
+ * @returns ~/.claudeops/profiles
  */
 export function getProfilesDir(): string {
   return join(getGlobalConfigDir(), PROFILES_DIR);
@@ -57,7 +57,7 @@ export function getProfilesDir(): string {
 /**
  * Get a specific profile directory
  * @param profileName - Name of the profile
- * @returns ~/.claude-code-kit/profiles/<profileName>
+ * @returns ~/.claudeops/profiles/<profileName>
  */
 export function getProfileDir(profileName: string): string {
   return join(getProfilesDir(), profileName);
@@ -65,7 +65,7 @@ export function getProfileDir(profileName: string): string {
 
 /**
  * Get the addons directory
- * @returns ~/.claude-code-kit/addons
+ * @returns ~/.claudeops/addons
  */
 export function getAddonsDir(): string {
   return join(getGlobalConfigDir(), ADDONS_DIR);
@@ -74,7 +74,7 @@ export function getAddonsDir(): string {
 /**
  * Get a specific addon directory
  * @param addonName - Name of the addon
- * @returns ~/.claude-code-kit/addons/<addonName>
+ * @returns ~/.claudeops/addons/<addonName>
  */
 export function getAddonDir(addonName: string): string {
   return join(getAddonsDir(), addonName);
@@ -82,7 +82,7 @@ export function getAddonDir(addonName: string): string {
 
 /**
  * Get the setups directory
- * @returns ~/.claude-code-kit/setups
+ * @returns ~/.claudeops/setups
  */
 export function getSetupsDir(): string {
   return join(getGlobalConfigDir(), SETUPS_DIR);
@@ -91,7 +91,7 @@ export function getSetupsDir(): string {
 /**
  * Get a specific setup directory
  * @param setupName - Name of the setup
- * @returns ~/.claude-code-kit/setups/<setupName>
+ * @returns ~/.claudeops/setups/<setupName>
  */
 export function getSetupDir(setupName: string): string {
   return join(getSetupsDir(), setupName);

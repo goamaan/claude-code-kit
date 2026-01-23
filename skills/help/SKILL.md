@@ -37,11 +37,11 @@ Activate when user says:
 When help is requested, output:
 
 ```
-# Claude-Kit Help
+# ClaudeOps Help
 
 ## Quick Start
 
-Just describe what you want to build or do. Claude-Kit will automatically:
+Just describe what you want to build or do. ClaudeOps will automatically:
 - Detect the best approach
 - Delegate to specialized agents
 - Verify completion
@@ -100,7 +100,7 @@ Just describe what you want to build or do. Claude-Kit will automatically:
 
 ## Agent Catalog
 
-Claude-Kit has 28 specialized agents organized by tier:
+ClaudeOps has 28 specialized agents organized by tier:
 
 ### Execution Agents
 - `executor-low` (haiku): Simple changes
@@ -130,7 +130,7 @@ Claude-Kit has 28 specialized agents organized by tier:
 ## Stopping and Cancelling
 
 Say "stop", "cancel", or "abort" to interrupt any running operation.
-Claude-Kit will:
+ClaudeOps will:
 1. Note current progress
 2. Stop spawning new agents
 3. Report status

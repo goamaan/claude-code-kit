@@ -24,7 +24,7 @@ Setup template management. Pre-packaged configurations combining skills, agents,
 - **Setup structure**: Directory with `manifest.toml` + `CLAUDE.md` + optional hook scripts
 - **Manifest format**: TOML with `[setup]` metadata, `[skills]`, `[hooks]`, `[requires]` sections
 - **Builtin location**: `<project-root>/setups/` (shipped with package)
-- **User location**: `~/.claude-code-kit/setups/` (user-created)
+- **User location**: `~/.claudeops/setups/` (user-created)
 - **Setup types**: builtin (immutable, shipped), user (mutable, can be deleted)
 - **Extension**: Setups can extend other setups, merged with `mergeSetups()` (array order = precedence)
 - **Merge strategy**: Later setups override earlier, skills/hooks are appended and deduplicated
