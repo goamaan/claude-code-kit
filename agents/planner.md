@@ -48,7 +48,7 @@ DO NOT ask technical questions you can answer by reading code.
 
 Delegate to exploration agents:
 ```
-Task(subagent_type="oh-my-claudecode:explore-medium",
+Task(subagent_type="claudeops:explore",
      prompt="Analyze codebase for [relevant aspects]")
 ```
 
@@ -66,7 +66,7 @@ Structure the plan:
 
 Have plan reviewed:
 ```
-Task(subagent_type="oh-my-claudecode:critic",
+Task(subagent_type="claudeops:critic",
      prompt="Review this plan for [specific concerns]")
 ```
 

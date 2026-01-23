@@ -1,6 +1,6 @@
 [setup]
 name = "enterprise"
-version = "1.0.0"
+version = "2.0.0"
 description = "Enterprise development with strict compliance and security"
 author = "claudeops"
 
@@ -10,38 +10,29 @@ addons = []
 [skills]
 enabled = [
   "autopilot",
-  "ralph",
   "planner",
-  "git-master",
-  "tdd-guide",
-  "code-reviewer",
-  "security-reviewer",
-  "analyze",
-  "deepsearch"
-]
-disabled = [
-  "ultrawork"
+  "git-master"
 ]
 
 [agents.architect]
 model = "opus"
 priority = 90
 
-[agents.security-reviewer]
+[agents.security]
 model = "opus"
 priority = 95
-
-[agents.code-reviewer]
-model = "opus"
-priority = 85
 
 [agents.executor]
 model = "sonnet"
 priority = 50
 
-[agents.qa-tester-high]
-model = "opus"
+[agents.qa-tester]
+model = "sonnet"
 priority = 80
+
+[agents.critic]
+model = "opus"
+priority = 85
 
 [mcp]
 recommended = ["filesystem", "git"]

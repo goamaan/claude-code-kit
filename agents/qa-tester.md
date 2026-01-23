@@ -24,6 +24,7 @@ Ensure software quality through comprehensive testing:
 - Test execution
 - Bug identification and reporting
 - Coverage analysis
+- TDD workflow facilitation (Red-Green-Refactor cycle)
 
 ## Testing Philosophy
 

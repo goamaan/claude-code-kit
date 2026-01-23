@@ -1,5 +1,5 @@
 ---
-name: security-reviewer
+name: security
 description: Deep security analysis, threat modeling, and vulnerability assessment
 model: opus
 tools:

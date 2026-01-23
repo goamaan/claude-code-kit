@@ -272,58 +272,7 @@ description = "Default claude-kit profile"
   // =========================================================================
   // Dependencies Checks
   // =========================================================================
-  {
-    id: 'oh-my-claudecode',
-    name: 'Check oh-my-claudecode installed',
-    category: 'dependencies',
-    description: 'Verify oh-my-claudecode is properly installed',
-    enabledByDefault: true,
-    async run() {
-      const start = performance.now();
-
-      // Check for omc directory in common locations
-      const omcPaths = [
-        join(getClaudeDir(), '.omc'),
-        join(getGlobalConfigDir(), 'omc'),
-      ];
-
-      for (const omcPath of omcPaths) {
-        if (await isDirectory(omcPath)) {
-          return createResult(this, {
-            passed: true,
-            message: `oh-my-claudecode found at ${omcPath}`,
-            details: { path: omcPath },
-            duration: performance.now() - start,
-          });
-        }
-      }
-
-      // Check if CLAUDE.md contains omc references
-      const claudeMdPath = join(getClaudeDir(), 'CLAUDE.md');
-      const claudeMdContent = await readFileSafe(claudeMdPath);
-
-      if (claudeMdContent?.includes('oh-my-claudecode')) {
-        return createResult(this, {
-          passed: true,
-          severity: 'info',
-          message: 'oh-my-claudecode detected in CLAUDE.md configuration',
-          duration: performance.now() - start,
-        });
-      }
-
-      return createResult(this, {
-        passed: false,
-        severity: 'warning',
-        message: 'oh-my-claudecode not detected',
-        suggestions: [
-          'Install oh-my-claudecode for enhanced Claude Code capabilities',
-          'Visit https://github.com/AviAvinav/oh-my-claudecode for installation instructions',
-        ],
-        fixAvailable: false,
-        duration: performance.now() - start,
-      });
-    },
-  },
+  // NOTE: oh-my-claudecode check removed - claudeops is now self-contained
 
   {
     id: 'bun-version',

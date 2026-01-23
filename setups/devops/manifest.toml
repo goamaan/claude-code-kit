@@ -1,6 +1,6 @@
 [setup]
 name = "devops"
-version = "1.0.0"
+version = "2.0.0"
 description = "DevOps with Docker, Kubernetes, and Terraform"
 author = "claudeops"
 
@@ -10,13 +10,8 @@ addons = []
 [skills]
 enabled = [
   "autopilot",
-  "ralph",
-  "ultrawork",
   "planner",
-  "git-master",
-  "security-reviewer",
-  "analyze",
-  "deepsearch"
+  "git-master"
 ]
 
 [agents.architect]
@@ -27,13 +22,9 @@ priority = 85
 model = "sonnet"
 priority = 50
 
-[agents.security-reviewer]
+[agents.security]
 model = "opus"
 priority = 80
-
-[agents.build-fixer]
-model = "sonnet"
-priority = 70
 
 [mcp]
 recommended = ["filesystem", "git", "fetch"]

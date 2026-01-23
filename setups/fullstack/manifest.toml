@@ -1,6 +1,6 @@
 [setup]
 name = "fullstack"
-version = "1.0.0"
+version = "2.0.0"
 description = "Full-stack development with React and Node.js"
 author = "claudeops"
 
@@ -10,16 +10,9 @@ addons = []
 [skills]
 enabled = [
   "autopilot",
-  "ralph",
-  "ultrawork",
   "planner",
   "git-master",
-  "frontend-ui-ux",
-  "tdd-guide",
-  "code-reviewer",
-  "security-reviewer",
-  "analyze",
-  "deepsearch"
+  "frontend-ui-ux"
 ]
 
 [agents.designer]
@@ -37,6 +30,10 @@ priority = 80
 [agents.qa-tester]
 model = "sonnet"
 priority = 60
+
+[agents.security]
+model = "opus"
+priority = 75
 
 [mcp]
 recommended = ["filesystem", "git", "fetch"]

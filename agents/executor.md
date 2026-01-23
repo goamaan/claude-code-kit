@@ -23,6 +23,7 @@ Implement features, fix bugs, and refactor code across multiple files:
 - Multi-file refactoring
 - Test writing
 - API implementation
+- Build error diagnosis and fixing
 
 ## Operating Principles
 

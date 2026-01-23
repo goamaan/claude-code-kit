@@ -48,12 +48,12 @@ Activate when user says:
 1. Parse user's request for explicit requirements
 2. Spawn `explore` agent to understand existing codebase:
    ```
-   Task(subagent_type="oh-my-claudecode:explore",
+   Task(subagent_type="claudeops:explore",
         prompt="Analyze codebase structure, patterns, and conventions")
    ```
 3. Spawn `analyst` agent for requirement analysis:
    ```
-   Task(subagent_type="oh-my-claudecode:analyst",
+   Task(subagent_type="claudeops:analyst",
         model="opus",
         prompt="Analyze requirements and identify gaps, risks, dependencies")
    ```
@@ -68,13 +68,13 @@ Activate when user says:
 
 1. Spawn `planner` agent to create strategic plan:
    ```
-   Task(subagent_type="oh-my-claudecode:planner",
+   Task(subagent_type="claudeops:planner",
         model="opus",
         prompt="Create implementation plan for: [requirements]")
    ```
 2. Spawn `architect` agent to design architecture:
    ```
-   Task(subagent_type="oh-my-claudecode:architect",
+   Task(subagent_type="claudeops:architect",
         model="opus",
         prompt="Design system architecture for: [requirements]")
    ```
@@ -95,7 +95,7 @@ Activate when user says:
 2. Spawn multiple executor agents in parallel:
    ```
    # For each independent work stream:
-   Task(subagent_type="oh-my-claudecode:executor",
+   Task(subagent_type="claudeops:executor",
         model="sonnet",
         prompt="Implement [specific component]")
    ```
@@ -118,7 +118,7 @@ Activate when user says:
 
 1. After each component, spawn verification:
    ```
-   Task(subagent_type="oh-my-claudecode:qa-tester",
+   Task(subagent_type="claudeops:qa-tester",
         prompt="Test [component] functionality")
    ```
 2. Run build after significant changes:
@@ -149,7 +149,7 @@ while (errors_exist):
 
 1. Final architect verification:
    ```
-   Task(subagent_type="oh-my-claudecode:architect",
+   Task(subagent_type="claudeops:architect",
         model="opus",
         prompt="Verify complete implementation meets all requirements")
    ```

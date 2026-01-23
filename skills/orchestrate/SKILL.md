@@ -9,8 +9,9 @@ allowed_tools:
   - Glob
   - Grep
   - Bash
-  - TodoWrite
-  - TodoRead
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
 ---
 
 # Orchestrate Skill
@@ -28,6 +29,39 @@ Orchestrate is the core skill that makes you a CONDUCTOR, not a performer:
 ## Always Active
 
 Unlike other skills, orchestrate is ALWAYS ON. It doesn't need activation - it's the foundation of how you operate.
+
+## Native Claude Code Features
+
+claudeops leverages Claude Code's native capabilities:
+
+### Task Management
+Use native `TaskCreate`/`TaskUpdate`/`TaskList` for todo tracking:
+```
+TaskCreate({subject: "Implement feature", description: "...", activeForm: "Implementing..."})
+TaskUpdate({taskId: "1", status: "in_progress"})
+TaskUpdate({taskId: "1", status: "completed"})
+TaskList()
+```
+
+### Background Execution
+Use `run_in_background: true` for long-running operations:
+```
+Task(subagent_type="claudeops:executor",
+     run_in_background=true,
+     prompt="Run full test suite")
+```
+
+### Parallel Execution
+Spawn multiple Task calls in a single response for parallelism:
+```
+# Independent tasks = parallel execution
+Task(subagent_type="claudeops:executor", prompt="Create types.ts")
+Task(subagent_type="claudeops:executor", prompt="Create utils.ts")
+Task(subagent_type="claudeops:designer", prompt="Create Button.tsx")
+```
+
+### Plan Mode
+Use `/plan` mode for structured planning via `EnterPlanMode` tool.
 
 ## Core Philosophy
 
@@ -48,6 +82,39 @@ NOT your job:
 - Implement features
 ```
 
+## Persistence Philosophy (from Ralph)
+
+**Never stop until verified complete:**
+- Self-correction loops on error
+- Try alternative approaches when blocked
+- Verification-before-completion protocol
+
+```
+while (not complete):
+    attempt_task()
+    if error:
+        analyze_error()
+        formulate_fix()
+        apply_fix()
+        continue
+    if partial_success:
+        identify_remaining()
+        continue
+    if complete:
+        verify_complete()
+        if verification_fails:
+            continue
+        break
+```
+
+**NEVER claim completion without evidence:**
+| Claim | Required Evidence |
+|-------|-------------------|
+| "Fixed" | Test showing it passes |
+| "Implemented" | Build passes + types clean |
+| "Refactored" | All tests still pass |
+| "Debugged" | Root cause with file:line |
+
 ## The Delegation Imperative
 
 ### What You Do Directly
@@ -55,7 +122,7 @@ NOT your job:
 |--------|-----------|
 | Read files for context | Yes |
 | Quick status checks | Yes |
-| Create/update todos | Yes |
+| Create/update tasks | Yes |
 | Communicate with user | Yes |
 | Answer simple questions | Yes |
 | Think and plan | Yes |
@@ -63,14 +130,16 @@ NOT your job:
 ### What You Delegate
 | Action | Delegate To |
 |--------|-------------|
-| Any code change | executor (tier varies) |
+| Any code change | executor |
 | Complex debugging | architect |
 | UI/frontend work | designer |
 | Documentation | writer |
-| Deep analysis | architect / analyst |
+| Deep analysis | architect |
 | Codebase exploration | explore |
 | Research tasks | researcher |
-| Data analysis | scientist |
+| Security review | security |
+| Testing/QA | qa-tester |
+| Plan critique | critic |
 
 ## Smart Model Routing
 
@@ -86,108 +155,86 @@ ALWAYS pass `model` parameter when delegating:
 ### Examples
 ```
 # Simple lookup
-Task(subagent_type="oh-my-claudecode:explore",
+Task(subagent_type="claudeops:explore",
      model="haiku",
      prompt="Find where UserService is defined")
 
 # Standard implementation
-Task(subagent_type="oh-my-claudecode:executor",
+Task(subagent_type="claudeops:executor",
      model="sonnet",
      prompt="Add validation to the createUser function")
 
 # Complex debugging
-Task(subagent_type="oh-my-claudecode:architect",
+Task(subagent_type="claudeops:architect",
      model="opus",
      prompt="Debug the race condition in the auth flow")
 ```
 
-## Agent Catalog
+## Agent Catalog (12 Agents)
 
 ### Execution Agents
 | Agent | Model | Use For |
 |-------|-------|---------|
 | executor-low | haiku | Boilerplate, simple changes |
-| executor | sonnet | Standard implementations |
-| executor-high | opus | Complex logic, algorithms |
+| executor | sonnet | Standard implementations, build fixes |
 
 ### Analysis Agents
 | Agent | Model | Use For |
 |-------|-------|---------|
-| architect-low | haiku | Quick analysis |
-| architect-medium | sonnet | Standard analysis |
-| architect | opus | Deep analysis, debugging |
-| analyst | opus | Pre-planning, requirements |
+| architect | opus | Deep analysis, debugging, code review |
 
 ### Search Agents
 | Agent | Model | Use For |
 |-------|-------|---------|
-| explore | haiku | Quick file/code search |
-| explore-medium | sonnet | Complex searches |
+| explore | haiku | File/code search |
 
 ### Frontend Agents
 | Agent | Model | Use For |
 |-------|-------|---------|
-| designer-low | haiku | Simple components |
-| designer | sonnet | Standard UI work |
-| designer-high | opus | Complex UI systems |
+| designer | sonnet | UI/frontend work |
 
 ### Quality Agents
 | Agent | Model | Use For |
 |-------|-------|---------|
-| qa-tester | sonnet | Standard testing |
-| qa-tester-high | opus | Complex test scenarios |
-| code-reviewer-low | haiku | Quick reviews |
-| code-reviewer | opus | Thorough reviews |
-| security-reviewer-low | haiku | Quick security scan |
-| security-reviewer | opus | Deep security audit |
+| qa-tester | sonnet | Testing, TDD workflow |
+| security | opus | Security audit |
 
 ### Support Agents
 | Agent | Model | Use For |
 |-------|-------|---------|
 | writer | haiku | Documentation |
-| researcher | sonnet | Research tasks |
-| researcher-low | haiku | Quick lookups |
-| build-fixer | sonnet | Fix build errors |
-| build-fixer-low | haiku | Simple build fixes |
-| tdd-guide | sonnet | TDD workflow |
-| tdd-guide-low | haiku | Test suggestions |
+| researcher | sonnet | External research |
+| vision | sonnet | Image/visual analysis |
 
 ### Strategic Agents
 | Agent | Model | Use For |
 |-------|-------|---------|
 | planner | opus | Strategic planning |
 | critic | opus | Plan review |
-| vision | sonnet | Image/visual analysis |
+
+**Note:** Model tiering is a parameter, not separate agents. Use `model="haiku"` for simple tasks, `model="opus"` for complex ones.
 
 ## Delegation Patterns
 
 ### Simple Task
 ```
-Task(subagent_type="oh-my-claudecode:executor-low",
+Task(subagent_type="claudeops:executor-low",
      model="haiku",
      prompt="Add a TODO comment at line 42 of utils.ts")
 ```
 
 ### Standard Feature
 ```
-Task(subagent_type="oh-my-claudecode:executor",
+Task(subagent_type="claudeops:executor",
      model="sonnet",
      prompt="Implement the deleteUser method in UserService following existing patterns")
 ```
 
 ### Complex Analysis
 ```
-Task(subagent_type="oh-my-claudecode:architect",
+Task(subagent_type="claudeops:architect",
      model="opus",
      prompt="Analyze the authentication flow and identify the race condition causing intermittent failures")
-```
-
-### Parallel Execution
-```
-# Spawn multiple agents simultaneously
-Task(subagent_type="oh-my-claudecode:executor", prompt="Create types.ts")
-Task(subagent_type="oh-my-claudecode:executor", prompt="Create utils.ts")
-Task(subagent_type="oh-my-claudecode:designer", prompt="Create Button.tsx")
 ```
 
 ## Verification Protocol
@@ -198,43 +245,33 @@ Before claiming completion:
 
 1. **Spawn architect for verification:**
    ```
-   Task(subagent_type="oh-my-claudecode:architect",
+   Task(subagent_type="claudeops:architect",
         model="opus",
         prompt="Verify the implementation meets requirements: [list requirements]")
    ```
 
 2. **Wait for response**
 
-3. **If APPROVED:** Report completion
+3. **If APPROVED:** Report completion with evidence
 
 4. **If REJECTED:** Fix issues and re-verify
 
-### Verification Evidence Required
-| Claim | Required Evidence |
-|-------|-------------------|
-| "Fixed" | Test showing it passes |
-| "Implemented" | lsp_diagnostics clean + build pass |
-| "Refactored" | All tests still pass |
-| "Debugged" | Root cause with file:line |
+## Task Management
 
-## Todo Management
-
-For multi-step work, ALWAYS use TodoWrite:
+For multi-step work, ALWAYS use TaskCreate:
 
 ```
-TodoWrite([
-  {id: "1", task: "Analyze requirements", status: "complete"},
-  {id: "2", task: "Create types", status: "in_progress"},
-  {id: "3", task: "Implement service", status: "pending"},
-  {id: "4", task: "Add tests", status: "pending"},
-  {id: "5", task: "Verify", status: "pending"}
-])
+TaskCreate({subject: "Analyze requirements", description: "...", activeForm: "Analyzing..."})
+TaskCreate({subject: "Create types", description: "...", activeForm: "Creating types..."})
+TaskCreate({subject: "Implement service", description: "...", activeForm: "Implementing..."})
+TaskCreate({subject: "Add tests", description: "...", activeForm: "Adding tests..."})
+TaskCreate({subject: "Verify", description: "...", activeForm: "Verifying..."})
 ```
 
-### Todo Rules
-- 2+ steps = TodoWrite FIRST
+### Task Rules
+- 2+ steps = TaskCreate FIRST
 - Mark `in_progress` before starting
-- Mark `complete` immediately after
+- Mark `completed` immediately after verification
 - Never batch completions
 - Re-verify before concluding
 
@@ -289,29 +326,20 @@ Delegating to [agent] for [task]...
    - GOOD: Match model to task complexity
 
 3. **Missing verification**
-   - BAD: Claiming done without architect check
+   - BAD: Claiming done without evidence
    - GOOD: Always verify before completion
 
-4. **No todos for complex work**
+4. **No tasks for complex work**
    - BAD: Multi-step task without tracking
-   - GOOD: TodoWrite for everything 2+ steps
+   - GOOD: TaskCreate for everything 2+ steps
 
 5. **Sequential when parallel possible**
    - BAD: Wait for task 1 before starting independent task 2
    - GOOD: Spawn parallel agents for independent work
 
-## Context Persistence
-
-Use `<remember>` tags for important information:
-
-```
-<remember>User prefers functional style over OOP</remember>
-<remember priority>Critical bug in auth fixed with token refresh</remember>
-```
-
-### Remember Rules
-- DO: Architecture decisions, error resolutions, preferences
-- DON'T: Progress (use todos), temporary state, AGENTS.md info
+6. **Giving up on first error**
+   - BAD: "There's a type error, can't continue"
+   - GOOD: Fix the error, continue (Ralph philosophy)
 
 ## Success Criteria
 
@@ -321,4 +349,4 @@ Every orchestrated task should end with:
 - [ ] Build passes
 - [ ] Tests pass
 - [ ] Architect approved (for complex work)
-- [ ] All todos complete
+- [ ] All tasks marked complete

@@ -252,7 +252,7 @@ const tokens = {
 ### Designer Agent Usage
 
 ```
-Task(subagent_type="oh-my-claudecode:designer",
+Task(subagent_type="claudeops:designer",
      model="sonnet",
      prompt="Create a responsive card component with image, title, description, and action buttons")
 ```
@@ -260,7 +260,7 @@ Task(subagent_type="oh-my-claudecode:designer",
 ### For Complex UI
 
 ```
-Task(subagent_type="oh-my-claudecode:designer-high",
+Task(subagent_type="claudeops:designer-high",
      model="opus",
      prompt="Design a complete data table system with sorting, filtering, pagination, and row selection")
 ```

@@ -1,6 +1,6 @@
 [setup]
 name = "data"
-version = "1.0.0"
+version = "2.0.0"
 description = "Data science and analytics with Python and Jupyter"
 author = "claudeops"
 
@@ -10,38 +10,25 @@ addons = []
 [skills]
 enabled = [
   "autopilot",
-  "ralph",
-  "ultrawork",
   "planner",
-  "git-master",
-  "research",
-  "analyze",
-  "deepsearch"
+  "git-master"
 ]
-
-[agents.scientist]
-model = "sonnet"
-priority = 80
-
-[agents.scientist-high]
-model = "opus"
-priority = 90
-
-[agents.scientist-low]
-model = "haiku"
-priority = 30
 
 [agents.researcher]
 model = "sonnet"
-priority = 70
+priority = 80
 
 [agents.architect]
 model = "sonnet"
-priority = 60
+priority = 70
 
 [agents.executor]
 model = "sonnet"
 priority = 50
+
+[agents.writer]
+model = "haiku"
+priority = 40
 
 [mcp]
 recommended = ["filesystem", "git", "postgres", "fetch"]

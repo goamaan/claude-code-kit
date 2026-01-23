@@ -1,6 +1,6 @@
 [setup]
 name = "backend"
-version = "1.0.0"
+version = "2.0.0"
 description = "Backend API development with security focus"
 author = "claudeops"
 
@@ -10,15 +10,8 @@ addons = []
 [skills]
 enabled = [
   "autopilot",
-  "ralph",
-  "ultrawork",
   "planner",
-  "git-master",
-  "tdd-guide",
-  "code-reviewer",
-  "security-reviewer",
-  "analyze",
-  "deepsearch"
+  "git-master"
 ]
 
 [agents.architect]
@@ -29,7 +22,7 @@ priority = 85
 model = "sonnet"
 priority = 50
 
-[agents.security-reviewer]
+[agents.security]
 model = "opus"
 priority = 80
 

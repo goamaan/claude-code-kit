@@ -1,6 +1,6 @@
 [setup]
 name = "frontend"
-version = "1.0.0"
+version = "2.0.0"
 description = "Frontend development with React, Vue, or Svelte"
 author = "claudeops"
 
@@ -10,24 +10,14 @@ addons = []
 [skills]
 enabled = [
   "autopilot",
-  "ralph",
-  "ultrawork",
   "planner",
   "git-master",
-  "frontend-ui-ux",
-  "tdd-guide",
-  "code-reviewer",
-  "analyze",
-  "deepsearch"
+  "frontend-ui-ux"
 ]
 
 [agents.designer]
-model = "opus"
+model = "sonnet"
 priority = 90
-
-[agents.designer-low]
-model = "haiku"
-priority = 30
 
 [agents.executor]
 model = "sonnet"
@@ -36,6 +26,10 @@ priority = 50
 [agents.architect]
 model = "sonnet"
 priority = 60
+
+[agents.qa-tester]
+model = "sonnet"
+priority = 55
 
 [mcp]
 recommended = ["filesystem", "git", "fetch"]

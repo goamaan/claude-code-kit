@@ -24,6 +24,7 @@ Provide deep, comprehensive architectural analysis for complex problems:
 - System-wide refactoring planning
 - Complex debugging requiring cross-cutting analysis
 - Technology selection decisions
+- Code review for design, security, and maintainability
 
 ## Operating Philosophy
 

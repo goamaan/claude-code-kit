@@ -5,6 +5,98 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-01-23
+
+### Breaking Changes
+
+This release makes claudeops fully self-contained by removing the dependency on oh-my-claudecode and consolidating agents and skills.
+
+#### Agent Changes
+
+**Reduced from 35 to 12 agents:**
+
+| Category | Kept | Archived |
+|----------|------|----------|
+| Core | architect, executor, executor-low, explore | architect-low, architect-medium, executor-high, explore-medium |
+| Specialized | designer, qa-tester, security, vision | designer-low, designer-high, qa-tester-high, scientist-*, build-fixer-*, tdd-guide-*, code-reviewer-*, analyst, oracle |
+| Planning | planner, critic, writer, researcher | researcher-low, *-expert agents |
+
+**Agent Prefix Change:** `oh-my-claudecode:` → `claudeops:`
+
+Example migration:
+```typescript
+// Before
+Task(subagent_type="oh-my-claudecode:architect", ...)
+
+// After
+Task(subagent_type="claudeops:architect", ...)
+```
+
+**Capability Absorption:**
+- `architect` now includes code review capabilities
+- `qa-tester` now includes TDD workflow facilitation
+- `executor` now includes build error diagnosis
+
+**Renamed Agent:**
+- `security-reviewer` → `security` (use `claudeops:security`)
+
+#### Skill Changes
+
+**Reduced from 15 to 6 skills:**
+
+| Kept | Archived (merged into orchestrate) |
+|------|-------------------------------------|
+| orchestrate, autopilot, planner | ralph, ultrawork, analyze, deepsearch |
+| git-master, frontend-ui-ux, doctor | code-review, research, tdd, profile, help |
+
+**Ralph Philosophy Merged:** The verification-before-completion and persistence philosophy from `ralph` is now built into the core `orchestrate` skill.
+
+#### Setup Manifest Changes
+
+The `requires.oh-my-claudecode` field is now deprecated:
+
+```toml
+# Before (v1.x)
+[requires]
+oh-my-claudecode = ">=3.3.0"
+addons = ["rm-rf-guard"]
+
+# After (v2.0)
+[requires]
+addons = ["rm-rf-guard"]
+# oh-my-claudecode field ignored (kept for backward compatibility)
+```
+
+All built-in setups have been updated to v2.0.0 with the new agent/skill references.
+
+### Added
+
+- **Native Claude Code Integration**: Leverages Claude Code's native Task tool (TaskCreate, TaskUpdate, TaskList), background execution (`run_in_background: true`), and `/plan` mode
+- **Self-contained Orchestration**: 12 specialized agents and 6 focused skills built directly into claudeops
+- **Streamlined Model Routing**: haiku/sonnet/opus routing with explicit `model` parameter support
+
+### Changed
+
+- Setup manifests now use v2.0.0 schema
+- Doctor diagnostics no longer check for oh-my-claudecode installation
+- Settings generator no longer references oh-my-claudecode plugin
+
+### Deprecated
+
+- `requires.oh-my-claudecode` field in setup manifests (ignored, kept for compatibility)
+
+### Removed
+
+- External oh-my-claudecode dependency
+- 23 redundant agent definitions (archived to `.archive/agents/`)
+- 9 redundant skill definitions (archived to `.archive/skills/`)
+
+### Migration
+
+See [docs/MIGRATION-v2.md](docs/MIGRATION-v2.md) for detailed migration instructions.
+
+---
+
 ## [0.1.0] - 2026-01-22
 
 Initial release of claudeops - a configuration and setup management layer for Claude Code.

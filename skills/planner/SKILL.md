@@ -54,7 +54,7 @@ Before interviewing user, AUTOMATICALLY gather context:
 
 1. **Explore codebase:**
    ```
-   Task(subagent_type="oh-my-claudecode:explore",
+   Task(subagent_type="claudeops:explore",
         prompt="Analyze codebase structure, patterns, tech stack")
    ```
 
@@ -199,7 +199,7 @@ After interview, create actionable plan:
 
 For complex plans, get critique:
 ```
-Task(subagent_type="oh-my-claudecode:critic",
+Task(subagent_type="claudeops:critic",
      model="opus",
      prompt="Review this plan for gaps, risks, improvements: [plan]")
 ```
