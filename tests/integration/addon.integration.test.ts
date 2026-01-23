@@ -155,10 +155,10 @@ keywords = ${JSON.stringify(addon.keywords)}
         const manager = createAddonManager();
         const addonPath = await manager.create('my-new-addon');
 
-        // Verify files were created
-        await expect(access(join(addonPath, 'addon.toml'))).resolves.toBeUndefined();
-        await expect(access(join(addonPath, 'hook.ts'))).resolves.toBeUndefined();
-        await expect(access(join(addonPath, 'README.md'))).resolves.toBeUndefined();
+        // Verify files were created (access resolves without throwing if file exists)
+        await access(join(addonPath, 'addon.toml'));
+        await access(join(addonPath, 'hook.ts'));
+        await access(join(addonPath, 'README.md'));
 
         // Verify manifest is valid
         const manifest = await loadAddonManifest(addonPath);
