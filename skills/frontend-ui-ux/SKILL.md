@@ -1,23 +1,6 @@
 ---
 name: frontend-ui-ux
-description: UI/UX design sensibility for frontend development (silent activation)
-auto_trigger:
-  - component
-  - styling
-  - CSS
-  - UI
-  - UX
-  - frontend
-  - React
-  - Vue
-  - Svelte
-  - design
-silent: true
-allowed_tools:
-  - Task
-  - Read
-  - Glob
-  - Grep
+description: UI/UX design principles for frontend development. Covers accessibility, responsive design, component patterns, and styling best practices. Use when building user interfaces or reviewing frontend code.
 ---
 
 # Frontend UI/UX Skill

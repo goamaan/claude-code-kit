@@ -1,19 +1,6 @@
 ---
 name: git-master
-description: Git expertise for commits, branches, and history management (silent activation)
-auto_trigger:
-  - commit
-  - branch
-  - merge
-  - rebase
-  - git
-  - push
-  - pull
-silent: true
-allowed_tools:
-  - Bash
-  - Read
-  - Grep
+description: Git expertise for commits, branches, and history management. Ensures clean commit messages, proper branch workflow, and safe history management. Use for any version control operations.
 ---
 
 # Git Master Skill

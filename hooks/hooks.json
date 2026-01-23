@@ -1,32 +1,25 @@
 {
   "hooks": [
     {
-      "name": "file-guard",
-      "type": "PreToolUse",
-      "enabled": true,
-      "path": "./file-guard.mjs",
-      "description": "Prevents accidental modification of critical system files and directories"
-    },
-    {
       "name": "keyword-detector",
       "type": "UserPromptSubmit",
       "enabled": true,
       "path": "./keyword-detector.mjs",
-      "description": "Detects important keywords in user prompts and flags them for special handling"
+      "description": "Detects keywords (ultrawork, autopilot, planner, etc.) and injects mode-specific context"
     },
     {
-      "name": "cost-tracker",
+      "name": "continuation-check",
+      "type": "Stop",
+      "enabled": true,
+      "path": "./continuation-check.mjs",
+      "description": "Evaluates completion status and blocks premature stopping when tasks remain"
+    },
+    {
+      "name": "lint-changed",
       "type": "PostToolUse",
       "enabled": true,
-      "path": "./cost-tracker.mjs",
-      "description": "Tracks API usage costs and warns when approaching budget limits"
-    },
-    {
-      "name": "codebase-map",
-      "type": "SessionStart",
-      "enabled": true,
-      "path": "./codebase-map.mjs",
-      "description": "Generates or updates codebase map for context awareness at session start"
+      "path": "./lint-changed.mjs",
+      "description": "Runs ESLint after Write/Edit on JavaScript/TypeScript files"
     },
     {
       "name": "typecheck-changed",
@@ -34,13 +27,6 @@
       "enabled": true,
       "path": "./typecheck-changed.mjs",
       "description": "Runs TypeScript type checking after Write/Edit on .ts/.tsx files"
-    },
-    {
-      "name": "lint-changed",
-      "type": "PostToolUse",
-      "enabled": true,
-      "path": "./lint-changed.mjs",
-      "description": "Runs ESLint after Write/Edit on .js/.ts/.tsx/.jsx files"
     },
     {
       "name": "checkpoint",

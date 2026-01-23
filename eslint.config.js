@@ -42,6 +42,24 @@ export default [
     },
   },
   {
+    files: ["hooks/**/*.mjs"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "module",
+      globals: {
+        console: "readonly",
+        process: "readonly",
+        Buffer: "readonly",
+        __dirname: "readonly",
+        __filename: "readonly",
+      },
+    },
+    rules: {
+      "no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
+      "no-console": "off",
+    },
+  },
+  {
     ignores: ["node_modules/**", "dist/**", "coverage/**", "*.config.js"],
   },
 ];

@@ -1,17 +1,6 @@
 ---
 name: doctor
-description: Diagnose and fix installation and configuration issues
-auto_trigger:
-  - doctor
-  - diagnose
-  - not working
-  - broken
-  - troubleshoot
-allowed_tools:
-  - Read
-  - Glob
-  - Grep
-  - Bash
+description: Diagnose and fix installation, configuration, and runtime issues. Use when something isn't working, for troubleshooting, or when system health checks are needed.
 ---
 
 # Doctor Skill
