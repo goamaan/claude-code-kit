@@ -1,3 +1,37 @@
+## [2.0.1](https://github.com/goamaan/claudeops/compare/v2.0.0...v2.0.1) (2026-01-23)
+
+### ⚠ BREAKING CHANGES
+
+* Remove backward compatibility for oh-my-claudecode
+
+- Delete 23 archived agent definitions (.archive/agents/)
+- Delete 9 archived skill definitions (.archive/skills/)
+- Delete .omc state directory
+- Delete MIGRATION-v2.md guide
+- Delete PLAN.md planning document
+- Remove oh-my-claudecode field from type definitions
+- Remove oh-my-claudecode handling from setup merger
+- Remove omcVersion from doctor diagnostics
+- Update all agent/skill files to use v2.0 patterns
+- Fix archived agent references (analyst, executor-high, etc.)
+- Replace TodoWrite/TodoRead with TaskCreate/TaskUpdate
+- Fix AskUserQuestion tool usage in planner skill
+- Update documentation examples
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
+### Bug Fixes
+
+* **ci:** add NPM_TOKEN for npm publish authentication ([d7ee999](https://github.com/goamaan/claudeops/commit/d7ee99950ccd27d60080c1bb1e6f811f8d0f2e2d))
+* **ci:** configure npm OIDC trusted publishing correctly ([e320d02](https://github.com/goamaan/claudeops/commit/e320d0235928d1fb1573caa73a9c51984a10d034))
+* **ci:** match semantic-release recommended workflow for trusted publishing ([845954e](https://github.com/goamaan/claudeops/commit/845954e95ceec1561600ec057dfef2472219b3cb))
+* **ci:** use Node.js 22 for semantic-release ([84e8250](https://github.com/goamaan/claudeops/commit/84e82506911f5b59561fb063f713643575bd74c0))
+* update addon test for bun compatibility ([108e4e8](https://github.com/goamaan/claudeops/commit/108e4e86a2a248f9eb76ff5c74310eb0412bc935))
+
+### Code Refactoring
+
+* remove all legacy oh-my-claudecode references and archived code ([b1414d5](https://github.com/goamaan/claudeops/commit/b1414d563d60484607c01508625534ff17b086c5))
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
