@@ -30,7 +30,8 @@
     "addons",
     "agents",
     "skills",
-    "hooks"
+    "hooks",
+    "scripts"
   ],
   "scripts": {
     "dev": "tsdown --watch",

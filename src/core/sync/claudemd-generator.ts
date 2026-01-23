@@ -4,6 +4,8 @@
  */
 
 import type { MergedSetup, MergedConfig } from '@/types';
+import { AGENT_CATALOG } from '@/core/router/agent-catalog.js';
+import { listEnabledPacks } from '@/domain/pack/manager.js';
 
 // =============================================================================
 // Constants
@@ -320,6 +322,86 @@ function generateMcpSection(setup: MergedSetup, config: MergedConfig): string {
   return lines.join('\n');
 }
 
+/**
+ * Generate dynamic context section with intelligent orchestration info
+ */
+async function generateDynamicContext(): Promise<string> {
+  const lines: string[] = [
+    '## Intelligent Orchestration',
+    '',
+    'claudeops v3 uses semantic intent classification - no keywords required.',
+    '',
+    '### How It Works',
+    '',
+    '1. **Semantic Analysis**: System analyzes your natural language request',
+    '2. **Intent Classification**: Determines type, complexity, and domains',
+    '3. **Agent Selection**: Automatically selects appropriate agents and models',
+    '4. **Parallel Execution**: Applies parallelism when beneficial',
+    '',
+    'Just describe what you want - the system handles the rest.',
+    '',
+  ];
+
+  // Agent Catalog
+  lines.push('## Available Agents');
+  lines.push('');
+  lines.push('| Agent | Model | Description |');
+  lines.push('|-------|-------|-------------|');
+
+  const agents = Object.values(AGENT_CATALOG).sort((a, b) => a.name.localeCompare(b.name));
+  for (const agent of agents) {
+    lines.push(`| ${agent.name} | ${agent.model} | ${agent.description} |`);
+  }
+  lines.push('');
+
+  // Model Routing
+  lines.push('### Smart Model Routing');
+  lines.push('');
+  lines.push('| Complexity | Model | Use For |');
+  lines.push('|------------|-------|---------|');
+  lines.push('| Trivial/Simple | haiku | Lookups, boilerplate, simple fixes |');
+  lines.push('| Moderate/Standard | sonnet | Features, refactoring, testing |');
+  lines.push('| Complex/Architectural | opus | Architecture, debugging, planning |');
+  lines.push('');
+
+  // Guardrails
+  lines.push('## Active Guardrails');
+  lines.push('');
+  lines.push('The following safety checks are active:');
+  lines.push('');
+  lines.push('- **Deletion Protection**: Prevents accidental data loss');
+  lines.push('- **Secret Scanning**: Detects sensitive data in code and commits');
+  lines.push('- **Dangerous Command Detection**: Warns about risky operations');
+  lines.push('');
+
+  // Installed Packs
+  try {
+    const packs = await listEnabledPacks();
+    if (packs.length > 0) {
+      lines.push('## Installed Capability Packs');
+      lines.push('');
+
+      for (const pack of packs) {
+        lines.push(`### ${pack.name}`);
+        lines.push('');
+        if (pack.components.length > 0) {
+          lines.push('**Components:**');
+          lines.push('');
+          for (const component of pack.components) {
+            const modelInfo = component.model ? ` (${component.model})` : '';
+            lines.push(`- \`${component.type}\`: ${component.name}${modelInfo} - ${component.description}`);
+          }
+          lines.push('');
+        }
+      }
+    }
+  } catch {
+    // Silently skip if pack system not available
+  }
+
+  return lines.join('\n');
+}
+
 // =============================================================================
 // Main Functions
 // =============================================================================
@@ -332,11 +414,11 @@ function generateMcpSection(setup: MergedSetup, config: MergedConfig): string {
  * @param options - Generation options
  * @returns Generated CLAUDE.md result
  */
-export function generateClaudeMd(
+export async function generateClaudeMd(
   setup: MergedSetup,
   config: MergedConfig,
   options: GenerateClaudeMdOptions = {},
-): GeneratedClaudeMd {
+): Promise<GeneratedClaudeMd> {
   const {
     includeProfile = true,
     includeAgents = true,
@@ -372,6 +454,11 @@ export function generateClaudeMd(
   // Header
   managedParts.push(customHeader ?? MANAGED_HEADER.trim());
   managedParts.push('');
+
+  // Dynamic context section (v3 intelligent orchestration)
+  const dynamicContext = await generateDynamicContext();
+  managedParts.push(dynamicContext);
+  includedSections.push('dynamic-context');
 
   // Profile section
   if (includeProfile) {
@@ -504,11 +591,11 @@ export function replaceManagedSection(
 /**
  * Create minimal CLAUDE.md with only essential information
  */
-export function createMinimalClaudeMd(
+export async function createMinimalClaudeMd(
   setup: MergedSetup,
   config: MergedConfig,
-): string {
-  const result = generateClaudeMd(setup, config, {
+): Promise<string> {
+  const result = await generateClaudeMd(setup, config, {
     includeProfile: false,
     includeAgents: false,
     includeSkills: false,

@@ -237,7 +237,7 @@ class SyncEngineImpl implements SyncEngine {
     const existingClaudeMd = await this.loadExistingClaudeMd();
 
     // 7. Generate CLAUDE.md
-    const claudeMd = generateClaudeMd(setup, config, {
+    const claudeMd = await generateClaudeMd(setup, config, {
       existingContent: existingClaudeMd ?? undefined,
       preserveUserContent: true,
     });
@@ -331,7 +331,7 @@ class SyncEngineImpl implements SyncEngine {
           if (preserveUserContent) {
             const existing = await this.loadExistingClaudeMd();
             if (existing) {
-              const regenerated = generateClaudeMd(state.setup, state.config, {
+              const regenerated = await generateClaudeMd(state.setup, state.config, {
                 existingContent: existing,
                 preserveUserContent: true,
               });

@@ -9,6 +9,18 @@ Optimized for API development with security and scalability focus.
 - **Databases**: PostgreSQL, MongoDB, Redis
 - **Message Queues**: RabbitMQ, Kafka, Redis Pub/Sub
 
+## Available Agents
+
+This setup includes specialized agents automatically selected based on your needs:
+
+- **executor** - API implementation and bug fixes
+- **architect** - System design, debugging, and performance analysis
+- **security** - Security audits, vulnerability scanning, and threat modeling
+- **qa-tester** - API testing, integration tests, and test automation
+- **planner** - Architecture planning and requirements analysis
+
+Just describe what you need - the system routes to appropriate agents automatically.
+
 ## API Design
 
 ### RESTful Conventions

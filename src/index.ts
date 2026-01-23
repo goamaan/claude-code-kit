@@ -18,3 +18,15 @@ export const NAME = "claudeops";
 
 // Domain exports (to be implemented)
 // export type { Profile, Setup, Addon } from "./types";
+
+// Classifier exports
+export * from './core/classifier/index.js';
+
+// Guardrails exports
+export * from './core/guardrails/index.js';
+
+// Router exports
+export * from './core/router/index.js';
+
+// Pack exports
+export * from './domain/pack/index.js';
