@@ -11,6 +11,7 @@ allowed_tools:
   - Bash
   - TaskCreate
   - TaskUpdate
+  - TaskGet
   - TaskList
 ---
 
@@ -34,14 +35,26 @@ Unlike other skills, orchestrate is ALWAYS ON. It doesn't need activation - it's
 
 claudeops leverages Claude Code's native capabilities:
 
-### Task Management
-Use native `TaskCreate`/`TaskUpdate`/`TaskList` for todo tracking:
+### Task System (Dependency-Aware Orchestration)
+
+Not just a to-do list - a **dependency-aware orchestration layer**:
+- Tasks can block other tasks via `addBlockedBy`
+- Blocked tasks cannot start until dependencies complete
+- Persists across context compaction and sessions
+- Multiple agents can work the same task list in parallel
+
 ```
-TaskCreate({subject: "Implement feature", description: "...", activeForm: "Implementing..."})
-TaskUpdate({taskId: "1", status: "in_progress"})
-TaskUpdate({taskId: "1", status: "completed"})
+# Create task with dependencies
+TaskCreate({subject: "Deploy to prod", addBlockedBy: ["tests", "review"]})
+
+# Assign to agent
+TaskUpdate({taskId: "5", owner: "deploy-agent", status: "in_progress"})
+
+# Check status - press Ctrl+T in terminal
 TaskList()
 ```
+
+See **Task Management** section below for full details.
 
 ### Background Execution
 Use `run_in_background: true` for long-running operations:
@@ -51,14 +64,16 @@ Task(subagent_type="claudeops:executor",
      prompt="Run full test suite")
 ```
 
-### Parallel Execution
-Spawn multiple Task calls in a single response for parallelism:
+### Parallel Agent Execution
+Multiple Task calls in one message = parallel execution:
 ```
-# Independent tasks = parallel execution
+# Three agents running simultaneously
 Task(subagent_type="claudeops:executor", prompt="Create types.ts")
 Task(subagent_type="claudeops:executor", prompt="Create utils.ts")
 Task(subagent_type="claudeops:designer", prompt="Create Button.tsx")
 ```
+
+All three agents read/write the same task list without conflicts.
 
 ### Plan Mode
 Use `/plan` mode for structured planning via `EnterPlanMode` tool.
@@ -258,22 +273,121 @@ Before claiming completion:
 
 ## Task Management
 
-For multi-step work, ALWAYS use TaskCreate:
+Claude Code's Task system is a **dependency-aware orchestration layer** that understands what blocks what, persists across sessions, and enables parallel agent work.
+
+### The Four Core Tools
+
+| Tool | Purpose | Key Fields |
+|------|---------|------------|
+| `TaskCreate` | Create a new task | subject, description, activeForm, metadata |
+| `TaskUpdate` | Modify existing task | taskId, status, owner, addBlockedBy, addBlocks |
+| `TaskGet` | Get full task details | taskId |
+| `TaskList` | See all tasks | (none) |
+
+### Task Schema
+
+```json
+{
+  "id": "3",
+  "subject": "Implement auth routes",
+  "description": "Create login/logout/refresh endpoints",
+  "activeForm": "Implementing auth routes",
+  "owner": "backend-dev",
+  "status": "pending",
+  "blocks": ["4", "5"],
+  "blockedBy": ["1", "2"],
+  "metadata": { "priority": "high" }
+}
+```
+
+### Task Dependencies
+
+**This is the killer feature.** Tasks can block other tasks - blocked tasks cannot start until dependencies complete.
 
 ```
-TaskCreate({subject: "Analyze requirements", description: "...", activeForm: "Analyzing..."})
-TaskCreate({subject: "Create types", description: "...", activeForm: "Creating types..."})
-TaskCreate({subject: "Implement service", description: "...", activeForm: "Implementing..."})
-TaskCreate({subject: "Add tests", description: "...", activeForm: "Adding tests..."})
-TaskCreate({subject: "Verify", description: "...", activeForm: "Verifying..."})
+TaskCreate({subject: "Set up database"})           // #1
+TaskCreate({subject: "Create user schema"})        // #2
+TaskUpdate({taskId: "3", addBlockedBy: ["1", "2"]}) // #3 waits for #1 AND #2
+```
+
+Visualization:
+```
+✓ #1 Set up database
+✓ #2 Create user schema
+■ #3 Implement auth routes (in_progress)
+□ #4 Add integration tests ⚠ blocked by #3
+□ #5 Write API docs ⚠ blocked by #3
+```
+
+**When #3 completes, #4 and #5 automatically become available.**
+
+### Agent Assignment with Owner
+
+The `owner` field labels which agent handles a task. Spawn agents that filter for their work:
+
+```
+# Step 1: Create tasks with owners
+TaskCreate({subject: "Run security audit", owner: "security-agent"})
+TaskCreate({subject: "Write tests", owner: "qa-agent"})
+
+# Step 2: Spawn agents that find their work
+Task(subagent_type="claudeops:security",
+     prompt="You are security-agent. Call TaskList, find tasks where owner='security-agent', complete them.")
+Task(subagent_type="claudeops:qa-tester",
+     prompt="You are qa-agent. Call TaskList, find tasks where owner='qa-agent', complete them.")
+```
+
+Multiple agents run simultaneously, all updating the same task list without conflicts.
+
+### Task Persistence
+
+**Within session:** Tasks survive context compaction automatically.
+
+**Across sessions:** Set `CLAUDE_CODE_TASK_LIST_ID` environment variable:
+
+```bash
+# Per terminal session
+CLAUDE_CODE_TASK_LIST_ID="my-project" claude
+
+# Or in .claude/settings.json
+{
+  "env": {
+    "CLAUDE_CODE_TASK_LIST_ID": "my-project"
+  }
+}
+```
+
+**Storage location:** `~/.claude/tasks/<list-id>/`
+
+### Task Creation Examples
+
+**Simple linear workflow:**
+```
+TaskCreate({subject: "Add logout button", description: "Add to NavBar.tsx"})
+TaskCreate({subject: "Implement logout API", addBlockedBy: ["1"]})
+TaskCreate({subject: "Test logout flow", addBlockedBy: ["2"]})
+```
+
+**Parallel investigation, sequential implementation:**
+```
+# Investigation tasks - run in parallel (no dependencies)
+TaskCreate({subject: "Investigate current auth"})    // #1
+TaskCreate({subject: "Research JWT best practices"}) // #2
+
+# Planning blocked by investigation
+TaskCreate({subject: "Design implementation", addBlockedBy: ["1", "2"]}) // #3
+
+# Implementation blocked by planning
+TaskCreate({subject: "Implement JWT auth", addBlockedBy: ["3"]}) // #4
 ```
 
 ### Task Rules
-- 2+ steps = TaskCreate FIRST
-- Mark `in_progress` before starting
-- Mark `completed` immediately after verification
-- Never batch completions
-- Re-verify before concluding
+- 3+ steps = TaskCreate with dependencies
+- Mark `in_progress` before starting work
+- Mark `completed` only after verification
+- Use `addBlockedBy` to enforce order
+- Use `owner` for parallel agent assignment
+- Check `TaskList` when resuming work
 
 ## Output Format
 
