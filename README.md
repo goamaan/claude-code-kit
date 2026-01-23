@@ -1,226 +1,133 @@
+<div align="center">
+
 # claudeops
 
-**Multi-Agent Orchestration Toolkit for Claude Code**
+**Multi-Agent Orchestration for Claude Code**
 
+[![npm version](https://img.shields.io/npm/v/claudeops.svg)](https://www.npmjs.com/package/claudeops)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Node.js >= 20.0.0](https://img.shields.io/badge/node-%3E%3D%2020.0.0-green.svg)](https://nodejs.org)
-[![npm version](https://img.shields.io/npm/v/claudeops.svg)](https://www.npmjs.com/package/claudeops)
+
+Transform Claude Code into a multi-agent development powerhouse. Delegate tasks to specialized agents, activate smart modes with keywords, and orchestrate complex workflows with ease.
+
+[Getting Started](#quick-start) • [Features](#features) • [Agents](#agents) • [Modes](#modes) • [Documentation](#documentation)
+
+</div>
 
 ---
 
-## Overview
+## What is claudeops?
 
-`claudeops` (`cops`, `co`) is a batteries-included enhancement toolkit for Claude Code that provides:
+claudeops supercharges Claude Code with multi-agent orchestration, automatic mode detection, and intelligent task routing. Instead of Claude doing everything itself, it can delegate work to specialized agents optimized for specific tasks - from architecture analysis to UI design to security audits.
 
-- **Multi-Agent Orchestration** - Delegate tasks to specialized agents (executor, architect, designer, etc.)
-- **Automatic Mode Detection** - Keywords like "ultrawork" or "autopilot" trigger enhanced behaviors
-- **Smart Model Routing** - Direct tasks to appropriate Claude models (Haiku, Sonnet, Opus)
-- **Task System Integration** - Dependency-aware task management with parallel execution
-- **Profile Management** - Switch between different configuration contexts
-- **Setup Templates** - Pre-configured environments for common development scenarios
-- **Hook System** - Intercept and modify Claude Code behavior at key points
-- **Cost Tracking** - Monitor token usage and spending with budgets
+## Features
+
+- **12 Specialized Agents** - Delegate to experts for execution, architecture, design, testing, security, and more
+- **Smart Mode Detection** - Type `autopilot` or `ultrawork` to activate enhanced workflows
+- **Intelligent Model Routing** - Automatically use Haiku for simple tasks, Opus for complex analysis
+- **Setup Templates** - Pre-configured profiles for fullstack, frontend, backend, devops, and enterprise
+- **Profile Management** - Switch between project configurations instantly
+- **Hook System** - Auto-lint, type-check, and checkpoint your code
+- **Cost Tracking** - Monitor spending with configurable budgets
 
 ---
 
 ## Quick Start
 
-### Installation
+Install claudeops globally:
 
 ```bash
 npm install -g claudeops
 ```
 
-### Initialize and Sync
+Initialize with a setup template:
 
 ```bash
-# Initialize configuration
 claudeops config init
-
-# Create a profile with a setup template
 claudeops profile create my-project --setup fullstack --activate
-
-# Sync configuration to Claude Code
 claudeops sync
 ```
 
-### Verify Setup
+Verify everything is working:
 
 ```bash
 claudeops doctor
 ```
 
+That's it! You can now use enhanced modes and agents in Claude Code.
+
 ---
 
-## Multi-Agent Orchestration
+## Agents
 
-The core feature of claudeops is enabling Claude Code to delegate work to specialized agents.
+claudeops provides 12 specialized agents optimized for different tasks. Each agent runs on the most cost-effective model for its workload.
 
-### Philosophy
+**Execution & Implementation**
+- `executor` - Standard features and bug fixes (Sonnet)
+- `executor-low` - Simple boilerplate and refactoring (Haiku)
 
-```
-YOU ARE A CONDUCTOR, NOT A PERFORMER
+**Analysis & Planning**
+- `architect` - Deep debugging and code review (Opus)
+- `planner` - Strategic planning and requirements (Opus)
+- `critic` - Plan review and gap analysis (Opus)
 
-Your job:
-- Read files for context
-- Analyze requirements
-- Create task breakdown with dependencies
-- Delegate to specialized agents
-- Verify completion
-- Report results
+**Specialized Domains**
+- `designer` - UI/UX, components, styling (Sonnet)
+- `qa-tester` - Testing and TDD workflows (Sonnet)
+- `security` - Security audits and reviews (Opus)
 
-NOT your job:
-- Write code directly
-- Make changes to files
-- Implement features yourself
-```
+**Support & Research**
+- `explore` - Fast codebase search (Haiku)
+- `writer` - Documentation and comments (Haiku)
+- `researcher` - External research and API analysis (Sonnet)
+- `vision` - Image and visual analysis (Sonnet)
 
-### Agent Catalog (12 Agents)
+**Usage Example:**
 
-All agents use prefix `claudeops:` when delegating via the Task tool.
-
-| Category | Agent | Model | Use For |
-|----------|-------|-------|---------|
-| **Execution** | executor | sonnet | Standard implementations, build fixes |
-| | executor-low | haiku | Boilerplate, simple changes |
-| **Analysis** | architect | opus | Deep analysis, debugging, code review |
-| **Search** | explore | haiku | File/code search, codebase discovery |
-| **Frontend** | designer | sonnet | UI/UX, components, styling |
-| **Quality** | qa-tester | sonnet | Testing, TDD workflow |
-| | security | opus | Security audit, vulnerability review |
-| **Support** | writer | haiku | Documentation, comments |
-| | researcher | sonnet | External research, API analysis |
-| | vision | sonnet | Image/visual analysis |
-| **Strategic** | planner | opus | Strategic planning, requirements |
-| | critic | opus | Plan review, gap analysis |
-
-### Delegation Examples
-
-```python
-# Simple lookup (cheap, fast)
-Task(subagent_type="claudeops:explore", model="haiku",
-     prompt="Find where UserService is defined")
-
-# Standard implementation
+```bash
+# In Claude Code, delegate tasks to agents:
 Task(subagent_type="claudeops:executor", model="sonnet",
-     prompt="Add validation to createUser function")
+     prompt="Add email validation to the signup form")
 
-# Complex debugging
 Task(subagent_type="claudeops:architect", model="opus",
-     prompt="Debug the race condition in auth flow")
-
-# Parallel execution (multiple Task calls in one message)
-Task(subagent_type="claudeops:executor", model="sonnet", prompt="Create types.ts")
-Task(subagent_type="claudeops:executor", model="sonnet", prompt="Create utils.ts")
-Task(subagent_type="claudeops:designer", model="sonnet", prompt="Create Button.tsx")
-```
-
-**CRITICAL:** Always pass the `model` parameter explicitly. Claude Code does NOT auto-apply models from agent definitions.
-
----
-
-## Automatic Mode Detection
-
-The keyword-detector hook automatically activates enhanced modes based on your prompts:
-
-| Keywords | Mode | Behavior |
-|----------|------|----------|
-| `ultrawork`, `ulw`, `uw` | **ULTRAWORK** | Maximum parallel execution, aggressive delegation, persistence until verified complete |
-| `autopilot`, `build me`, `create a`, `make me` | **AUTOPILOT** | 5-phase autonomous execution (Discovery → Planning → Execution → Verification → Completion) |
-| `plan this`, `plan the`, `how should I` | **PLANNER** | Structured user interview + parallelizable task breakdown |
-| `investigate`, `debug`, `analyze` | **ANALYSIS** | Deep analysis via architect agent |
-| `find`, `search`, `locate` | **SEARCH** | Parallel explore agents for codebase discovery |
-
-### Example Usage
-
-```
-User: "ultrawork - implement user authentication"
-→ Activates ULTRAWORK mode with maximum parallelism
-
-User: "build me a REST API for products"
-→ Activates AUTOPILOT mode with 5-phase workflow
-
-User: "plan this feature: add payment processing"
-→ Activates PLANNER mode with structured interview
+     prompt="Debug the race condition in the auth flow")
 ```
 
 ---
 
-## Task System
+## Modes
 
-claudeops leverages Claude Code's native Task system for dependency-aware orchestration.
+Type keywords to activate enhanced workflows automatically.
 
-### Core Tools
+**ULTRAWORK** (`ultrawork`, `ulw`, `uw`)
+- Maximum parallel execution
+- Aggressive task delegation
+- Persistent until verified complete
 
-| Tool | Purpose | Key Fields |
-|------|---------|------------|
-| `TaskCreate` | Create a new task | subject, description, activeForm, addBlockedBy |
-| `TaskUpdate` | Modify existing task | taskId, status, owner, addBlockedBy, addBlocks |
-| `TaskGet` | Get full task details | taskId |
-| `TaskList` | See all tasks | (none) |
+**AUTOPILOT** (`autopilot`, `build me`, `create a`, `make me`)
+- 5-phase autonomous workflow
+- Discovery → Planning → Execution → Verification → Completion
 
-### Task Dependencies
+**PLANNER** (`plan this`, `plan the`, `how should I`)
+- Structured user interview
+- Parallelizable task breakdown
 
-Tasks can block other tasks - blocked tasks cannot start until dependencies complete:
+**ANALYSIS** (`investigate`, `debug`, `analyze`)
+- Deep analysis via architect agent
+- Root cause identification
 
-```python
-TaskCreate({subject: "Set up database"})           # Task #1
-TaskCreate({subject: "Create user schema"})        # Task #2
-TaskCreate({subject: "Implement auth", addBlockedBy: ["1", "2"]})  # Task #3 waits for both
+**SEARCH** (`find`, `search`, `locate`)
+- Parallel codebase exploration
+- Fast pattern matching
+
+**Example:**
+
 ```
+You: "ultrawork - implement user authentication with JWT"
+Claude: [Activates ULTRAWORK mode, spawns multiple agents in parallel]
 
-### Parallel Agent Assignment
-
-```python
-# Create tasks with owners
-TaskCreate({subject: "Run security audit", owner: "security-agent"})
-TaskCreate({subject: "Write tests", owner: "qa-agent"})
-
-# Spawn agents that find their work
-Task(subagent_type="claudeops:security", model="opus",
-     prompt="You are security-agent. Call TaskList, find your tasks, complete them.")
-Task(subagent_type="claudeops:qa-tester", model="sonnet",
-     prompt="You are qa-agent. Call TaskList, find your tasks, complete them.")
-```
-
----
-
-## Hook System
-
-Hooks intercept and modify Claude Code behavior at key points.
-
-### Available Hooks
-
-| Hook | Event | Purpose |
-|------|-------|---------|
-| `keyword-detector` | UserPromptSubmit | Detects keywords and injects mode context |
-| `continuation-check` | Stop | Blocks stopping when tasks remain pending |
-| `lint-changed` | PostToolUse | Runs ESLint after Write/Edit on JS/TS files |
-| `typecheck-changed` | PostToolUse | Runs TypeScript check after Write/Edit on TS files |
-| `checkpoint` | Stop | Creates git stash checkpoint before session ends |
-| `thinking-level` | UserPromptSubmit | Enhances reasoning for complex tasks |
-
-### Hook Configuration
-
-Hooks are configured in `.claude/settings.json`:
-
-```json
-{
-  "hooks": {
-    "UserPromptSubmit": [{
-      "hooks": [{
-        "type": "command",
-        "command": "node \"$CLAUDE_PROJECT_DIR/hooks/keyword-detector.mjs\""
-      }]
-    }],
-    "Stop": [{
-      "hooks": [{
-        "type": "command",
-        "command": "node \"$CLAUDE_PROJECT_DIR/hooks/continuation-check.mjs\""
-      }]
-    }]
-  }
-}
+You: "build me a REST API for products"
+Claude: [Activates AUTOPILOT mode, runs 5-phase workflow]
 ```
 
 ---
@@ -229,130 +136,62 @@ Hooks are configured in `.claude/settings.json`:
 
 Pre-built configurations for common development scenarios.
 
-| Setup | Purpose | Key Features |
-|-------|---------|--------------|
-| `minimal` | Bare essentials | Default model routing only |
-| `fullstack` | React + Node.js | Frontend + backend agents, git mastery |
-| `frontend` | Frontend-focused | Designer agent, UI/UX skills |
-| `backend` | Backend-focused | API design, database, testing |
-| `data` | Data science | Python, ML, statistics |
-| `devops` | Infrastructure | Docker, K8s, CI/CD |
-| `enterprise` | Large teams | All skills, security reviewers |
-
 ```bash
-# List available setups
+# List available templates
 claudeops setup list
 
-# Use a setup
+# Use a template
 claudeops setup use fullstack
-
-# Get setup info
-claudeops setup info backend
 ```
+
+**Available Templates:**
+- `minimal` - Bare essentials with model routing
+- `fullstack` - React + Node.js with all agents
+- `frontend` - UI/UX focused with designer agent
+- `backend` - API design, database, testing
+- `data` - Python, ML, data science workflows
+- `devops` - Docker, K8s, CI/CD automation
+- `enterprise` - Full agent suite with security
 
 ---
 
-## Profile Management
+## Common Commands
 
-Profiles are named configuration contexts for different projects or work modes.
+**Sync & Diagnostics**
 
 ```bash
-# List all profiles
-claudeops profile list
-
-# Create profile with setup template
-claudeops profile create client-a --setup fullstack --activate
-
-# Switch profiles
-claudeops profile use client-a
-
-# Export/import profiles
-claudeops profile export client-a --format json --output client-a.json
-claudeops profile import client-a.json --name client-a-copy
+claudeops sync              # Sync configuration to Claude Code
+claudeops doctor            # Run diagnostics
+claudeops upgrade --check   # Check for updates
 ```
 
----
-
-## Commands Reference
-
-### Core Commands
+**Profile Management**
 
 ```bash
-# Sync configuration to Claude Code
-claudeops sync [--dry-run] [--force] [--backup]
-
-# Run diagnostics
-claudeops doctor [--fix] [--verbose]
-
-# Check for updates
-claudeops upgrade [--check]
+claudeops profile list                                      # List profiles
+claudeops profile create client-a --setup fullstack         # Create profile
+claudeops profile use client-a                              # Switch profiles
 ```
 
-### Profile Management
+**Cost Tracking**
 
 ```bash
-claudeops profile list [--json]
-claudeops profile use <name>
-claudeops profile create <name> [--from <base>] [--setup <setup>] [--activate]
-claudeops profile delete <name> [--force]
-claudeops profile export <name> [--format toml|json]
-claudeops profile import <source> [--name <name>]
-claudeops profile show [name] [--json]
+claudeops cost today               # View today's spending
+claudeops cost budget --set 10     # Set daily budget to $10
 ```
 
-### Setup Management
+**Hooks**
 
 ```bash
-claudeops setup list [--json]
-claudeops setup info <name> [--json]
-claudeops setup use <name>
-claudeops setup create <name> [--description <text>]
-claudeops setup export <name> [--output <path>]
-claudeops setup import <source> [--name <name>]
-```
-
-### Addon Management
-
-```bash
-claudeops addon list [--json]
-claudeops addon search <query>
-claudeops addon install <source> [--version <version>]
-claudeops addon update <name>
-claudeops addon remove <name> [--force]
-```
-
-### MCP Server Management
-
-```bash
-claudeops mcp list [--json] [--status]
-claudeops mcp add <server> [--config <json>]
-claudeops mcp remove <server>
-claudeops mcp enable <server>
-claudeops mcp disable <server>
-```
-
-### Cost Tracking
-
-```bash
-claudeops cost today [--format table|json]
-claudeops cost week [--format table|json]
-claudeops cost budget [--set <usd>] [--period daily|weekly|monthly]
-claudeops cost export [--format csv|json] [--period <period>]
-```
-
-### Hook Management
-
-```bash
-claudeops hook list [--json]
-claudeops hook debug [--event <event>] [--verbose]
-claudeops hook test <hook-name> [--event <event>] [--input <json>]
+claudeops hook list      # List active hooks
+claudeops hook debug     # Debug hook execution
 ```
 
 ---
 
 ## Configuration
 
-### Global Configuration (`~/.claudeops/config.toml`)
+**Global Config** (`~/.claudeops/config.toml`)
 
 ```toml
 [model]
@@ -366,150 +205,54 @@ complex = "opus"
 [cost]
 enabled = true
 dailyBudget = 10.0
-weeklyBudget = 50.0
-
-[sync]
-autoSync = true
-backupBeforeSync = true
 ```
 
-### Project Configuration (`.claudeops.yaml`)
+**Project Config** (`.claudeops.yaml`)
 
 ```yaml
 profiles:
   - name: development
-    description: Development environment
     extends: fullstack
 
-  - name: production
-    description: Production configuration
-    extends: enterprise
-
 activeProfile: development
-
-cost:
-  dailyBudget: 5.0
 ```
 
 ---
 
-## Skills
+## Documentation
 
-Skills are specialized capabilities that can be activated manually or via keyword detection.
+For detailed documentation on agents, modes, hooks, and advanced usage, run `claudeops --help` or see the sections above.
 
-| Skill | Description |
-|-------|-------------|
-| `orchestrate` | Core multi-agent orchestration (always conceptually active) |
-| `autopilot` | Autonomous execution from idea to working code |
-| `planner` | Strategic planning with structured user interview |
-| `git-master` | Git expertise for commits, branches, history |
-| `frontend-ui-ux` | UI/UX design principles for frontend work |
-| `doctor` | Diagnose and fix configuration issues |
-
----
-
-## Verification Protocol
-
-Before claiming completion on complex work:
-
-1. **Spawn architect for verification:**
-   ```python
-   Task(subagent_type="claudeops:architect", model="opus",
-        prompt="Verify the implementation meets requirements...")
-   ```
-
-2. **Wait for response**
-
-3. **If APPROVED:** Report completion with evidence
-
-4. **If REJECTED:** Fix issues and re-verify
-
-### Required Evidence
-
-| Claim | Required Evidence |
-|-------|-------------------|
-| "Fixed" | Test showing it passes |
-| "Implemented" | Build passes + types clean |
-| "Refactored" | All tests still pass |
-
----
-
-## Troubleshooting
-
-### "Command not found: claudeops"
+**Troubleshooting:**
 
 ```bash
-# Verify installation
+# Command not found
 npm list -g claudeops
-
-# Add npm bin to PATH if needed
 export PATH="$(npm config get prefix)/bin:$PATH"
-```
 
-### Configuration not syncing
-
-```bash
+# Config not syncing
 claudeops doctor --fix
-claudeops sync --dry-run  # See what would be synced
-claudeops sync --backup   # Sync with backup
-```
+claudeops sync --dry-run
 
-### Hooks not executing
-
-```bash
+# Hooks not working
 claudeops hook list
 claudeops hook debug --verbose
-```
-
-### Mode not activating
-
-Ensure keyword-detector hook is enabled in `.claude/settings.json` and the hooks directory contains `keyword-detector.mjs`.
-
----
-
-## Development
-
-```bash
-# Install dependencies
-npm install
-
-# Development mode
-npm run dev
-
-# Run tests
-npm test
-
-# Type checking
-npm run typecheck
-
-# Linting
-npm run lint
-
-# Build
-npm run build
 ```
 
 ---
 
 ## Contributing
 
+Contributions are welcome! Please follow these steps:
+
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature/my-feature`
-3. Make changes and test thoroughly
-4. Run `npm run verify` to check code quality
-5. Commit with conventional messages: `git commit -m "feat: add my feature"`
-6. Push and create a Pull Request
+3. Make your changes and test: `npm run verify`
+4. Commit with conventional messages: `git commit -m "feat: add feature"`
+5. Open a Pull Request
 
 ---
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) for details.
-
----
-
-## Support
-
-- Open an issue on GitHub
-- Check existing documentation
-- Review troubleshooting section above
+MIT License - see [LICENSE](LICENSE) for details
