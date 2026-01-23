@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /**
  * typecheck-changed - PostToolUse Hook
  *
@@ -10,23 +11,45 @@
 
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { existsSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { dirname, resolve, join } from 'path';
 
 const execAsync = promisify(exec);
 
-/**
- * Check if file is a TypeScript file
- */
-function isTypeScriptFile(filePath) {
-  return /\.(ts|tsx)$/.test(filePath);
+// Read input from stdin
+let input;
+try {
+  const stdinData = readFileSync(0, 'utf8');
+  input = JSON.parse(stdinData);
+} catch {
+  process.exit(0);
+}
+
+const toolName = input.tool_name || '';
+const toolInput = input.tool_input || {};
+const _cwd = input.cwd || process.cwd();
+
+// Only process Write/Edit tools
+if (toolName !== 'Write' && toolName !== 'Edit') {
+  process.exit(0);
+}
+
+const filePath = toolInput.file_path;
+
+// Check if file is a TypeScript file
+function isTypeScriptFile(fp) {
+  return /\.(ts|tsx)$/.test(fp);
+}
+
+if (!filePath || !isTypeScriptFile(filePath)) {
+  process.exit(0);
 }
 
 /**
  * Find tsconfig.json in directory hierarchy
  */
-function findTsConfig(filePath) {
-  let dir = dirname(resolve(filePath));
+function findTsConfig(fp) {
+  let dir = dirname(resolve(fp));
   const root = '/';
 
   while (dir !== root) {
@@ -45,113 +68,60 @@ function findTsConfig(filePath) {
 /**
  * Run TypeScript type checking
  */
-async function runTypeCheck(filePath) {
-  const tsconfigPath = findTsConfig(filePath);
+async function runTypeCheck(fp) {
+  const tsconfigPath = findTsConfig(fp);
 
   if (!tsconfigPath) {
-    return {
-      success: true,
-      output: 'No tsconfig.json found, skipping type check',
-      errors: [],
-    };
+    return { success: true, output: '', errors: [] };
   }
 
   const projectDir = dirname(tsconfigPath);
 
   try {
-    const { stdout: packageJson } = await execAsync('cat package.json', {
-      cwd: projectDir,
-      encoding: 'utf8',
-    }).catch(() => ({ stdout: '{}' }));
+    const pkgPath = join(projectDir, 'package.json');
+    let hasTypecheckScript = false;
 
-    const pkg = JSON.parse(packageJson);
-    const hasTypecheckScript = pkg.scripts && pkg.scripts.typecheck;
+    if (existsSync(pkgPath)) {
+      const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
+      hasTypecheckScript = pkg.scripts && (pkg.scripts.typecheck || pkg.scripts['type-check']);
+    }
 
     let command;
     if (hasTypecheckScript) {
-      command = 'npm run typecheck';
+      command = 'npm run typecheck 2>&1';
     } else {
-      command = 'npx tsc --noEmit';
+      command = 'npx tsc --noEmit 2>&1';
     }
 
-    const { stdout, stderr } = await execAsync(command, {
+    const { stdout } = await execAsync(command, {
       cwd: projectDir,
       encoding: 'utf8',
-      timeout: 30000,
+      timeout: 60000, // TypeScript can be slow
     });
 
-    return {
-      success: true,
-      output: stdout + stderr,
-      errors: [],
-    };
+    return { success: true, output: stdout, errors: [] };
   } catch (error) {
-    const output = (error.stdout || '') + (error.stderr || '');
-    const errors = parseTypeScriptErrors(output);
-
-    return {
-      success: false,
-      output,
-      errors,
-    };
+    const output = error.stdout || error.stderr || error.message;
+    return { success: false, output, errors: [output] };
   }
 }
 
-/**
- * Parse TypeScript error output
- */
-function parseTypeScriptErrors(output) {
-  const errors = [];
-  const lines = output.split('\n');
-
-  for (const line of lines) {
-    if (/\.tsx?:\d+:\d+/.test(line) || /error TS\d+:/.test(line)) {
-      errors.push(line.trim());
-    }
-  }
-
-  return errors.length > 0 ? errors : [output.trim()];
-}
-
-/**
- * Main hook function
- */
-export default async function typecheckChangedHook(context) {
-  const { tool, toolInput } = context;
-
-  if (tool !== 'Write' && tool !== 'Edit') {
-    return { decision: 'allow' };
-  }
-
-  const filePath = toolInput.file_path;
-
-  if (!filePath || !isTypeScriptFile(filePath)) {
-    return { decision: 'allow' };
-  }
-
+// Run typecheck and output result
+try {
   const result = await runTypeCheck(filePath);
 
-  if (result.success) {
-    return {
-      decision: 'allow',
-      metadata: {
-        typecheck: 'passed',
-        output: result.output,
-      },
+  if (!result.success && result.errors.length > 0) {
+    // Report type errors to Claude via additionalContext
+    const output = {
+      hookSpecificOutput: {
+        hookEventName: 'PostToolUse',
+        additionalContext: `[TYPE ERRORS] TypeScript found issues after modifying ${filePath}:\n\n${result.output.slice(0, 2000)}\n\nPlease fix these type errors.`
+      }
     };
+    console.log(JSON.stringify(output));
   }
-
-  const errorCount = result.errors.length;
-  const errorPreview = result.errors.slice(0, 10).join('\n');
-  const hasMore = errorCount > 10 ? '\n... and ' + (errorCount - 10) + ' more errors' : '';
-
-  return {
-    decision: 'allow',
-    message: '\n⚠️  TypeScript type check failed after modifying ' + filePath + ':\n\n' + errorPreview + hasMore + '\n\nPlease fix these type errors.\n',
-    metadata: {
-      typecheck: 'failed',
-      errorCount,
-      errors: result.errors,
-    },
-  };
+} catch {
+  // Silently fail - don't block on type errors
 }
+
+process.exit(0);

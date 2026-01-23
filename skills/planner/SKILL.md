@@ -1,23 +1,6 @@
 ---
 name: planner
-description: Strategic planning with user interview for complex tasks
-auto_trigger:
-  - plan this
-  - plan the
-  - how should I
-  - help me plan
-  - what's the best way
-  - broad request detected
-allowed_tools:
-  - Task
-  - Read
-  - Glob
-  - Grep
-  - AskUserQuestion
-  - TaskCreate
-  - TaskUpdate
-  - TaskGet
-  - TaskList
+description: Strategic planning with structured user interview for complex tasks. Converts vague requests into actionable, parallelizable task plans. Use when user asks to plan, architect, or scope work, or when requirements are unclear.
 ---
 
 # Planner Skill

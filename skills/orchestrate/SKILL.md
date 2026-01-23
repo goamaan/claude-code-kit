@@ -1,18 +1,6 @@
 ---
 name: orchestrate
-description: Core multi-agent orchestration - always active, enables delegation
-auto_trigger: []
-always_active: true
-allowed_tools:
-  - Task
-  - Read
-  - Glob
-  - Grep
-  - Bash
-  - TaskCreate
-  - TaskUpdate
-  - TaskGet
-  - TaskList
+description: Core multi-agent orchestration for delegating work to specialized agents. Use when coordinating complex tasks, planning implementations, or when you need to spawn multiple agents.
 ---
 
 # Orchestrate Skill

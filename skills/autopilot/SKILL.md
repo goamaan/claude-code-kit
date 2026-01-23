@@ -1,22 +1,6 @@
 ---
 name: autopilot
-description: Full autonomous execution from idea to working, tested code
-auto_trigger:
-  - autopilot
-  - build me
-  - I want a
-  - create a
-  - make me
-allowed_tools:
-  - Task
-  - Read
-  - Glob
-  - Grep
-  - Bash
-  - TaskCreate
-  - TaskUpdate
-  - TaskGet
-  - TaskList
+description: Full autonomous execution from idea to working, tested code. 5-phase workflow with parallel agent execution. Use for building complete features, creating new projects, or hands-off development.
 ---
 
 # Autopilot Skill
