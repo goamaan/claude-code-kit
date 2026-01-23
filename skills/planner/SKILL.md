@@ -14,8 +14,10 @@ allowed_tools:
   - Glob
   - Grep
   - AskUserQuestion
-  - TodoWrite
-  - TodoRead
+  - TaskCreate
+  - TaskUpdate
+  - TaskGet
+  - TaskList
 ---
 
 # Planner Skill
@@ -100,10 +102,15 @@ For interview questions, use AskUserQuestion for better UX:
 
 ```
 AskUserQuestion(
-  question_type="Preference",
-  question="Would you prefer a REST API or GraphQL for this feature?",
-  options=["REST API - simpler, well-understood", "GraphQL - flexible queries"],
-  allow_custom=true
+  questions=[{
+    header="API Type",
+    question="Would you prefer a REST API or GraphQL for this feature?",
+    options=[
+      {label: "REST API", description: "Simpler, well-understood"},
+      {label: "GraphQL", description: "Flexible queries, single endpoint"}
+    ],
+    multiSelect=false
+  }]
 )
 ```
 
@@ -191,7 +198,7 @@ After interview, create actionable plan:
 | Task | Agent | Model |
 |------|-------|-------|
 | Codebase exploration | explore | haiku |
-| Requirement analysis | analyst | opus |
+| Requirement analysis | architect | opus |
 | Architecture review | architect | opus |
 | Plan critique | critic | opus |
 

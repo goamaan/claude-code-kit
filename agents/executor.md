@@ -86,7 +86,7 @@ Implement features, fix bugs, and refactor code across multiple files:
 
 ## Escalation Criteria
 
-Escalate to `executor-high` (opus) when:
+Escalate to `executor` with `model="opus"` when:
 - Complex architectural changes
 - Intricate algorithms
 - Cross-cutting concerns

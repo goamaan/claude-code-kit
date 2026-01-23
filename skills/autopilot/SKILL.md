@@ -13,8 +13,10 @@ allowed_tools:
   - Glob
   - Grep
   - Bash
-  - TodoWrite
-  - TodoRead
+  - TaskCreate
+  - TaskUpdate
+  - TaskGet
+  - TaskList
 ---
 
 # Autopilot Skill
@@ -51,9 +53,9 @@ Activate when user says:
    Task(subagent_type="claudeops:explore",
         prompt="Analyze codebase structure, patterns, and conventions")
    ```
-3. Spawn `analyst` agent for requirement analysis:
+3. Spawn `architect` agent for requirement analysis:
    ```
-   Task(subagent_type="claudeops:analyst",
+   Task(subagent_type="claudeops:architect",
         model="opus",
         prompt="Analyze requirements and identify gaps, risks, dependencies")
    ```
@@ -79,7 +81,7 @@ Activate when user says:
         prompt="Design system architecture for: [requirements]")
    ```
 3. Break down into parallelizable work streams
-4. Create comprehensive TodoWrite with all tasks
+4. Create comprehensive task list with TaskCreate for all tasks
 5. Identify critical path and dependencies
 
 **Output:**
@@ -99,12 +101,12 @@ Activate when user says:
         model="sonnet",
         prompt="Implement [specific component]")
    ```
-3. Use appropriate agent tiers:
-   - `executor-low` for simple files/boilerplate
-   - `executor` for standard features
-   - `executor-high` for complex logic
+3. Use appropriate model tiers:
+   - `executor-low` with `model="haiku"` for simple files/boilerplate
+   - `executor` with `model="sonnet"` for standard features
+   - `executor` with `model="opus"` for complex logic
 4. Coordinate shared resources/interfaces
-5. Track progress via TodoWrite
+5. Track progress via TaskUpdate
 
 **Parallelization Strategy:**
 - Group tasks by domain (frontend, backend, tests)
@@ -131,7 +133,7 @@ Activate when user says:
    ```
 4. Check for type errors:
    ```
-   Use lsp_diagnostics_directory tool with strategy="auto"
+   Bash(command="npm run typecheck", run_in_background=true)
    ```
 5. If errors found, spawn fix agents immediately
 
@@ -164,7 +166,7 @@ while (errors_exist):
 | Task | Agent | Model |
 |------|-------|-------|
 | Codebase analysis | explore | haiku |
-| Requirement analysis | analyst | opus |
+| Requirement analysis | architect | opus |
 | Risk assessment | architect | opus |
 
 ### Planning Phase
@@ -172,14 +174,14 @@ while (errors_exist):
 |------|-------|-------|
 | Strategic planning | planner | opus |
 | Architecture design | architect | opus |
-| Task breakdown | analyst | opus |
+| Task breakdown | architect | opus |
 
 ### Execution Phase
 | Task | Agent | Model |
 |------|-------|-------|
 | Boilerplate/simple | executor-low | haiku |
 | Standard features | executor | sonnet |
-| Complex logic | executor-high | opus |
+| Complex logic | executor | opus |
 | UI components | designer | sonnet |
 | Documentation | writer | haiku |
 
@@ -187,8 +189,8 @@ while (errors_exist):
 | Task | Agent | Model |
 |------|-------|-------|
 | Testing | qa-tester | sonnet |
-| Code review | code-reviewer-low | haiku |
-| Build fixes | build-fixer | sonnet |
+| Code review | architect | haiku |
+| Build fixes | executor | sonnet |
 
 ## Output Format
 
@@ -269,7 +271,7 @@ Built [description] with [N] files across [M] components.
 
 6. **No progress tracking**
    - BAD: Losing track of what's done
-   - GOOD: TodoWrite for everything, update continuously
+   - GOOD: TaskCreate for everything, TaskUpdate continuously
 
 7. **Over-planning**
    - BAD: Spending 30 minutes planning a 10-minute task
@@ -282,7 +284,7 @@ Built [description] with [N] files across [M] components.
 ## Interruption Handling
 
 If user says "stop", "cancel", or "pause":
-1. Note current state in TodoWrite
+1. Note current state via TaskUpdate
 2. Stop spawning new agents
 3. Wait for active agents to complete or timeout
 4. Report current progress
@@ -291,7 +293,7 @@ If user says "stop", "cancel", or "pause":
 ## Resume Capability
 
 To resume an interrupted autopilot session:
-1. Read existing TodoWrite for state
+1. Read existing task state via TaskList
 2. Identify incomplete tasks
 3. Re-enter at appropriate phase
 4. Continue execution
@@ -299,7 +301,7 @@ To resume an interrupted autopilot session:
 ## Success Criteria
 
 Autopilot is complete when:
-- [ ] All TodoWrite items marked complete
+- [ ] All tasks marked complete via TaskUpdate
 - [ ] Build passes
 - [ ] Tests pass (or no test failures introduced)
 - [ ] No type errors

@@ -196,7 +196,6 @@ export interface DiagnosticReport {
     platform: string;
     nodeVersion: string;
     claudeKitVersion: string;
-    omcVersion?: string;
     claudeCodeVersion?: string;
   };
 

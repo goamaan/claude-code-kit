@@ -51,12 +51,11 @@ author = "test-author"
 extends = "minimal"
 
 [requires]
-oh-my-claudecode = "^3.0.0"
 addons = ["addon-a", "addon-b"]
 
 [skills]
-enabled = ["autopilot", "ralph"]
-disabled = ["ultrawork"]
+enabled = ["autopilot", "planner"]
+disabled = ["frontend-ui-ux"]
 
 [agents.designer]
 model = "sonnet"
@@ -87,11 +86,10 @@ build = { enabled = true, alias = "b", description = "Build the project" }
       expect(result.author).toBe('test-author');
       expect(result.extends).toBe('minimal');
 
-      expect(result.requires?.['oh-my-claudecode']).toBe('^3.0.0');
       expect(result.requires?.addons).toEqual(['addon-a', 'addon-b']);
 
-      expect(result.skills?.enabled).toEqual(['autopilot', 'ralph']);
-      expect(result.skills?.disabled).toEqual(['ultrawork']);
+      expect(result.skills?.enabled).toEqual(['autopilot', 'planner']);
+      expect(result.skills?.disabled).toEqual(['frontend-ui-ux']);
 
       expect(result.agents?.['designer']?.model).toBe('sonnet');
       expect(result.agents?.['designer']?.priority).toBe(70);

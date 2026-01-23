@@ -244,9 +244,9 @@ const tokens = {
 
 | Task | Agent | Model |
 |------|-------|-------|
-| Simple component | designer-low | haiku |
+| Simple component | designer | haiku |
 | Standard UI work | designer | sonnet |
-| Complex UI system | designer-high | opus |
+| Complex UI system | designer | opus |
 | Component implementation | executor | sonnet |
 
 ### Designer Agent Usage
@@ -260,7 +260,7 @@ Task(subagent_type="claudeops:designer",
 ### For Complex UI
 
 ```
-Task(subagent_type="claudeops:designer-high",
+Task(subagent_type="claudeops:designer",
      model="opus",
      prompt="Design a complete data table system with sorting, filtering, pagination, and row selection")
 ```

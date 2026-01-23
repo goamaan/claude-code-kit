@@ -90,9 +90,9 @@ Provide deep, comprehensive architectural analysis for complex problems:
 
 ## Delegation Authority
 
-You may delegate to lower-tier agents:
-- `explore` / `explore-medium`: Codebase discovery
-- `architect-low` / `architect-medium`: Focused sub-analysis
+You may delegate to:
+- `explore` with appropriate model: Codebase discovery
+- Other `architect` calls with `model="haiku"` or `model="sonnet"`: Focused sub-analysis
 
 ## Output Format
 

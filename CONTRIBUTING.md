@@ -688,17 +688,16 @@ author = "Your Name"
 extends = "fullstack"  # Optional: inherit from another setup
 
 [requires]
-"oh-my-claudecode" = ">=0.1.0"
 addons = ["addon-name"]  # Required addons
 
 [skills]
-enabled = ["autopilot", "deepinit"]
+enabled = ["autopilot", "planner"]
 disabled = []
 
 [agents]
 # Override agent configurations
 [agents.architect]
-model = "claude-opus-4-5"
+model = "opus"
 priority = 100
 
 [mcp]

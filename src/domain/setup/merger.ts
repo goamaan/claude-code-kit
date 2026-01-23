@@ -172,9 +172,6 @@ function mergeManifestInto(
 ): void {
   // Merge requires
   if (manifest.requires) {
-    if (manifest.requires['oh-my-claudecode']) {
-      merged.requires['oh-my-claudecode'] = manifest.requires['oh-my-claudecode'];
-    }
     if (manifest.requires.addons) {
       merged.requires.addons.push(...manifest.requires.addons);
     }

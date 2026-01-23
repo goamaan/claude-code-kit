@@ -32,7 +32,6 @@ const TomlAddonFileSchema = z.object({
   }),
   requires: z.object({
     'claudeops': z.string().optional(),
-    'oh-my-claudecode': z.string().optional(),
   }).optional(),
   install: z.object({
     runtime: z.enum(['node', 'bun', 'deno']).optional(),

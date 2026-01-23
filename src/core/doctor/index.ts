@@ -202,7 +202,6 @@ async function getSystemInfo(): Promise<DiagnosticReport['system']> {
 
   let claudeKitVersion = '0.0.0';
   let claudeCodeVersion: string | undefined;
-  let omcVersion: string | undefined;
 
   // Try to get claudeops version from package.json
   try {
@@ -231,7 +230,6 @@ async function getSystemInfo(): Promise<DiagnosticReport['system']> {
     nodeVersion: process.version,
     claudeKitVersion,
     claudeCodeVersion,
-    omcVersion,
   };
 }
 
@@ -289,9 +287,6 @@ export function formatReport(report: DiagnosticReport): string {
   lines.push(`- claudeops: ${report.system.claudeKitVersion}`);
   if (report.system.claudeCodeVersion) {
     lines.push(`- Claude Code: ${report.system.claudeCodeVersion}`);
-  }
-  if (report.system.omcVersion) {
-    lines.push(`- oh-my-claudecode: ${report.system.omcVersion}`);
   }
 
   lines.push('');

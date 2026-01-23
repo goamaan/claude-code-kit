@@ -40,12 +40,6 @@ export const VersionConstraintSchema = z.string().regex(
 ).optional();
 
 export const SetupRequiresSchema = z.object({
-  /**
-   * @deprecated Kept for backward compatibility only. This field is no longer
-   * checked or enforced. claudeops is now self-contained and does not depend
-   * on oh-my-claudecode.
-   */
-  'oh-my-claudecode': VersionConstraintSchema,
   addons: z.array(z.string()).optional(),
 });
 export type SetupRequires = z.infer<typeof SetupRequiresSchema>;
@@ -187,11 +181,6 @@ export interface MergedSetup {
 
   /** All resolved requirements */
   requires: {
-    /**
-     * @deprecated Kept for backward compatibility only. This field is no longer
-     * checked or enforced. claudeops is now self-contained.
-     */
-    'oh-my-claudecode'?: string;
     addons: string[];
   };
 

@@ -146,7 +146,6 @@ keywords = ["safety", "protection", "git"]
 
 [requires]
 claudeops = ">=0.1.0"
-oh-my-claudecode = ">=3.0.0"
 
 [install]
 runtime = "bun"
@@ -223,7 +222,6 @@ Version compatibility requirements:
 ```toml
 [requires]
 claudeops = ">=0.1.0"
-oh-my-claudecode = ">=3.0.0"
 ```
 
 Uses semantic versioning. Installation will fail if requirements aren't met.

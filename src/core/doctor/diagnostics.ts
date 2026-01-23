@@ -272,7 +272,6 @@ description = "Default claude-kit profile"
   // =========================================================================
   // Dependencies Checks
   // =========================================================================
-  // NOTE: oh-my-claudecode check removed - claudeops is now self-contained
 
   {
     id: 'bun-version',

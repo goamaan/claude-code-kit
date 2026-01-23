@@ -130,7 +130,7 @@ interface Props {
 
 ## Escalation Criteria
 
-Escalate to `designer-high` (opus) when:
+Escalate to `designer` with `model="opus"` when:
 - Complex design system creation
 - Major UX architecture decisions
 - Performance-critical animations

@@ -176,7 +176,6 @@ export const AddonManifestSchema = z.object({
   // Compatibility
   requires: z.object({
     'claudeops': z.string().optional(),
-    'oh-my-claudecode': z.string().optional(),
   }).optional(),
 
   // Installation

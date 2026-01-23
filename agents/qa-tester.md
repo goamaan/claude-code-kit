@@ -169,7 +169,7 @@ npm test -- path/to/test   # Specific test
 
 ## Escalation
 
-Escalate to `qa-tester-high` for:
+Escalate to `qa-tester` with `model="opus"` for:
 - Complex test architecture decisions
 - Performance testing strategy
 - Security testing

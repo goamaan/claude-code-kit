@@ -53,18 +53,12 @@ Task(subagent_type="claudeops:architect", ...)
 
 #### Setup Manifest Changes
 
-The `requires.oh-my-claudecode` field is now deprecated:
+The `requires.oh-my-claudecode` field has been removed:
 
 ```toml
-# Before (v1.x)
-[requires]
-oh-my-claudecode = ">=3.3.0"
-addons = ["rm-rf-guard"]
-
-# After (v2.0)
+# v2.0 format
 [requires]
 addons = ["rm-rf-guard"]
-# oh-my-claudecode field ignored (kept for backward compatibility)
 ```
 
 All built-in setups have been updated to v2.0.0 with the new agent/skill references.
@@ -82,19 +76,12 @@ All built-in setups have been updated to v2.0.0 with the new agent/skill referen
 - Doctor diagnostics no longer check for oh-my-claudecode installation
 - Settings generator no longer references oh-my-claudecode plugin
 
-### Deprecated
-
-- `requires.oh-my-claudecode` field in setup manifests (ignored, kept for compatibility)
-
 ### Removed
 
-- External oh-my-claudecode dependency
-- 23 redundant agent definitions (archived to `.archive/agents/`)
-- 9 redundant skill definitions (archived to `.archive/skills/`)
-
-### Migration
-
-See [docs/MIGRATION-v2.md](docs/MIGRATION-v2.md) for detailed migration instructions.
+- External oh-my-claudecode dependency and all references
+- 23 redundant agent definitions (executor-high, architect-low, etc.)
+- 9 redundant skill definitions (ralph, ultrawork, tdd, etc.)
+- `requires.oh-my-claudecode` field from manifests
 
 ---
 
@@ -203,7 +190,6 @@ Initial release of claudeops - a configuration and setup management layer for Cl
     - Schema compliance
     - Missing required fields
   - Installation checks:
-    - Verify oh-my-claudecode installation
     - Check Node.js/Bun version
     - Validate directory structure
   - Auto-fix capabilities:
@@ -336,11 +322,8 @@ Initial release of claudeops - a configuration and setup management layer for Cl
     - `CLAUDE.md` - Active instructions
     - `skills/` - Symlinked from setup
     - `hooks/` - Merged from addons and setup
-    - `plugins/oh-my-claudecode/` - Managed by claude-kit
 
 #### Documentation
-
-- Comprehensive PLAN.md with architecture overview
 - Setup manifest documentation
 - Addon manifest and development guide
 - CLI command reference
@@ -376,7 +359,6 @@ Initial release of claudeops - a configuration and setup management layer for Cl
 
 ### Known Limitations
 
-- oh-my-claudecode 3.3.0+ required for full feature compatibility
 - Configuration sync may overwrite unmanaged sections in ~/.claude/CLAUDE.md
 - Some addons may have platform-specific requirements
 

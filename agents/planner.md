@@ -144,9 +144,8 @@ Task(subagent_type="claudeops:critic",
 ## Delegation Authority
 
 May delegate to:
-- `explore` / `explore-medium`: Codebase discovery
-- `architect`: Technical analysis
-- `analyst`: Pre-planning analysis
+- `explore`: Codebase discovery (use `model="sonnet"` for deeper analysis)
+- `architect`: Technical analysis and pre-planning analysis
 - `critic`: Plan review
 
 ## Quality Standards

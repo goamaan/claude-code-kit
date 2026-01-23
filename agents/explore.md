@@ -89,7 +89,7 @@ Project structure:
 
 ## Escalation
 
-Escalate to `explore-medium` when:
+Escalate to `explore` with `model="sonnet"` when:
 - Need deeper understanding of code
 - Complex pattern matching required
 - Cross-file relationship mapping needed
