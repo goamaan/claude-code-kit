@@ -1,5 +1,7 @@
 # Setup Templates Guide
 
+> **Note:** This guide describes setup templates from claudeops v2. In v3, the system uses **semantic intent detection** instead of skill keywords. Skills like `autopilot`, `ralph`, and `ultrawork` are deprecated in favor of natural language interaction. See [MIGRATION.md](./MIGRATION.md) for details.
+
 Setup templates are pre-configured starting points that provide everything Claude needs to work effectively in different development contexts. Each setup includes a manifest defining skills, agents, MCP configurations, and custom instructions tailored to your workflow.
 
 ## What Setups Provide

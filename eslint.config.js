@@ -42,7 +42,7 @@ export default [
     },
   },
   {
-    files: ["hooks/**/*.mjs"],
+    files: ["hooks/**/*.mjs", "scripts/hooks/**/*.js"],
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",

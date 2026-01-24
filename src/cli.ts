@@ -19,6 +19,9 @@ const main = defineCommand({
     // Add-on management
     addon: () => import("./commands/addon.js").then((m) => m.default),
 
+    // Pack management
+    pack: () => import("./commands/pack.js").then((m) => m.default),
+
     // Configuration management
     config: () => import("./commands/config.js").then((m) => m.default),
 
@@ -52,6 +55,7 @@ const main = defineCommand({
     console.log("  profile   Manage profiles (list, use, create, delete, export, import)");
     console.log("  setup     Manage setups (list, info, use, create, export, import)");
     console.log("  addon     Manage addons (list, search, install, update, remove, create)");
+    console.log("  pack      Manage packs (add, list, info, remove, enable, disable, update)");
     console.log("  config    Manage configuration (init, edit, show, validate, export)");
     console.log("  mcp       Manage MCP servers (list, add, remove, enable, disable)");
     console.log("  cost      Cost tracking (today, week, budget, export, pricing)");

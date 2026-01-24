@@ -8,6 +8,18 @@ Optimized for frontend development with modern frameworks and design systems.
 - **Vue**: Composition API, Pinia, Vue Router
 - **Svelte**: Components, stores, SvelteKit
 
+## Available Agents
+
+This setup includes specialized agents automatically selected based on your needs:
+
+- **designer** - UI/UX design, component creation, and styling
+- **executor** - Feature implementation and bug fixes
+- **architect** - Performance optimization and architecture review
+- **qa-tester** - Component testing, visual regression, and accessibility testing
+- **planner** - Feature planning and component design
+
+Just describe what you need - the system routes to appropriate agents automatically.
+
 ## Design Principles
 
 ### Component Design

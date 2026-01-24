@@ -10,6 +10,18 @@ Optimized for infrastructure as code, containerization, and CI/CD.
 - **CI/CD**: GitHub Actions, GitLab CI, Jenkins
 - **Monitoring**: Prometheus, Grafana, Datadog
 
+## Available Agents
+
+This setup includes specialized agents for DevOps workflows:
+
+- **executor** - Infrastructure code implementation, configuration changes
+- **architect** - System design, performance optimization, troubleshooting
+- **security** - Security reviews, vulnerability scanning, compliance checks
+- **qa-tester** - Infrastructure testing, validation, smoke tests
+- **planner** - Architecture planning, migration strategies, capacity planning
+
+Just describe what you need - the system routes to appropriate agents automatically.
+
 ## Docker Best Practices
 
 ### Dockerfile Guidelines

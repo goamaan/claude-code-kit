@@ -9,6 +9,20 @@ Optimized for full-stack web development with React and Node.js.
 - **Database**: PostgreSQL, MongoDB, Redis
 - **Testing**: Vitest, Playwright, Jest
 
+## Available Agents
+
+This setup includes specialized agents that will be automatically selected based on your needs:
+
+- **executor** - Standard feature implementation and bug fixes
+- **architect** - Deep debugging, code review, and architecture analysis
+- **designer** - UI/UX components and styling
+- **qa-tester** - Testing and TDD workflows
+- **security** - Security audits and vulnerability reviews
+- **planner** - Strategic planning and requirement analysis
+- **explorer** - Fast codebase search and navigation
+
+Just describe what you need naturally - the system will route to the appropriate agents.
+
 ## Development Patterns
 
 ### Component Architecture
@@ -49,3 +63,13 @@ Optimized for full-stack web development with React and Node.js.
 - Keep commits atomic and focused
 - Write descriptive commit messages
 - Create feature branches for new work
+
+## Safety Guardrails
+
+This setup includes built-in safety protections:
+
+- **Deletion Protection**: Blocks dangerous commands like `rm -rf`
+- **Secret Scanning**: Prevents committing API keys and tokens
+- **Dangerous Commands**: Warns on force push, hard reset, and SQL drops
+
+These can be customized in `.claudeops.yaml` if needed.

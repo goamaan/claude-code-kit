@@ -1,0 +1,29 @@
+{
+  "name": "claudeops-hooks",
+  "version": "3.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Claude Code hook scripts for claudeops",
+  "scripts": {
+    "test": "node --test"
+  },
+  "keywords": [
+    "claude-code",
+    "hooks",
+    "guardrails",
+    "intent-classification"
+  ],
+  "files": [
+    "*.js",
+    "lib/*.js",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "notes": [
+    "This package uses dependencies from the parent claudeops package.",
+    "No separate node_modules installation required.",
+    "Imports are resolved from ../../dist/ (compiled TypeScript)"
+  ]
+}

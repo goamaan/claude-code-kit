@@ -2,6 +2,28 @@
 
 Strict compliance, security scanning, and audit logging for enterprise environments.
 
+## Available Agents
+
+This setup includes the full suite of specialized agents with enhanced security focus:
+
+- **security** - Security audits, vulnerability scanning, compliance checks
+- **architect** - System design reviews, performance analysis, architecture decisions
+- **executor** - Implementation following security and compliance standards
+- **qa-tester** - Comprehensive testing including security and compliance validation
+- **planner** - Strategic planning with compliance and risk considerations
+- **critic** - Code review focusing on security, compliance, and quality standards
+
+All agents are automatically selected based on your request and configured to enforce enterprise policies.
+
+## Built-in Guardrails
+
+Enterprise-grade safety protections enabled by default:
+
+- **Deletion Protection**: Blocks destructive commands, requires explicit bypass
+- **Secret Scanning**: Prevents committing credentials, API keys, or PII
+- **Dangerous Commands**: Blocks risky operations without approval
+- **Compliance Checks**: Validates changes against security policies
+
 ## Compliance Requirements
 
 ### Code Standards

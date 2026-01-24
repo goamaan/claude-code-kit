@@ -9,6 +9,18 @@ Optimized for data analysis, machine learning, and Jupyter notebooks.
 - **Visualization**: matplotlib, seaborn, plotly
 - **Notebooks**: Jupyter, JupyterLab
 
+## Available Agents
+
+This setup includes specialized agents for data science workflows:
+
+- **executor** - Data processing, model implementation, analysis scripts
+- **architect** - Pipeline design, optimization, debugging complex issues
+- **researcher** - Literature review, methodology research, API exploration
+- **qa-tester** - Data validation, model testing, reproducibility checks
+- **planner** - Experiment design, project planning, methodology selection
+
+Just describe what you need - the system routes to appropriate agents automatically.
+
 ## Project Structure
 
 ```
