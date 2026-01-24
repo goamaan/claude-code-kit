@@ -20,6 +20,15 @@
             "timeout": 15
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/hooks/version-bump-prompt.mjs\"",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "PostToolUse": [
