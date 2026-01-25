@@ -1,0 +1,27 @@
+name = "frontend"
+description = "Frontend development profile (React, CSS, UI/UX)"
+
+[skills]
+enabled = [
+  "frontend-ui-ux",
+]
+
+[agents.designer]
+model = "sonnet"
+priority = 80
+
+[agents.designer-high]
+model = "opus"
+priority = 90
+
+[agents.executor]
+model = "sonnet"
+priority = 70
+
+[model]
+default = "sonnet"
+
+[model.routing]
+simple = "haiku"
+standard = "sonnet"
+complex = "opus"

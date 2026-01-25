@@ -12,7 +12,17 @@ import {
   getConfigPaths,
   getConfigLayers,
   getActiveProfileName,
+  loadGlobalConfig,
+  saveGlobalConfig,
+  loadProjectConfig,
+  saveProjectConfig,
 } from '../core/config/loader.js';
+import {
+  resolvePackageManager,
+  detectFromLockfile,
+  getSupportedPackageManagers,
+  isValidPackageManager,
+} from '../utils/package-manager.js';
 import { stringify } from '../core/config/parser.js';
 import { getGlobalConfigDir, getProjectConfigDir } from '../utils/paths.js';
 import { exists, writeFile, ensureDir } from '../utils/fs.js';
@@ -492,6 +502,148 @@ const pathsCommand = defineCommand({
 });
 
 // =============================================================================
+// Package Manager Command
+// =============================================================================
+
+const pmCommand = defineCommand({
+  meta: {
+    name: 'pm',
+    description: 'Manage package manager preference',
+  },
+  args: {
+    json: {
+      type: 'boolean',
+      description: 'Output as JSON',
+      default: false,
+    },
+  },
+  subCommands: {
+    show: defineCommand({
+      meta: {
+        name: 'show',
+        description: 'Show current package manager preference',
+      },
+      args: {
+        json: {
+          type: 'boolean',
+          description: 'Output as JSON',
+          default: false,
+        },
+      },
+      async run({ args }) {
+        const config = await loadConfig();
+        const detected = detectFromLockfile(process.cwd());
+        const resolved = resolvePackageManager(config.packageManager, process.cwd());
+
+        if (args['json']) {
+          output.json({
+            configured: config.packageManager ?? null,
+            detected: detected ?? null,
+            resolved,
+          });
+          return;
+        }
+
+        output.header('Package Manager');
+        output.kv('Configured', config.packageManager ?? '(not set)');
+        output.kv('Detected', detected ?? '(no lockfile)');
+        output.kv('Resolved', resolved);
+      },
+    }),
+    set: defineCommand({
+      meta: {
+        name: 'set',
+        description: 'Set package manager preference (e.g., cops config pm set pnpm)',
+      },
+      args: {
+        global: {
+          type: 'boolean',
+          alias: 'g',
+          description: 'Set in global config',
+          default: false,
+        },
+      },
+      async run({ args }) {
+        const pm = args._[0];
+
+        if (!pm) {
+          output.error('Please specify a package manager: npm, yarn, pnpm, or bun');
+          output.dim('  Example: cops config pm set pnpm');
+          process.exit(1);
+        }
+
+        if (!isValidPackageManager(pm)) {
+          output.error(`Invalid package manager: ${pm}`);
+          output.info('Supported: ' + getSupportedPackageManagers().join(', '));
+          process.exit(1);
+        }
+
+        if (args['global']) {
+          const globalConfig = await loadGlobalConfig();
+          // Type assertion needed: loadGlobalConfig returns input type, saveGlobalConfig expects output type
+          // The spread preserves all existing fields while updating packageManager
+          await saveGlobalConfig({ ...globalConfig, packageManager: pm } as Parameters<typeof saveGlobalConfig>[0]);
+          output.success(`Global package manager set to: ${pm}`);
+        } else {
+          const projectConfig = await loadProjectConfig();
+          await saveProjectConfig({ ...projectConfig, packageManager: pm } as Parameters<typeof saveProjectConfig>[0]);
+          output.success(`Project package manager set to: ${pm}`);
+        }
+
+        output.dim('Run `cops sync` to update CLAUDE.md');
+      },
+    }),
+    detect: defineCommand({
+      meta: {
+        name: 'detect',
+        description: 'Auto-detect package manager from lockfile',
+      },
+      async run() {
+        const detected = detectFromLockfile(process.cwd());
+
+        if (detected) {
+          output.success(`Detected package manager: ${detected}`);
+          output.dim('Use `cops config pm set ' + detected + '` to save this preference');
+        } else {
+          output.warn('No lockfile found');
+          output.info('Supported lockfiles:');
+          output.dim('  - package-lock.json (npm)');
+          output.dim('  - yarn.lock (yarn)');
+          output.dim('  - pnpm-lock.yaml (pnpm)');
+          output.dim('  - bun.lockb (bun)');
+        }
+      },
+    }),
+  },
+  async run({ args }) {
+    // Default to show command
+    const config = await loadConfig();
+    const detected = detectFromLockfile(process.cwd());
+    const resolved = resolvePackageManager(config.packageManager, process.cwd());
+
+    if (args.json) {
+      output.json({
+        configured: config.packageManager ?? null,
+        detected: detected ?? null,
+        resolved,
+      });
+      return;
+    }
+
+    output.header('Package Manager');
+    output.kv('Configured', config.packageManager ?? '(not set)');
+    output.kv('Detected', detected ?? '(no lockfile)');
+    output.kv('Resolved', resolved);
+
+    console.log();
+    output.info('Commands:');
+    output.dim('  cops config pm set <npm|yarn|pnpm|bun>  Set preference');
+    output.dim('  cops config pm set <pm> -g              Set global preference');
+    output.dim('  cops config pm detect                   Auto-detect from lockfile');
+  },
+});
+
+// =============================================================================
 // Main Command
 // =============================================================================
 
@@ -507,5 +659,6 @@ export default defineCommand({
     validate: validateCommand,
     export: exportCommand,
     paths: pathsCommand,
+    pm: pmCommand,
   },
 });

@@ -69,6 +69,9 @@ export const AddonHooksSchema = z.object({
 
   /** Hooks that run when subagent stops */
   SubagentStop: z.array(HookMatcherSchema).optional(),
+
+  /** Hooks that run when user submits a prompt */
+  UserPromptSubmit: z.array(HookMatcherSchema).optional(),
 });
 export type AddonHooks = z.infer<typeof AddonHooksSchema>;
 

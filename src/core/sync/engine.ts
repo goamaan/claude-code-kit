@@ -35,6 +35,7 @@ import {
   type GeneratedClaudeMd,
 } from './claudemd-generator.js';
 import { createBackup } from './backup.js';
+import { createSkillManager } from '@/domain/skill/skill-manager.js';
 
 // =============================================================================
 // Constants
@@ -68,6 +69,9 @@ export interface SyncOptions {
 
   /** Preserve user modifications in unmarked sections */
   preserveUserContent?: boolean;
+
+  /** Include skill sync to ~/.claude/skills/ */
+  syncSkills?: boolean;
 }
 
 /**
@@ -94,6 +98,13 @@ export interface SyncResult {
 
   /** Diff entries for changes */
   changes: DiffEntry[];
+
+  /** Skill sync results */
+  skillSync?: {
+    added: string[];
+    updated: string[];
+    removed: string[];
+  };
 }
 
 /**
@@ -260,6 +271,7 @@ class SyncEngineImpl implements SyncEngine {
       settingsOnly = false,
       claudeMdOnly = false,
       preserveUserContent = true,
+      syncSkills = true,
     } = options;
 
     const result: SyncResult = {
@@ -344,6 +356,26 @@ class SyncEngineImpl implements SyncEngine {
             await writeFile(claudeMdPath, finalContent);
             result.modifiedFiles.push(claudeMdPath);
           }
+        }
+
+        // Sync skills to Claude Code
+        if (syncSkills && !settingsOnly) {
+          const skillManager = createSkillManager({
+            disabledSkills: state.config.skills.disabled,
+          });
+
+          await skillManager.loadSkills();
+          const skillSyncResult = await skillManager.syncToClaudeCode();
+
+          if (skillSyncResult.errors.length > 0) {
+            result.warnings.push(...skillSyncResult.errors.map(e => `Skill sync: ${e}`));
+          }
+
+          result.skillSync = {
+            added: skillSyncResult.added,
+            updated: skillSyncResult.updated,
+            removed: skillSyncResult.removed,
+          };
         }
       }
 

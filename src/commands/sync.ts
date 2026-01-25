@@ -1,34 +1,41 @@
 /**
  * Sync command
- * ck sync [--dry-run] [--force] [--backup]
- * Syncs configuration to Claude Code settings
+ * cops sync [--dry-run] [--force] [--backup]
+ * Unified sync: skills, hooks, and CLAUDE.md to Claude Code
  */
 
 import { defineCommand } from 'citty';
 import * as output from '../ui/output.js';
 import * as prompts from '../ui/prompts.js';
 import { loadConfig } from '../core/config/loader.js';
-import { listEnabledAddons } from '../domain/addon/manager.js';
+import { createSkillManager } from '../domain/skill/index.js';
+import { createHookManager } from '../domain/hook/index.js';
 import { getClaudeDir, getGlobalConfigDir } from '../utils/paths.js';
 import { exists, readFile, writeFile, ensureDir } from '../utils/fs.js';
 import { join } from 'node:path';
-import type { SettingsHooks, HookEvent } from '../types/hook.js';
-import type { McpSettings } from '../types/mcp.js';
 
 // =============================================================================
 // Types
 // =============================================================================
 
-interface SyncPlan {
-  actions: SyncAction[];
+interface SyncResult {
+  skills: {
+    added: string[];
+    updated: string[];
+    removed: string[];
+    errors: string[];
+  };
+  hooks: {
+    added: string[];
+    updated: string[];
+    removed: string[];
+    errors: string[];
+  };
+  claudeMd: {
+    updated: boolean;
+    path: string;
+  };
   warnings: string[];
-}
-
-interface SyncAction {
-  type: 'create' | 'update' | 'delete' | 'backup';
-  target: string;
-  description: string;
-  details?: Record<string, unknown>;
 }
 
 // =============================================================================
@@ -53,187 +60,143 @@ async function createBackup(filePath: string): Promise<string | null> {
   return backupPath;
 }
 
-async function planSync(_dryRun: boolean): Promise<SyncPlan> {
-  const plan: SyncPlan = {
-    actions: [],
-    warnings: [],
-  };
+// =============================================================================
+// Main Sync Logic
+// =============================================================================
 
+async function executeUnifiedSync(options: {
+  backup: boolean;
+  verbose: boolean;
+}): Promise<SyncResult> {
   const config = await loadConfig();
   const claudeDir = getClaudeDir();
-
-  // 1. Sync settings.json (hooks)
-  const settingsPath = join(claudeDir, 'settings.json');
-  const currentSettings: { hooks?: SettingsHooks; [key: string]: unknown } = {};
-
-  if (await exists(settingsPath)) {
-    try {
-      const content = await readFile(settingsPath);
-      Object.assign(currentSettings, JSON.parse(content));
-    } catch {
-      plan.warnings.push('Could not parse existing settings.json');
-    }
-  }
-
-  // Build new hooks from addons
-  const addons = await listEnabledAddons();
-  const newHooks: SettingsHooks = {};
-
-  for (const addon of addons) {
-    if (!addon.manifest.hooks) continue;
-
-    const hookEvents: HookEvent[] = ['PreToolUse', 'PostToolUse', 'Stop', 'SubagentStop'];
-    for (const event of hookEvents) {
-      const eventHooks = addon.manifest.hooks[event];
-      if (!eventHooks || !Array.isArray(eventHooks)) continue;
-
-      if (!newHooks[event]) {
-        newHooks[event] = [];
-      }
-
-      for (const hook of eventHooks) {
-        // Convert addon hook format to settings.json format
-        newHooks[event]!.push({
-          matcher: hook.matcher,
-          handler: hook.handler.startsWith('/') || hook.handler.startsWith('~')
-            ? hook.handler
-            : join(addon.path, hook.handler),
-        });
-      }
-    }
-  }
-
-  // Check if hooks have changed
-  const hooksChanged = JSON.stringify(currentSettings.hooks) !== JSON.stringify(newHooks);
-
-  if (hooksChanged) {
-    plan.actions.push({
-      type: currentSettings.hooks ? 'update' : 'create',
-      target: settingsPath,
-      description: 'Sync hooks from enabled addons',
-      details: {
-        before: Object.keys(currentSettings.hooks ?? {}).length + ' events',
-        after: Object.keys(newHooks).length + ' events',
-      },
-    });
-  }
-
-  // 2. Sync MCP server states (enable/disable based on config)
-  const mcpSettingsPath = join(claudeDir, 'claude_desktop_config.json');
-  let mcpSettings: McpSettings = { mcpServers: {} };
-
-  if (await exists(mcpSettingsPath)) {
-    try {
-      const content = await readFile(mcpSettingsPath);
-      mcpSettings = JSON.parse(content) as McpSettings;
-    } catch {
-      plan.warnings.push('Could not parse existing claude_desktop_config.json');
-    }
-  }
-
-  // Check if any MCP server states need to change
-  const enabledSet = new Set(config.mcp.enabled);
-  const disabledSet = new Set(config.mcp.disabled);
-
-  for (const [serverName] of Object.entries(mcpSettings.mcpServers ?? {})) {
-    if (enabledSet.has(serverName)) {
-      // Should be enabled - check if it's currently disabled
-      // Note: Claude Desktop doesn't have a direct enable/disable, this is tracked in config
-    }
-    if (disabledSet.has(serverName)) {
-      plan.warnings.push(`MCP server "${serverName}" is disabled in config. Consider removing from claude_desktop_config.json.`);
-    }
-  }
-
-  // 3. Generate/update CLAUDE.md if auto-sync is enabled
-  if (config.sync.auto) {
-    const claudeMdPath = join(process.cwd(), 'CLAUDE.md');
-    // Note: globalClaudeMdPath would be used for global CLAUDE.md sync in the future
-    // const globalClaudeMdPath = join(claudeDir, 'CLAUDE.md');
-
-    // Check if we should update CLAUDE.md based on profile/setup changes
-    // This is a simplified check - in practice, you'd track content hashes
-    if (!(await exists(claudeMdPath))) {
-      plan.actions.push({
-        type: 'create',
-        target: claudeMdPath,
-        description: 'Create project CLAUDE.md',
-      });
-    }
-  }
-
-  return plan;
-}
-
-async function executeSync(plan: SyncPlan, options: { backup: boolean }): Promise<void> {
-  const claudeDir = getClaudeDir();
+  const warnings: string[] = [];
 
   // Ensure Claude directory exists
   await ensureDir(claudeDir);
 
-  // Execute each action
-  for (const action of plan.actions) {
-    if (options.backup && (action.type === 'update' || action.type === 'delete')) {
-      const backupPath = await createBackup(action.target);
-      if (backupPath) {
-        output.dim(`  Backed up to: ${backupPath}`);
+  // Backup settings.json if requested
+  if (options.backup) {
+    const settingsPath = join(claudeDir, 'settings.json');
+    if (await exists(settingsPath)) {
+      const backupPath = await createBackup(settingsPath);
+      if (backupPath && options.verbose) {
+        output.dim(`  Backed up settings.json to: ${backupPath}`);
       }
     }
-
-    switch (action.type) {
-      case 'create':
-      case 'update':
-        if (action.target.endsWith('settings.json')) {
-          // Update settings.json with hooks
-          const settingsPath = action.target;
-          let settings: { hooks?: SettingsHooks; [key: string]: unknown } = {};
-
-          if (await exists(settingsPath)) {
-            try {
-              const content = await readFile(settingsPath);
-              settings = JSON.parse(content);
-            } catch {
-              // Start fresh
-            }
-          }
-
-          // Build hooks from enabled addons
-          const addons = await listEnabledAddons();
-          const hooks: SettingsHooks = {};
-
-          for (const addon of addons) {
-            if (!addon.manifest.hooks) continue;
-
-            const hookEvents: HookEvent[] = ['PreToolUse', 'PostToolUse', 'Stop', 'SubagentStop'];
-            for (const event of hookEvents) {
-              const eventHooks = addon.manifest.hooks[event];
-              if (!eventHooks || !Array.isArray(eventHooks)) continue;
-
-              if (!hooks[event]) {
-                hooks[event] = [];
-              }
-
-              for (const hook of eventHooks) {
-                hooks[event]!.push({
-                  matcher: hook.matcher,
-                  handler: hook.handler.startsWith('/') || hook.handler.startsWith('~')
-                    ? hook.handler
-                    : join(addon.path, hook.handler),
-                });
-              }
-            }
-          }
-
-          settings.hooks = hooks;
-          await writeFile(settingsPath, JSON.stringify(settings, null, 2));
-        }
-        break;
-
-      case 'delete':
-        // Not implemented - we don't delete files during sync
-        break;
-    }
   }
+
+  // 1. Sync Skills
+  const skillManager = createSkillManager({
+    disabledSkills: config.skills.disabled,
+  });
+  await skillManager.loadSkills();
+  const skillResult = await skillManager.syncToClaudeCode();
+
+  // 2. Sync Hooks
+  const hookManager = createHookManager({
+    disabledHooks: config.hooks.disabled,
+  });
+  await hookManager.loadHooks();
+  const hookResult = await hookManager.syncToClaudeSettings();
+
+  // 3. Generate CLAUDE.md (global)
+  const globalClaudeMdPath = join(claudeDir, 'CLAUDE.md');
+  let claudeMdUpdated = false;
+
+  try {
+    // Generate CLAUDE.md content
+    const claudeMdContent = generateClaudeMdContent(config);
+
+    // Check if content has changed
+    let existingContent = '';
+    if (await exists(globalClaudeMdPath)) {
+      existingContent = await readFile(globalClaudeMdPath);
+    }
+
+    if (existingContent !== claudeMdContent) {
+      if (options.backup && existingContent) {
+        await createBackup(globalClaudeMdPath);
+      }
+      await writeFile(globalClaudeMdPath, claudeMdContent);
+      claudeMdUpdated = true;
+    }
+  } catch (err) {
+    warnings.push(`Failed to update CLAUDE.md: ${err instanceof Error ? err.message : String(err)}`);
+  }
+
+  return {
+    skills: skillResult,
+    hooks: hookResult,
+    claudeMd: {
+      updated: claudeMdUpdated,
+      path: globalClaudeMdPath,
+    },
+    warnings,
+  };
+}
+
+/**
+ * Generate CLAUDE.md content from config
+ */
+function generateClaudeMdContent(config: Awaited<ReturnType<typeof loadConfig>>): string {
+  const lines: string[] = [];
+
+  lines.push('# claudeops Configuration');
+  lines.push('');
+  lines.push('<!-- This file is managed by claudeops. Manual edits may be overwritten. -->');
+  lines.push('');
+
+  // Profile info
+  lines.push(`## Active Profile: ${config.profile.name}`);
+  if (config.profile.description) {
+    lines.push('');
+    lines.push(config.profile.description);
+  }
+  lines.push('');
+
+  // Model configuration
+  lines.push('## Model Configuration');
+  lines.push('');
+  lines.push(`- **Default**: ${config.model.default}`);
+  lines.push(`- **Simple tasks**: ${config.model.routing.simple}`);
+  lines.push(`- **Standard tasks**: ${config.model.routing.standard}`);
+  lines.push(`- **Complex tasks**: ${config.model.routing.complex}`);
+  lines.push('');
+
+  // Agent configurations
+  if (Object.keys(config.agents).length > 0) {
+    lines.push('## Agent Configuration');
+    lines.push('');
+    lines.push('| Agent | Model | Priority |');
+    lines.push('|-------|-------|----------|');
+    for (const [name, agentConfig] of Object.entries(config.agents)) {
+      lines.push(`| ${name} | ${agentConfig.model} | ${agentConfig.priority} |`);
+    }
+    lines.push('');
+  }
+
+  // Disabled skills
+  if (config.skills.disabled.length > 0) {
+    lines.push('## Disabled Skills');
+    lines.push('');
+    for (const skill of config.skills.disabled) {
+      lines.push(`- ${skill}`);
+    }
+    lines.push('');
+  }
+
+  // Disabled hooks
+  if (config.hooks.disabled.length > 0) {
+    lines.push('## Disabled Hooks');
+    lines.push('');
+    for (const hook of config.hooks.disabled) {
+      lines.push(`- ${hook}`);
+    }
+    lines.push('');
+  }
+
+  return lines.join('\n');
 }
 
 // =============================================================================
@@ -243,7 +206,7 @@ async function executeSync(plan: SyncPlan, options: { backup: boolean }): Promis
 export default defineCommand({
   meta: {
     name: 'sync',
-    description: 'Sync configuration to Claude Code',
+    description: 'Sync skills, hooks, and configuration to Claude Code',
   },
   args: {
     dryRun: {
@@ -264,70 +227,61 @@ export default defineCommand({
       description: 'Backup files before modifying',
       default: true,
     },
+    verbose: {
+      type: 'boolean',
+      alias: 'v',
+      description: 'Show detailed sync information',
+      default: false,
+    },
     json: {
       type: 'boolean',
-      description: 'Output sync plan as JSON',
+      description: 'Output sync result as JSON',
       default: false,
     },
   },
   async run({ args }) {
     const s = prompts.spinner();
-    s.start('Planning sync...');
 
-    const plan = await planSync(args.dryRun);
-
-    s.stop('Sync plan ready');
-
-    if (args.json) {
-      output.json(plan);
-      return;
-    }
-
-    // Show warnings
-    if (plan.warnings.length > 0) {
-      output.header('Warnings');
-      for (const warning of plan.warnings) {
-        output.warn(warning);
-      }
-      console.log();
-    }
-
-    // Show planned actions
-    if (plan.actions.length === 0) {
-      output.success('Everything is in sync!');
-      return;
-    }
-
-    output.header('Sync Plan');
-
-    for (const action of plan.actions) {
-      const icon = action.type === 'create' ? '+' :
-                   action.type === 'update' ? '~' :
-                   action.type === 'delete' ? '-' : '*';
-
-      console.log(`  ${icon} ${action.description}`);
-      output.dim(`    ${action.target}`);
-
-      if (action.details) {
-        for (const [key, value] of Object.entries(action.details)) {
-          output.dim(`    ${key}: ${value}`);
-        }
-      }
-    }
-
-    console.log();
-
-    // Dry run - stop here
+    // Dry run - just show what would happen
     if (args.dryRun) {
+      const config = await loadConfig();
+
+      output.header('Dry Run - Sync Plan');
+      console.log();
+
+      output.kv('Profile', config.profile.name);
+      output.kv('Model', config.model.default);
+      console.log();
+
+      // Show what would be synced
+      const skillManager = createSkillManager({
+        disabledSkills: config.skills.disabled,
+      });
+      const skills = await skillManager.loadSkills();
+
+      const hookManager = createHookManager({
+        disabledHooks: config.hooks.disabled,
+      });
+      const hooks = await hookManager.loadHooks();
+
+      output.kv('Skills to sync', skills.length.toString());
+      output.kv('Hooks to sync', hooks.length.toString());
+
+      if (config.skills.disabled.length > 0) {
+        output.kv('Disabled skills', config.skills.disabled.join(', '));
+      }
+      if (config.hooks.disabled.length > 0) {
+        output.kv('Disabled hooks', config.hooks.disabled.join(', '));
+      }
+
+      console.log();
       output.info('Dry run - no changes made');
       return;
     }
 
     // Confirm unless forced
     if (!args.force) {
-      const confirmed = await prompts.promptConfirm(
-        `Apply ${plan.actions.length} change(s)?`
-      );
+      const confirmed = await prompts.promptConfirm('Sync skills, hooks, and CLAUDE.md to Claude Code?');
       prompts.handleCancel(confirmed);
       if (!confirmed) {
         output.info('Sync cancelled');
@@ -336,20 +290,85 @@ export default defineCommand({
     }
 
     // Execute sync
-    s.start('Syncing...');
+    s.start('Syncing to Claude Code...');
 
     try {
-      await executeSync(plan, { backup: args.backup });
+      const result = await executeUnifiedSync({
+        backup: args.backup,
+        verbose: args.verbose,
+      });
+
       s.stop('Sync complete');
 
-      output.success(`Applied ${plan.actions.length} change(s)`);
+      if (args.json) {
+        output.json(result);
+        return;
+      }
 
-      if (args.backup) {
-        output.dim('Backups saved to ~/.claudeops/backups/');
+      // Show results
+      const skillChanges = result.skills.added.length + result.skills.updated.length + result.skills.removed.length;
+      const hookChanges = result.hooks.added.length + result.hooks.updated.length + result.hooks.removed.length;
+
+      console.log();
+      output.header('Sync Results');
+      console.log();
+
+      // Skills
+      if (skillChanges > 0) {
+        output.success(`Skills: ${result.skills.added.length} added, ${result.skills.updated.length} updated, ${result.skills.removed.length} removed`);
+        if (args.verbose) {
+          for (const name of result.skills.added) console.log(`  + ${name}`);
+          for (const name of result.skills.updated) console.log(`  ~ ${name}`);
+          for (const name of result.skills.removed) console.log(`  - ${name}`);
+        }
+      } else {
+        output.dim('Skills: No changes');
+      }
+
+      // Hooks
+      if (hookChanges > 0) {
+        output.success(`Hooks: ${result.hooks.added.length} added, ${result.hooks.updated.length} updated, ${result.hooks.removed.length} removed`);
+        if (args.verbose) {
+          for (const name of result.hooks.added) console.log(`  + ${name}`);
+          for (const name of result.hooks.updated) console.log(`  ~ ${name}`);
+          for (const name of result.hooks.removed) console.log(`  - ${name}`);
+        }
+      } else {
+        output.dim('Hooks: No changes');
+      }
+
+      // CLAUDE.md
+      if (result.claudeMd.updated) {
+        output.success(`CLAUDE.md: Updated`);
+        if (args.verbose) {
+          output.dim(`  ${result.claudeMd.path}`);
+        }
+      } else {
+        output.dim('CLAUDE.md: No changes');
+      }
+
+      // Warnings
+      if (result.warnings.length > 0) {
+        console.log();
+        for (const warning of result.warnings) {
+          output.warn(warning);
+        }
+      }
+
+      // Errors
+      const allErrors = [...result.skills.errors, ...result.hooks.errors];
+      if (allErrors.length > 0) {
+        console.log();
+        output.error(`${allErrors.length} error(s) during sync:`);
+        for (const error of allErrors) {
+          console.log(`  ${error}`);
+        }
+        process.exit(1);
       }
 
       console.log();
       output.info('Restart Claude Code for changes to take effect');
+
     } catch (err) {
       s.stop('Sync failed');
       output.error(err instanceof Error ? err.message : String(err));
@@ -357,3 +376,13 @@ export default defineCommand({
     }
   },
 });
+
+/**
+ * Execute sync programmatically (for use by profile switch)
+ */
+export async function syncAll(options?: { verbose?: boolean; backup?: boolean }): Promise<SyncResult> {
+  return executeUnifiedSync({
+    backup: options?.backup ?? true,
+    verbose: options?.verbose ?? false,
+  });
+}

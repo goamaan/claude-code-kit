@@ -4,7 +4,7 @@
  * @module claudeops
  */
 
-export const VERSION = "0.1.0";
+export const VERSION = "3.1.0";
 
 export const NAME = "claudeops";
 
@@ -28,5 +28,18 @@ export * from './core/guardrails/index.js';
 // Router exports
 export * from './core/router/index.js';
 
-// Pack exports
-export * from './domain/pack/index.js';
+// Skill exports
+export * from './domain/skill/index.js';
+
+// Generator exports
+export * from './domain/generator/index.js';
+
+// Hook exports
+export * from './domain/hook/index.js';
+
+// State exports
+export * from './domain/state/index.js';
+
+// Error handling exports
+export * from './utils/errors.js';
+export * from './utils/error-helpers.js';

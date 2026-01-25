@@ -9,9 +9,9 @@ import { z } from 'zod';
 // Hook Events
 // =============================================================================
 
-export type HookEvent = 'PreToolUse' | 'PostToolUse' | 'Stop' | 'SubagentStop';
+export type HookEvent = 'PreToolUse' | 'PostToolUse' | 'Stop' | 'SubagentStop' | 'UserPromptSubmit';
 
-export const HookEventSchema = z.enum(['PreToolUse', 'PostToolUse', 'Stop', 'SubagentStop']);
+export const HookEventSchema = z.enum(['PreToolUse', 'PostToolUse', 'Stop', 'SubagentStop', 'UserPromptSubmit']);
 
 // =============================================================================
 // Pre-Tool Use Hook Input
@@ -204,28 +204,62 @@ export interface ComposedHooks {
 // Settings Hook Entry (for settings.json hooks)
 // =============================================================================
 
-export interface SettingsHookEntry {
-  /** Matcher pattern */
-  matcher: string;
+/**
+ * Individual hook command specification
+ */
+export interface SettingsHookCommand {
+  /** Type of hook (currently only "command" or "prompt" supported) */
+  type: 'command' | 'prompt';
 
-  /** Handler specification (script path, command, etc.) */
-  handler: string;
+  /** Command to execute (for type: "command") */
+  command?: string;
 
-  /** Priority (higher runs first) */
-  priority?: number;
+  /** Prompt to send to LLM (for type: "prompt") */
+  prompt?: string;
 
-  /** Whether enabled */
-  enabled?: boolean;
-
-  /** Timeout in milliseconds */
+  /** Timeout in seconds */
   timeout?: number;
+}
+
+/**
+ * Hook entry in settings.json
+ *
+ * Format per official Claude Code docs:
+ * - matcher: String pattern (regex supported, e.g., "Bash", "Edit|Write", "*")
+ * - hooks: Array of command objects
+ */
+export interface SettingsHookEntry {
+  /**
+   * Matcher pattern - STRING format
+   * - Simple: "Write" matches only Write tool
+   * - Regex: "Edit|Write" or "Notebook.*"
+   * - Wildcard: "*" matches all tools
+   * - Expression: 'tool == "Bash" && tool_input.command matches "..."'
+   * - Optional for events like UserPromptSubmit, Stop
+   */
+  matcher?: string;
+
+  /** Array of hook commands to execute */
+  hooks: SettingsHookCommand[];
+
+  /** Optional description of what the hook does */
+  description?: string;
 }
 
 export interface SettingsHooks {
   PreToolUse?: SettingsHookEntry[];
   PostToolUse?: SettingsHookEntry[];
+  PostToolUseFailure?: SettingsHookEntry[];
   Stop?: SettingsHookEntry[];
   SubagentStop?: SettingsHookEntry[];
+  SubagentStart?: SettingsHookEntry[];
+  UserPromptSubmit?: SettingsHookEntry[];
+  SessionStart?: SettingsHookEntry[];
+  SessionEnd?: SettingsHookEntry[];
+  PreCompact?: SettingsHookEntry[];
+  Setup?: SettingsHookEntry[];
+  Notification?: SettingsHookEntry[];
+  PermissionRequest?: SettingsHookEntry[];
 }
 
 // =============================================================================

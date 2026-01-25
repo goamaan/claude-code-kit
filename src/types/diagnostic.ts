@@ -134,6 +134,16 @@ export interface ValidationResult {
 // Diagnostic Check Definition
 // =============================================================================
 
+/**
+ * Context passed to diagnostic checks for path overrides (primarily for testing)
+ */
+export interface DiagnosticContext {
+  getConfigDir: () => string;
+  getClaudeDir: () => string;
+  getProfilesDir: () => string;
+  getAddonsDir: () => string;
+}
+
 export interface DiagnosticCheck {
   /** Unique check ID */
   id: string;
@@ -154,10 +164,10 @@ export interface DiagnosticCheck {
   dependsOn?: string[];
 
   /** Execute the check */
-  run: () => Promise<DiagnosticResult>;
+  run: (context?: DiagnosticContext) => Promise<DiagnosticResult>;
 
   /** Fix function (if available) */
-  fix?: () => Promise<FixResult>;
+  fix?: (context?: DiagnosticContext) => Promise<FixResult>;
 }
 
 // =============================================================================

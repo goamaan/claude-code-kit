@@ -1,0 +1,26 @@
+name = "typescript"
+description = "TypeScript development profile"
+
+[agents.executor]
+model = "sonnet"
+priority = 80
+
+[agents.architect]
+model = "opus"
+priority = 75
+
+[agents.tdd-guide]
+model = "sonnet"
+priority = 70
+
+[model]
+default = "sonnet"
+
+[model.routing]
+simple = "haiku"
+standard = "sonnet"
+complex = "opus"
+
+[model.overrides]
+types = "opus"
+generics = "opus"

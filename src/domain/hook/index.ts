@@ -21,3 +21,14 @@ export {
   // Types
   type HookSource,
 } from './composer.js';
+
+// Hook Manager exports
+export type {
+  Hook,
+  HookMetadata,
+  HookSourceType,
+  HookManagerOptions,
+  HookSyncResult,
+} from './types.js';
+
+export { HookManager, createHookManager } from './hook-manager.js';

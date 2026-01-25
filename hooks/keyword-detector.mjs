@@ -1,5 +1,12 @@
 #!/usr/bin/env node
 /**
+ * @deprecated This hook is deprecated in favor of the semantic intent-classifier hook.
+ * The intent-classifier uses AI-powered classification instead of keyword patterns,
+ * providing more accurate intent detection and skill matching.
+ *
+ * This hook will be removed in claudeops v4. Please migrate to:
+ * - scripts/hooks/classify-intent.js (semantic classification + skill matching)
+ *
  * Keyword Detector Hook - UserPromptSubmit
  *
  * Detects keywords in user prompts and injects mode-specific context.
@@ -29,6 +36,9 @@ try {
 
 const prompt = input.prompt || '';
 const promptLower = prompt.toLowerCase();
+
+// Deprecation warning
+console.error('[DEPRECATED] keyword-detector.mjs is deprecated. Use scripts/hooks/classify-intent.js instead.');
 
 // Remove code blocks to avoid false positives from code examples
 const promptWithoutCode = promptLower.replace(/```[\s\S]*?```/g, '').replace(/`[^`]+`/g, '');

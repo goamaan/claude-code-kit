@@ -19,8 +19,11 @@ const main = defineCommand({
     // Add-on management
     addon: () => import("./commands/addon.js").then((m) => m.default),
 
-    // Pack management
-    pack: () => import("./commands/pack.js").then((m) => m.default),
+    // Skill management
+    skill: () => import("./commands/skill.js").then((m) => m.default),
+
+    // Intent classification
+    classify: () => import("./commands/classify.js").then((m) => m.default),
 
     // Configuration management
     config: () => import("./commands/config.js").then((m) => m.default),
@@ -51,21 +54,52 @@ const main = defineCommand({
     console.log(`${NAME} v${VERSION}`);
     console.log("Batteries-included Claude Code enhancement toolkit");
     console.log("");
-    console.log("Commands:");
-    console.log("  profile   Manage profiles (list, use, create, delete, export, import)");
-    console.log("  setup     Manage setups (list, info, use, create, export, import)");
-    console.log("  addon     Manage addons (list, search, install, update, remove, create)");
-    console.log("  pack      Manage packs (add, list, info, remove, enable, disable, update)");
-    console.log("  config    Manage configuration (init, edit, show, validate, export)");
-    console.log("  mcp       Manage MCP servers (list, add, remove, enable, disable)");
-    console.log("  cost      Cost tracking (today, week, budget, export, pricing)");
-    console.log("  hook      Manage hooks (list, debug, test)");
-    console.log("  sync      Sync configuration to Claude Code");
-    console.log("  doctor    Diagnose configuration issues");
-    console.log("  install   Interactive installation wizard");
-    console.log("  upgrade   Check for and install updates");
+
+    console.log("Getting Started:");
+    console.log("  cops install        Interactive installation wizard");
+    console.log("  cops config init    Initialize configuration");
+    console.log("  cops doctor         Diagnose and fix issues");
+    console.log("  cops sync           Sync to Claude Code");
     console.log("");
-    console.log("Run 'cck <command> --help' for more information on a command.");
+
+    console.log("Core Commands:");
+    console.log("  profile            Manage profiles (list, use, create, delete)");
+    console.log("  config             Manage configuration (init, edit, show, validate)");
+    console.log("  sync               Sync configuration to Claude Code");
+    console.log("");
+
+    console.log("Extensions:");
+    console.log("  setup              Manage setups (list, info, use, create)");
+    console.log("  addon              Manage addons (search, install, update, remove)");
+    console.log("  skill              Manage skills (list, info, install, sync)");
+    console.log("  mcp                Manage MCP servers (list, add, enable, disable)");
+    console.log("  hook               Manage hooks (list, debug, test)");
+    console.log("");
+
+    console.log("AI Features:");
+    console.log("  classify           Test intent classification and routing");
+    console.log("");
+
+    console.log("Utilities:");
+    console.log("  cost               Cost tracking (today, week, budget, pricing)");
+    console.log("  doctor             Diagnose configuration issues");
+    console.log("  upgrade            Check for and install updates");
+    console.log("");
+
+    console.log("Examples:");
+    console.log("  cops config init              Create initial configuration");
+    console.log("  cops profile create work      Create a work profile");
+    console.log("  cops addon search react       Search for React addons");
+    console.log("  cops upgrade --check          Check for updates");
+    console.log("");
+
+    console.log("For detailed help:");
+    console.log("  cops <command> --help         Show help for a specific command");
+    console.log("  cops doctor                   Diagnose installation issues");
+    console.log("");
+
+    console.log("Documentation:");
+    console.log("  https://github.com/goamaan/claudeops");
   },
 });
 

@@ -2,13 +2,16 @@
  * Cost Tracker Tests
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { createCostTracker, type CostTracker } from './tracker.js';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import * as fs from 'node:fs/promises';
+import * as path from 'node:path';
+import * as os from 'node:os';
+import { createCostTracker } from './tracker.js';
 import { type CostStorage } from './storage.js';
 import type { CostEntry } from '@/types/index.js';
 
-// Mock storage
-const mockStorage: CostStorage = {
+// Mock storage for storage-related tests
+const createMockStorage = (): CostStorage => ({
   append: vi.fn().mockResolvedValue(undefined),
   query: vi.fn().mockResolvedValue([]),
   getPath: vi.fn((year, month) => `/mock/costs/${year}-${String(month).padStart(2, '0')}.jsonl`),
@@ -16,31 +19,25 @@ const mockStorage: CostStorage = {
   getThisWeek: vi.fn().mockResolvedValue([]),
   getThisMonth: vi.fn().mockResolvedValue([]),
   clear: vi.fn().mockResolvedValue(undefined),
-};
+});
 
-// Mock fs utilities
-// NOTE: vi.mock() is not supported in this version of Vitest
-// vi.mock('@/utils/fs.js', () => ({
-//   readJsonSafe: vi.fn().mockResolvedValue(null),
-//   writeJson: vi.fn().mockResolvedValue(undefined),
-//   exists: vi.fn().mockResolvedValue(false),
-// }));
+describe('CostTracker', () => {
+  let tempDir: string;
+  let mockStorage: CostStorage;
 
-// Mock path utilities
-// vi.mock('@/utils/paths.js', () => ({
-//   getGlobalConfigDir: vi.fn(() => '/mock/home/.claude-kit'),
-// }));
+  beforeEach(async () => {
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'cost-tracker-test-'));
+    mockStorage = createMockStorage();
+  });
 
-describe.skip('CostTracker', () => {
-  let tracker: CostTracker;
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-    tracker = createCostTracker(mockStorage as CostStorage);
+  afterEach(async () => {
+    await fs.rm(tempDir, { recursive: true, force: true });
   });
 
   describe('record', () => {
     it('records a cost entry with calculated costs', async () => {
+      const tracker = createCostTracker(mockStorage, tempDir);
+
       await tracker.record({
         sessionId: 'test-session',
         model: 'sonnet',
@@ -68,6 +65,8 @@ describe.skip('CostTracker', () => {
     });
 
     it('calculates correct cost for haiku model', async () => {
+      const tracker = createCostTracker(mockStorage, tempDir);
+
       await tracker.record({
         sessionId: 'test-session',
         model: 'haiku',
@@ -89,6 +88,8 @@ describe.skip('CostTracker', () => {
     });
 
     it('calculates correct cost for opus model', async () => {
+      const tracker = createCostTracker(mockStorage, tempDir);
+
       await tracker.record({
         sessionId: 'test-session',
         model: 'opus',
@@ -112,6 +113,8 @@ describe.skip('CostTracker', () => {
 
   describe('today', () => {
     it('returns summary for today', async () => {
+      const tracker = createCostTracker(mockStorage, tempDir);
+
       const entries: CostEntry[] = [
         {
           id: '1',
@@ -146,6 +149,8 @@ describe.skip('CostTracker', () => {
 
   describe('thisWeek', () => {
     it('returns summary for this week', async () => {
+      const tracker = createCostTracker(mockStorage, tempDir);
+
       const entries: CostEntry[] = [
         {
           id: '1',
@@ -169,6 +174,8 @@ describe.skip('CostTracker', () => {
 
   describe('thisMonth', () => {
     it('returns summary for this month', async () => {
+      const tracker = createCostTracker(mockStorage, tempDir);
+
       const entries: CostEntry[] = [
         {
           id: '1',
@@ -194,6 +201,8 @@ describe.skip('CostTracker', () => {
 
   describe('summary', () => {
     it('delegates to correct period function', async () => {
+      const tracker = createCostTracker(mockStorage, tempDir);
+
       (mockStorage.getToday as ReturnType<typeof vi.fn>).mockResolvedValue([]);
       (mockStorage.getThisWeek as ReturnType<typeof vi.fn>).mockResolvedValue([]);
       (mockStorage.getThisMonth as ReturnType<typeof vi.fn>).mockResolvedValue([]);
@@ -211,6 +220,8 @@ describe.skip('CostTracker', () => {
 
   describe('export', () => {
     it('exports as JSON', async () => {
+      const tracker = createCostTracker(mockStorage, tempDir);
+
       const entries: CostEntry[] = [
         {
           id: '1',
@@ -233,6 +244,8 @@ describe.skip('CostTracker', () => {
     });
 
     it('exports as CSV', async () => {
+      const tracker = createCostTracker(mockStorage, tempDir);
+
       const entries: CostEntry[] = [
         {
           id: '1',
@@ -258,20 +271,13 @@ describe.skip('CostTracker', () => {
 
   describe('budget management', () => {
     it('sets and gets budget', async () => {
-      const { readJsonSafe, writeJson } = await import('@/utils/fs.js');
-      const mockReadJsonSafe = readJsonSafe as ReturnType<typeof vi.fn>;
-      const mockWriteJson = writeJson as ReturnType<typeof vi.fn>;
+      const tracker = createCostTracker(mockStorage, tempDir);
 
       // Set budget
       await tracker.setBudget('daily', 10);
-
-      expect(mockWriteJson).toHaveBeenCalledWith(
-        expect.stringContaining('cost-budget.json'),
-        expect.objectContaining({ daily: 10 })
-      );
+      await tracker.setBudget('monthly', 100);
 
       // Get budget
-      mockReadJsonSafe.mockResolvedValueOnce({ daily: 10, monthly: 100 });
       const budget = await tracker.getBudget();
 
       expect(budget.daily).toBe(10);
@@ -279,10 +285,10 @@ describe.skip('CostTracker', () => {
     });
 
     it('checks budget status', async () => {
-      const { readJsonSafe } = await import('@/utils/fs.js');
-      const mockReadJsonSafe = readJsonSafe as ReturnType<typeof vi.fn>;
+      const tracker = createCostTracker(mockStorage, tempDir);
 
-      mockReadJsonSafe.mockResolvedValueOnce({ daily: 1 }); // Budget limit
+      // Set a low daily budget
+      await tracker.setBudget('daily', 1);
 
       const entries: CostEntry[] = [
         {
@@ -308,6 +314,8 @@ describe.skip('CostTracker', () => {
 
   describe('cost aggregation', () => {
     it('aggregates by model', async () => {
+      const tracker = createCostTracker(mockStorage, tempDir);
+
       const entries: CostEntry[] = [
         {
           id: '1',
@@ -347,6 +355,8 @@ describe.skip('CostTracker', () => {
     });
 
     it('aggregates by profile', async () => {
+      const tracker = createCostTracker(mockStorage, tempDir);
+
       const entries: CostEntry[] = [
         {
           id: '1',
@@ -380,6 +390,8 @@ describe.skip('CostTracker', () => {
     });
 
     it('counts unique sessions', async () => {
+      const tracker = createCostTracker(mockStorage, tempDir);
+
       const entries: CostEntry[] = [
         {
           id: '1',

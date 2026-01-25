@@ -40,7 +40,7 @@ const checks: Record<string, DiagnosticCheck> = {
         ? `Found: ${configDir}`
         : `Missing: ${configDir}`,
       suggestions: dirExists ? undefined : [
-        'Run: cck config init',
+        'Run: cops config init',
         'Or: mkdir -p ~/.claudeops',
       ],
       fixAvailable: !dirExists,
@@ -123,7 +123,7 @@ const checks: Record<string, DiagnosticCheck> = {
       description: 'Validate configuration files',
       message,
       suggestions: passed ? undefined : [
-        'Run: ck config validate',
+        'Run: cops config validate',
         'Check TOML syntax in config files',
         ...errors,
       ],
@@ -162,8 +162,8 @@ const checks: Record<string, DiagnosticCheck> = {
       description: 'Check if active profile exists',
       message,
       suggestions: passed ? undefined : [
-        'Run: ck profile list',
-        'Run: ck profile create default',
+        'Run: cops profile list',
+        'Run: cops profile create default',
       ],
       fixAvailable: false,
       duration: Date.now() - start,

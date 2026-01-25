@@ -1,0 +1,22 @@
+name = "backend"
+description = "Backend development profile (API, database, server)"
+
+[agents.architect]
+model = "opus"
+priority = 80
+
+[agents.executor]
+model = "sonnet"
+priority = 75
+
+[agents.security-reviewer]
+model = "opus"
+priority = 70
+
+[model]
+default = "sonnet"
+
+[model.routing]
+simple = "haiku"
+standard = "sonnet"
+complex = "opus"

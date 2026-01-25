@@ -104,6 +104,174 @@ Detects complex tasks and adds reasoning enhancement instructions.
 
 ---
 
+### cost-warning.mjs
+
+**Event:** `UserPromptSubmit`
+
+Warns when approaching daily cost budget based on token usage.
+
+**Behavior:**
+- Tracks cumulative costs per day
+- Estimates costs based on input/output tokens
+- Warns at 80% and 95% of daily budget
+- Configurable via `CLAUDE_DAILY_BUDGET` environment variable
+
+**Environment:**
+```bash
+export CLAUDE_DAILY_BUDGET=50.0  # Default: $50/day
+```
+
+---
+
+### security-scan.mjs
+
+**Event:** `PreToolUse`
+**Matcher:** `Bash` (git commands)
+
+Scans for secrets and sensitive data before git commits.
+
+**Detects:**
+- API keys, tokens, passwords
+- AWS credentials
+- GitHub tokens
+- Private keys
+- Connection strings
+- Sensitive file names (.env, credentials.json, etc.)
+
+**Bypass:**
+```bash
+export SKIP_SECRET_SCAN=1
+```
+
+---
+
+### test-reminder.mjs
+
+**Event:** `PostToolUse`
+**Matcher:** `Edit|Write`
+
+Reminds to run tests after code changes.
+
+**Behavior:**
+- Tracks modified source files
+- Detects test framework (pytest, jest, vitest, go test, cargo test)
+- Reminds every 15 minutes
+- Suggests appropriate test command
+
+**Bypass:**
+```bash
+export SKIP_TEST_REMINDER=1
+```
+
+---
+
+### format-on-save.mjs
+
+**Event:** `PostToolUse`
+**Matcher:** `Edit|Write`
+
+Automatically formats files after Write/Edit operations.
+
+**Supported Formatters:**
+- Prettier (JS/TS/JSON/CSS/HTML/YAML/MD)
+- Black (Python)
+- rustfmt (Rust)
+- gofmt (Go)
+- clang-format (C/C++)
+
+**Bypass:**
+```bash
+export SKIP_AUTO_FORMAT=1
+```
+
+---
+
+### git-branch-check.mjs
+
+**Event:** `PreToolUse`
+**Matcher:** `Bash` (git commands)
+
+Warns when attempting to commit or push to protected branches.
+
+**Protected Branches:**
+- main
+- master
+- production
+- prod
+
+**Bypass:**
+```bash
+export SKIP_BRANCH_CHECK=1
+```
+
+---
+
+### todo-tracker.mjs
+
+**Event:** `UserPromptSubmit`
+
+Tracks TODO items mentioned in user prompts.
+
+**Detects:**
+- `TODO: item`
+- `FIXME: item`
+- `HACK: item`
+- `[ ] item` (checkbox format)
+
+**Completion:**
+- `done: item`
+- `[x] item`
+
+**Clear:**
+```bash
+export CLEAR_SESSION_TODOS=1
+```
+
+---
+
+### session-log.mjs
+
+**Event:** `Stop`
+
+Logs session summary when Claude stops.
+
+**Tracks:**
+- Session duration
+- Token usage (input/output)
+- Estimated cost
+- Tools invoked
+- Files modified
+- Commands run
+
+**Logs saved to:**
+- `~/.claudeops/logs/sessions/{date}.jsonl` (JSONL format)
+- `~/.claudeops/logs/sessions/{sessionId}.txt` (human-readable)
+
+---
+
+### large-file-warning.mjs
+
+**Event:** `PreToolUse`
+**Matcher:** `Read`
+
+Warns before reading large files that could consume excessive tokens.
+
+**Thresholds:**
+- Warning: 100 KB
+- Critical: 500 KB
+
+**Suggests:**
+- Read specific lines with offset/limit
+- Use Grep for targeted search
+- Use Bash with head/tail
+
+**Bypass:**
+```bash
+export SKIP_FILE_SIZE_CHECK=1
+```
+
+---
+
 ## Hook Configuration
 
 Hooks are registered in `.claude/settings.json`:

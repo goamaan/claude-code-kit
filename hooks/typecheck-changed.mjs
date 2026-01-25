@@ -16,6 +16,59 @@ import { dirname, resolve, join } from 'path';
 
 const execAsync = promisify(exec);
 
+/**
+ * Detect package manager from environment or lockfile
+ */
+function getPackageManager(projectDir) {
+  // Check env var first (set by claudeops sync)
+  const preferred = process.env.CLAUDEOPS_PACKAGE_MANAGER;
+  if (preferred && ['npm', 'yarn', 'pnpm', 'bun'].includes(preferred)) {
+    return preferred;
+  }
+
+  // Detect from lockfile
+  const lockfiles = {
+    'package-lock.json': 'npm',
+    'yarn.lock': 'yarn',
+    'pnpm-lock.yaml': 'pnpm',
+    'bun.lockb': 'bun',
+  };
+
+  for (const [file, pm] of Object.entries(lockfiles)) {
+    if (existsSync(join(projectDir, file))) {
+      return pm;
+    }
+  }
+
+  return 'npm';
+}
+
+/**
+ * Get run command for package manager
+ */
+function getRunCommand(pm) {
+  const commands = {
+    npm: 'npm run',
+    yarn: 'yarn',
+    pnpm: 'pnpm',
+    bun: 'bun run',
+  };
+  return commands[pm] || 'npm run';
+}
+
+/**
+ * Get exec command for package manager
+ */
+function getExecCommand(pm) {
+  const commands = {
+    npm: 'npx',
+    yarn: 'yarn dlx',
+    pnpm: 'pnpm exec',
+    bun: 'bunx',
+  };
+  return commands[pm] || 'npx';
+}
+
 // Read input from stdin
 let input;
 try {
@@ -86,11 +139,15 @@ async function runTypeCheck(fp) {
       hasTypecheckScript = pkg.scripts && (pkg.scripts.typecheck || pkg.scripts['type-check']);
     }
 
+    const pm = getPackageManager(projectDir);
+    const runCmd = getRunCommand(pm);
+    const execCmd = getExecCommand(pm);
+
     let command;
     if (hasTypecheckScript) {
-      command = 'npm run typecheck 2>&1';
+      command = `${runCmd} typecheck 2>&1`;
     } else {
-      command = 'npx tsc --noEmit 2>&1';
+      command = `${execCmd} tsc --noEmit 2>&1`;
     }
 
     const { stdout } = await execAsync(command, {

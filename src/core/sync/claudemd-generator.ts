@@ -5,7 +5,6 @@
 
 import type { MergedSetup, MergedConfig } from '@/types';
 import { AGENT_CATALOG } from '@/core/router/agent-catalog.js';
-import { listEnabledPacks } from '@/domain/pack/manager.js';
 
 // =============================================================================
 // Constants
@@ -323,6 +322,37 @@ function generateMcpSection(setup: MergedSetup, config: MergedConfig): string {
 }
 
 /**
+ * Generate package manager instructions section
+ */
+function generatePackageManagerSection(config: MergedConfig): string {
+  const pm = config.packageManager;
+  if (!pm) return '';
+
+  const cmds: Record<string, { run: string; exec: string; install: string }> = {
+    npm: { run: 'npm run', exec: 'npx', install: 'npm install' },
+    yarn: { run: 'yarn', exec: 'yarn dlx', install: 'yarn add' },
+    pnpm: { run: 'pnpm', exec: 'pnpm exec', install: 'pnpm add' },
+    bun: { run: 'bun run', exec: 'bunx', install: 'bun add' },
+  };
+
+  const commands = cmds[pm];
+  if (!commands) return '';
+
+  return [
+    '## Package Manager',
+    '',
+    `This project uses **${pm}**. Always use these commands:`,
+    '',
+    `- Run scripts: \`${commands.run} <script>\``,
+    `- Execute packages: \`${commands.exec} <package>\``,
+    `- Install dependencies: \`${commands.install} <package>\``,
+    '',
+    '**Do NOT use npm/npx if a different manager is specified above.**',
+    '',
+  ].join('\n');
+}
+
+/**
  * Generate dynamic context section with intelligent orchestration info
  */
 async function generateDynamicContext(): Promise<string> {
@@ -373,31 +403,6 @@ async function generateDynamicContext(): Promise<string> {
   lines.push('- **Secret Scanning**: Detects sensitive data in code and commits');
   lines.push('- **Dangerous Command Detection**: Warns about risky operations');
   lines.push('');
-
-  // Installed Packs
-  try {
-    const packs = await listEnabledPacks();
-    if (packs.length > 0) {
-      lines.push('## Installed Capability Packs');
-      lines.push('');
-
-      for (const pack of packs) {
-        lines.push(`### ${pack.name}`);
-        lines.push('');
-        if (pack.components.length > 0) {
-          lines.push('**Components:**');
-          lines.push('');
-          for (const component of pack.components) {
-            const modelInfo = component.model ? ` (${component.model})` : '';
-            lines.push(`- \`${component.type}\`: ${component.name}${modelInfo} - ${component.description}`);
-          }
-          lines.push('');
-        }
-      }
-    }
-  } catch {
-    // Silently skip if pack system not available
-  }
 
   return lines.join('\n');
 }
@@ -473,6 +478,13 @@ export async function generateClaudeMd(
   const modelSection = generateModelSection(config);
   managedParts.push(modelSection);
   includedSections.push('model');
+
+  // Package manager section
+  const packageManagerSection = generatePackageManagerSection(config);
+  if (packageManagerSection) {
+    managedParts.push(packageManagerSection);
+    includedSections.push('package-manager');
+  }
 
   // Skills section
   if (includeSkills) {

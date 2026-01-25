@@ -207,21 +207,28 @@ function buildSummary(
 // Implementation
 // =============================================================================
 
-export function createCostTracker(storage?: CostStorage): CostTracker {
+export function createCostTracker(storage?: CostStorage, configDir?: string): CostTracker {
   const costStorage = storage ?? createCostStorage();
+
+  /**
+   * Get the config directory to use
+   */
+  function getConfigDir(): string {
+    return configDir ?? getGlobalConfigDir();
+  }
 
   /**
    * Get path to budget config file
    */
   function getBudgetPath(): string {
-    return join(getGlobalConfigDir(), BUDGET_FILE);
+    return join(getConfigDir(), BUDGET_FILE);
   }
 
   /**
    * Get path to pricing config file
    */
   function getPricingPath(): string {
-    return join(getGlobalConfigDir(), PRICING_FILE);
+    return join(getConfigDir(), PRICING_FILE);
   }
 
   /**

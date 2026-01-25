@@ -25,7 +25,7 @@ export const AGENT_CATALOG: Record<string, AgentConfig> = {
   // ---------------------------------------------------------------------------
   executor: {
     name: 'executor',
-    model: 'sonnet',
+    model: 'opus',
     description: 'Standard feature implementation and bug fixes',
     domains: ['general', 'backend', 'frontend', 'testing'],
   },
@@ -52,7 +52,7 @@ export const AGENT_CATALOG: Record<string, AgentConfig> = {
   // ---------------------------------------------------------------------------
   designer: {
     name: 'designer',
-    model: 'sonnet',
+    model: 'opus',
     description: 'UI/UX design, component creation, and styling',
     domains: ['frontend'],
   },
@@ -62,7 +62,7 @@ export const AGENT_CATALOG: Record<string, AgentConfig> = {
   // ---------------------------------------------------------------------------
   'qa-tester': {
     name: 'qa-tester',
-    model: 'sonnet',
+    model: 'opus',
     description: 'Test writing, TDD workflow, and quality checks',
     domains: ['testing', 'general'],
   },
@@ -79,7 +79,7 @@ export const AGENT_CATALOG: Record<string, AgentConfig> = {
   // ---------------------------------------------------------------------------
   researcher: {
     name: 'researcher',
-    model: 'sonnet',
+    model: 'opus',
     description: 'External research and documentation analysis',
     domains: ['documentation', 'general'],
   },

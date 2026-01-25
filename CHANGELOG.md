@@ -1,3 +1,131 @@
+## [3.1.0] - 2026-01-25
+
+### Added
+
+#### Preferred Package Manager Support
+- Add global and per-project package manager preference (npm, yarn, pnpm, bun)
+- Priority chain: project config > global config > lockfile detection > npm (default)
+- New CLI command: `cops config pm` with subcommands:
+  - `cops config pm show` - Display current package manager settings
+  - `cops config pm set <pm>` - Set project-level preference
+  - `cops config pm set <pm> -g` - Set global preference
+  - `cops config pm detect` - Auto-detect from lockfile
+- CLAUDE.md generator includes package manager instructions
+- All hooks respect configured package manager
+- Upgrade command uses configured package manager
+
+#### Skills Library (21 skills)
+- 15 new skills added (21 total): executor variants, architect, analyze, qa-tester, tdd, security, writer, researcher, explore, deepsearch, critic, code-review, typescript-expert
+- Each skill has YAML frontmatter with auto-trigger patterns and domains
+- Appropriate model tier assignment (haiku/sonnet/opus)
+- New CLI commands:
+  - `cops skill list` - List installed skills
+  - `cops skill install NAME [--from URL]` - Install skills
+  - `cops skill enable/disable NAME` - Toggle skills
+  - `cops skill info NAME` - Show skill details
+  - `cops skill sync` - Sync to Claude Code
+
+#### Hooks Library (13 hooks)
+- cost-warning.mjs - Warn when approaching daily cost budget
+- security-scan.mjs - Scan for secrets before commits
+- test-reminder.mjs - Remind to run tests after code changes
+- format-on-save.mjs - Auto-format files after write
+- git-branch-check.mjs - Warn when on protected branches
+- lint-changed.mjs - Lint files after modifications
+- typecheck-changed.mjs - Type check after modifications
+- todo-tracker.mjs - Track TODO items in prompts
+- session-log.mjs - Log session summary on stop
+- large-file-warning.mjs - Warn before reading large files
+- New CLI commands:
+  - `cops hook list` - List active hooks
+  - `cops hook debug` - Debug hook execution
+  - `cops hook test` - Test hook functionality
+
+#### Profile System Enhancements
+- Profile inheritance via `extends` field
+- Project-level overrides (.claudeops/profile.toml)
+- 8 profile templates: minimal, frontend, backend, fullstack, security, devops, python, typescript
+- `resolveProfile()` with inheritance chain resolution
+- `getWithOverrides()` for project-specific settings
+
+#### Error Handling Improvements
+- ClaudeOpsError class with context and suggestions
+- Error categorization (CONFIG, NETWORK, FILE_SYSTEM, etc)
+- Error factories for common scenarios
+- Actionable error messages with next steps
+
+#### Upgrade Command Enhancements
+- Version change type detection (major/minor/patch)
+- Breaking change warnings for major versions
+- `--check` flag (check without installing)
+- `--force` flag (skip confirmation)
+- Changelog and release notes links
+
+### Changed
+- Removed pack module (commands, domain, types) - functionality merged elsewhere
+- Enhanced hook command with library and management features
+- Enhanced skill command with improved management
+- Updated all skills with refinements
+- CLI help organized into categories with examples
+
+### Fixed
+- Use compatible vitest mocking pattern for CI
+- Use compatible assertion pattern for async no-throw tests
+- VERSION test uses regex pattern
+
+### Documentation
+- New comprehensive `docs/ARCHITECTURE.md` covering entire codebase
+  - Core systems: classifier, router, guardrails, config, sync, doctor
+  - Domain modules: profile, setup, addon, hook, skill, mcp, cost, state
+  - Data flow, directory structure, and extension points
+- Removed 23 outdated documentation files:
+  - Root: AGENTS.md, IMPROVEMENTS.md
+  - docs/: ARCHITECTURE-V3.md, IMPLEMENTATION-PLAN.md, MIGRATION.md, PACKS.md, old ARCHITECTURE.md
+  - src/**/AGENTS.md files (16 files across subdirectories)
+
+---
+
+## [3.0.0] - 2026-01-23
+
+### Added
+
+#### Semantic Intent Classification
+- Replace keyword-based modes with semantic intent classification
+- AI-powered classification of user prompts into intents:
+  - research, implementation, debugging, review, planning, refactoring, maintenance, conversation
+- Complexity detection (trivial, simple, moderate, complex, architectural)
+- Domain detection (frontend, backend, database, devops, security, testing, documentation, general)
+- Signal detection (wantsPersistence, wantsSpeed, wantsAutonomy, wantsPlanning, wantsVerification, wantsThorough)
+
+#### Intelligent Routing
+- Agent selection based on intent and complexity
+- Model tier selection (haiku/sonnet/opus) based on task requirements
+- Parallelism determination for multi-agent workflows
+- Verification requirements based on task type
+
+#### Guardrails Layer
+- Deletion protection for important files and directories
+- Secret scanning before commits
+- Dangerous command detection and warnings
+- Configurable guardrail rules
+
+#### Hook Scripts
+- Cross-platform Node.js hooks for Claude Code integration
+- PreToolUse and PostToolUse hook types
+- Configurable hook priorities and patterns
+
+### Changed
+- Remove "ultrawork" and "autopilot" terminology
+- Modernize agent orchestration approach
+- Update documentation with v3 architecture
+
+### Documentation
+- ~~docs/ARCHITECTURE-V3.md - Full architecture specification~~ (superseded by docs/ARCHITECTURE.md in v3.1.0)
+- ~~docs/MIGRATION.md - v2 to v3 migration guide~~ (removed in v3.1.0)
+- Updated README and setup templates
+
+---
+
 ## [2.0.1](https://github.com/goamaan/claudeops/compare/v2.0.0...v2.0.1) (2026-01-23)
 
 ### ⚠ BREAKING CHANGES

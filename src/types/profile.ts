@@ -63,6 +63,12 @@ export interface ProfileDetails {
       disabled: string[];
     };
 
+    /** All enabled hooks (including inherited) */
+    hooks: {
+      enabled: string[];
+      disabled: string[];
+    };
+
     /** All agent configurations (including inherited) */
     agents: Record<string, {
       model?: ModelName;

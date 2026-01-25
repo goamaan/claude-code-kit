@@ -213,7 +213,7 @@ describe('router', () => {
       expect(decision.primaryModel).toBe('haiku');
     });
 
-    it('should select sonnet for moderate complexity', () => {
+    it('should select opus for moderate complexity', () => {
       const classification: IntentClassification = {
         type: 'implementation',
         complexity: 'moderate',
@@ -229,7 +229,7 @@ describe('router', () => {
         recommendation: {
           agents: ['executor'],
           parallelism: 'sequential',
-          modelTier: 'sonnet',
+          modelTier: 'opus',
           verification: false,
         },
         confidence: 0.85,
@@ -237,7 +237,7 @@ describe('router', () => {
 
       const decision = routeIntent(classification);
 
-      expect(decision.primaryModel).toBe('sonnet');
+      expect(decision.primaryModel).toBe('opus');
     });
 
     it('should select opus for architectural complexity', () => {

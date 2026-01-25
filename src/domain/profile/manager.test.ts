@@ -395,4 +395,163 @@ description = "Overwritten"
       await expect(manager.get('cycle-a')).rejects.toThrow('Circular inheritance');
     });
   });
+
+  describe('getWithOverrides()', () => {
+    it('should apply project-level overrides to profile', async () => {
+      await manager.create('base', {
+        skills: { enabled: ['base-skill'] },
+        agents: { executor: { model: 'haiku', priority: 50 } },
+        mcp: { enabled: ['base-mcp'] },
+      });
+
+      const projectOverrides = {
+        name: 'project-override',
+        skills: { enabled: ['project-skill'], disabled: ['unwanted-skill'] },
+        agents: { executor: { model: 'opus' as const } },
+        mcp: { enabled: ['project-mcp'] },
+      };
+
+      const details = await manager.getWithOverrides('base', projectOverrides);
+
+      expect(details.resolved.skills.enabled).toContain('base-skill');
+      expect(details.resolved.skills.enabled).toContain('project-skill');
+      expect(details.resolved.skills.disabled).toContain('unwanted-skill');
+      expect(details.resolved.agents['executor']?.model).toBe('opus');
+      expect(details.resolved.agents['executor']?.priority).toBe(50);
+      expect(details.resolved.mcp.enabled).toContain('base-mcp');
+      expect(details.resolved.mcp.enabled).toContain('project-mcp');
+    });
+
+    it('should return base profile when no overrides provided', async () => {
+      await manager.create('no-override', {
+        description: 'No overrides',
+        skills: { enabled: ['test-skill'] },
+      });
+
+      const details = await manager.getWithOverrides('no-override');
+      const baseDetails = await manager.get('no-override');
+
+      expect(details).toEqual(baseDetails);
+    });
+
+    it('should override model configuration', async () => {
+      await manager.create('model-base', {
+        model: {
+          default: 'haiku',
+          routing: { simple: 'haiku', standard: 'sonnet' },
+        },
+      });
+
+      const projectOverrides = {
+        name: 'project-model-override',
+        model: {
+          default: 'opus' as const,
+          routing: { complex: 'opus' as const },
+        },
+      };
+
+      const details = await manager.getWithOverrides('model-base', projectOverrides);
+
+      expect(details.resolved.model.default).toBe('opus');
+      expect(details.resolved.model.routing.simple).toBe('haiku');
+      expect(details.resolved.model.routing.complex).toBe('opus');
+    });
+
+    it('should add new agents from project overrides', async () => {
+      await manager.create('agent-base', {
+        agents: { executor: { model: 'sonnet' } },
+      });
+
+      const projectOverrides = {
+        name: 'project-agent-override',
+        agents: {
+          designer: { model: 'opus' as const, priority: 80 },
+        },
+      };
+
+      const details = await manager.getWithOverrides('agent-base', projectOverrides);
+
+      expect(details.resolved.agents['executor']?.model).toBe('sonnet');
+      expect(details.resolved.agents['designer']?.model).toBe('opus');
+      expect(details.resolved.agents['designer']?.priority).toBe(80);
+    });
+  });
+
+  describe('loadProjectOverrides()', () => {
+    it('should load project overrides from .claudeops/profile.toml', async () => {
+      const projectDir = path.join(tempDir, 'project1');
+      const claudeopsDir = path.join(projectDir, '.claudeops');
+      await fs.mkdir(claudeopsDir, { recursive: true });
+
+      const profileContent = `name = "project-override"
+description = "Project-level overrides"
+
+[skills]
+enabled = ["project-skill"]
+
+[agents.executor]
+model = "opus"
+`;
+
+      await fs.writeFile(path.join(claudeopsDir, 'profile.toml'), profileContent);
+
+      const overrides = await manager.loadProjectOverrides(projectDir);
+
+      expect(overrides).not.toBeNull();
+      expect(overrides?.name).toBe('project-override');
+      expect(overrides?.description).toBe('Project-level overrides');
+      expect(overrides?.skills?.enabled).toContain('project-skill');
+      expect(overrides?.agents?.['executor']?.model).toBe('opus');
+    });
+
+    it('should return null when no project override exists', async () => {
+      const projectDir = path.join(tempDir, 'no-override-project');
+      await fs.mkdir(projectDir, { recursive: true });
+
+      const overrides = await manager.loadProjectOverrides(projectDir);
+
+      expect(overrides).toBeNull();
+    });
+
+    it('should try multiple file locations', async () => {
+      const projectDir = path.join(tempDir, 'project2');
+      await fs.mkdir(projectDir, { recursive: true });
+
+      // Create override in alternate location
+      const profileContent = `name = "alternate-location"
+
+[skills]
+enabled = ["test"]
+`;
+
+      await fs.writeFile(path.join(projectDir, '.claudeops.toml'), profileContent);
+
+      const overrides = await manager.loadProjectOverrides(projectDir);
+
+      expect(overrides).not.toBeNull();
+      expect(overrides?.name).toBe('alternate-location');
+    });
+
+    it('should skip invalid files and try next location', async () => {
+      const projectDir = path.join(tempDir, 'project3');
+      const claudeopsDir = path.join(projectDir, '.claudeops');
+      await fs.mkdir(claudeopsDir, { recursive: true });
+
+      // Create an invalid TOML file first
+      await fs.writeFile(path.join(claudeopsDir, 'profile.toml'), 'invalid toml content [[[');
+
+      // Create a valid file in alternate location
+      const validContent = `name = "fallback-valid"
+
+[skills]
+enabled = ["fallback-skill"]
+`;
+      await fs.writeFile(path.join(projectDir, '.claudeops.toml'), validContent);
+
+      const overrides = await manager.loadProjectOverrides(projectDir);
+
+      expect(overrides).not.toBeNull();
+      expect(overrides?.name).toBe('fallback-valid');
+    });
+  });
 });

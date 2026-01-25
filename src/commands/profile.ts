@@ -9,6 +9,7 @@ import * as prompts from '../ui/prompts.js';
 import { createProfileManager, ProfileNotFoundError, ProfileExistsError, ActiveProfileDeleteError } from '../domain/profile/manager.js';
 import { writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { syncAll } from './sync.js';
 
 const profileManager = createProfileManager();
 
@@ -82,11 +83,35 @@ const useCommand = defineCommand({
       description: 'Profile name to activate',
       required: true,
     },
+    noSync: {
+      type: 'boolean',
+      description: 'Skip auto-sync after switching',
+      default: false,
+    },
   },
   async run({ args }) {
     try {
       await profileManager.use(args.name);
       output.success(`Switched to profile: ${args.name}`);
+
+      // Auto-sync to Claude Code unless --no-sync
+      if (!args.noSync) {
+        output.info('Syncing to Claude Code...');
+        try {
+          const result = await syncAll({ verbose: false });
+          const skillChanges = result.skills.added.length + result.skills.updated.length + result.skills.removed.length;
+          const hookChanges = result.hooks.added.length + result.hooks.updated.length + result.hooks.removed.length;
+
+          if (skillChanges > 0 || hookChanges > 0 || result.claudeMd.updated) {
+            output.success('Sync complete');
+          } else {
+            output.dim('No changes to sync');
+          }
+        } catch (syncErr) {
+          output.warn(`Sync failed: ${syncErr instanceof Error ? syncErr.message : String(syncErr)}`);
+          output.info('Run "cops sync" manually to sync');
+        }
+      }
     } catch (err) {
       if (err instanceof ProfileNotFoundError) {
         output.error(`Profile not found: ${args.name}`);

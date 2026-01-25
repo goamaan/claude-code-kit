@@ -1,0 +1,26 @@
+name = "security"
+description = "Security-focused development profile"
+
+[agents.security-reviewer]
+model = "opus"
+priority = 95
+
+[agents.security-reviewer-low]
+model = "sonnet"
+priority = 85
+
+[agents.architect]
+model = "opus"
+priority = 80
+
+[agents.code-reviewer]
+model = "opus"
+priority = 75
+
+[model]
+default = "opus"
+
+[model.routing]
+simple = "sonnet"
+standard = "opus"
+complex = "opus"

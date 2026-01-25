@@ -216,6 +216,7 @@ export {
   type FixResult,
   type ValidationResult,
   type DiagnosticCheck,
+  type DiagnosticContext,
   type DiagnosticReport,
   type DoctorOptions,
   type DiagnosticCheckId,
