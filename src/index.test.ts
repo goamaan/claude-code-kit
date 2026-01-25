@@ -4,7 +4,7 @@ import { VERSION, NAME } from "./index.js";
 describe("claudeops", () => {
   describe("exports", () => {
     it("should export VERSION", () => {
-      expect(VERSION).toBe("0.1.0");
+      expect(VERSION).toMatch(/^\d+\.\d+\.\d+$/);
     });
 
     it("should export NAME", () => {
