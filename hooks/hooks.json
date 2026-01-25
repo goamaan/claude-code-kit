@@ -1,13 +1,6 @@
 {
   "hooks": [
     {
-      "name": "keyword-detector",
-      "type": "UserPromptSubmit",
-      "enabled": true,
-      "path": "./keyword-detector.mjs",
-      "description": "Detects keywords (ultrawork, autopilot, planner, etc.) and injects mode-specific context"
-    },
-    {
       "name": "continuation-check",
       "type": "Stop",
       "enabled": true,
