@@ -73,6 +73,16 @@
 - Use compatible assertion pattern for async no-throw tests
 - VERSION test uses regex pattern
 
+### Documentation
+- New comprehensive `docs/ARCHITECTURE.md` covering entire codebase
+  - Core systems: classifier, router, guardrails, config, sync, doctor
+  - Domain modules: profile, setup, addon, hook, skill, mcp, cost, state
+  - Data flow, directory structure, and extension points
+- Removed 23 outdated documentation files:
+  - Root: AGENTS.md, IMPROVEMENTS.md
+  - docs/: ARCHITECTURE-V3.md, IMPLEMENTATION-PLAN.md, MIGRATION.md, PACKS.md, old ARCHITECTURE.md
+  - src/**/AGENTS.md files (16 files across subdirectories)
+
 ---
 
 ## [3.0.0] - 2026-01-23
@@ -110,8 +120,8 @@
 - Update documentation with v3 architecture
 
 ### Documentation
-- docs/ARCHITECTURE-V3.md - Full architecture specification
-- docs/MIGRATION.md - v2 to v3 migration guide
+- ~~docs/ARCHITECTURE-V3.md - Full architecture specification~~ (superseded by docs/ARCHITECTURE.md in v3.1.0)
+- ~~docs/MIGRATION.md - v2 to v3 migration guide~~ (removed in v3.1.0)
 - Updated README and setup templates
 
 ---
