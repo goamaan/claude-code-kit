@@ -36,3 +36,7 @@ export * from './domain/skill/index.js';
 
 // State exports
 export * from './domain/state/index.js';
+
+// Error handling exports
+export * from './utils/errors.js';
+export * from './utils/error-helpers.js';
