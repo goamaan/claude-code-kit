@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { existsSync, rmSync, mkdirSync } from 'fs';
+import { existsSync, rmSync, mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import {
   saveSessionState,
@@ -141,8 +141,7 @@ describe('session state management', () => {
       }
 
       // Write invalid JSON
-      const fs = require('fs');
-      fs.writeFileSync(testStateFile, 'invalid json{', 'utf-8');
+      writeFileSync(testStateFile, 'invalid json{', 'utf-8');
 
       const loaded = loadSessionState();
       expect(loaded).toBeNull();
@@ -190,7 +189,7 @@ describe('session state management', () => {
       saveSessionState(state);
       const loaded = loadSessionState();
 
-      expect(loaded?.classification.extra).toBe('additional field');
+      expect(loaded?.classification['extra']).toBe('additional field');
     });
 
     it('should preserve all routing fields', () => {
@@ -213,7 +212,7 @@ describe('session state management', () => {
       saveSessionState(state);
       const loaded = loadSessionState();
 
-      expect(loaded?.routing?.custom).toBe('custom value');
+      expect(loaded?.routing?.['custom']).toBe('custom value');
     });
   });
 });

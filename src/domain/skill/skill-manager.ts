@@ -345,45 +345,98 @@ export class SkillManager {
   /**
    * Sync skills to Claude Code's native skill directory
    */
-  async syncToClaudeCode(): Promise<{ synced: string[]; errors: string[] }> {
-    const synced: string[] = [];
+  async syncToClaudeCode(): Promise<{
+    added: string[];
+    updated: string[];
+    removed: string[];
+    errors: string[];
+  }> {
+    const added: string[] = [];
+    const updated: string[] = [];
+    const removed: string[] = [];
     const errors: string[] = [];
 
-    // Ensure Claude skills directory exists
-    await mkdir(CLAUDE_SKILLS_DIR, { recursive: true });
+    try {
+      // Ensure Claude skills directory exists
+      await mkdir(CLAUDE_SKILLS_DIR, { recursive: true });
 
-    for (const skill of this.skills.values()) {
-      try {
-        const destPath = join(CLAUDE_SKILLS_DIR, `${skill.metadata.name}.md`);
+      // Track which skills should exist in Claude Code
+      const expectedSkills = new Set<string>();
 
-        // Build full skill file with frontmatter
-        const frontmatter = [
-          '---',
-          `name: ${skill.metadata.name}`,
-          `description: ${skill.metadata.description}`,
-        ];
+      // Sync enabled skills to Claude Code
+      for (const skill of this.skills.values()) {
+        try {
+          const destPath = join(CLAUDE_SKILLS_DIR, `${skill.metadata.name}.md`);
+          expectedSkills.add(`${skill.metadata.name}.md`);
 
-        if (skill.metadata.autoTrigger?.length) {
-          frontmatter.push(`auto_trigger: [${skill.metadata.autoTrigger.map(t => `"${t}"`).join(', ')}]`);
+          // Build full skill file with frontmatter
+          const frontmatter = [
+            '---',
+            `name: ${skill.metadata.name}`,
+            `description: ${skill.metadata.description || ''}`,
+          ];
+
+          if (skill.metadata.autoTrigger?.length) {
+            frontmatter.push(`auto_trigger: [${skill.metadata.autoTrigger.map(t => `"${t}"`).join(', ')}]`);
+          }
+          if (skill.metadata.domains?.length) {
+            frontmatter.push(`domains: [${skill.metadata.domains.map(d => `"${d}"`).join(', ')}]`);
+          }
+          if (skill.metadata.model) {
+            frontmatter.push(`model: ${skill.metadata.model}`);
+          }
+          if (skill.metadata.disableModelInvocation !== undefined) {
+            frontmatter.push(`disable-model-invocation: ${skill.metadata.disableModelInvocation}`);
+          }
+          if (skill.metadata.userInvocable !== undefined) {
+            frontmatter.push(`user-invocable: ${skill.metadata.userInvocable}`);
+          }
+
+          frontmatter.push('---', '');
+
+          const fullContent = frontmatter.join('\n') + '\n' + skill.content;
+
+          // Check if file exists
+          const fileExists = existsSync(destPath);
+
+          // Write to Claude skills directory
+          await fsWriteFile(destPath, fullContent, 'utf8');
+
+          if (fileExists) {
+            updated.push(skill.metadata.name);
+          } else {
+            added.push(skill.metadata.name);
+          }
+        } catch (err) {
+          errors.push(`${skill.metadata.name}: ${err instanceof Error ? err.message : 'Unknown error'}`);
         }
-        if (skill.metadata.model) {
-          frontmatter.push(`model: ${skill.metadata.model}`);
-        }
-
-        frontmatter.push('---', '');
-
-        const fullContent = frontmatter.join('\n') + skill.content;
-
-        // Write to Claude skills directory
-        await fsWriteFile(destPath, fullContent, 'utf8');
-
-        synced.push(skill.metadata.name);
-      } catch (err) {
-        errors.push(`${skill.metadata.name}: ${err instanceof Error ? err.message : 'Unknown error'}`);
       }
+
+      // Clean up skills that were removed from claudeops
+      if (existsSync(CLAUDE_SKILLS_DIR)) {
+        const existingFiles = await readdir(CLAUDE_SKILLS_DIR);
+
+        for (const file of existingFiles) {
+          if (!file.endsWith('.md')) continue;
+
+          // Skip if this skill is expected
+          if (expectedSkills.has(file)) continue;
+
+          try {
+            // Remove the file (it's no longer in our skill set)
+            const { unlink } = await import('fs/promises');
+            await unlink(join(CLAUDE_SKILLS_DIR, file));
+            removed.push(file.replace(/\.md$/, ''));
+          } catch (err) {
+            errors.push(`Failed to remove ${file}: ${err instanceof Error ? err.message : 'Unknown error'}`);
+          }
+        }
+      }
+    } catch (err) {
+      errors.push(`Sync failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
 
-    return { synced, errors };
+    return { added, updated, removed, errors };
   }
 }
 
