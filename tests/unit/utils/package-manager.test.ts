@@ -4,7 +4,6 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import * as fs from 'fs';
 import {
   detectFromLockfile,
   resolvePackageManager,
@@ -14,14 +13,18 @@ import {
   type PackageManager,
 } from '../../../src/utils/package-manager.js';
 
+// Create mock for existsSync
+const mockExistsSync = vi.fn();
+
 // Mock the fs module
 vi.mock('fs', () => ({
-  existsSync: vi.fn(),
+  existsSync: (...args: unknown[]) => mockExistsSync(...args),
 }));
 
 describe('package-manager utility', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockExistsSync.mockReset();
   });
 
   afterEach(() => {
@@ -30,7 +33,7 @@ describe('package-manager utility', () => {
 
   describe('detectFromLockfile', () => {
     it('should detect npm from package-lock.json', () => {
-      vi.mocked(fs.existsSync).mockImplementation((path) => {
+      mockExistsSync.mockImplementation((path: string) => {
         return String(path).endsWith('package-lock.json');
       });
 
@@ -39,7 +42,7 @@ describe('package-manager utility', () => {
     });
 
     it('should detect yarn from yarn.lock', () => {
-      vi.mocked(fs.existsSync).mockImplementation((path) => {
+      mockExistsSync.mockImplementation((path: string) => {
         return String(path).endsWith('yarn.lock');
       });
 
@@ -48,7 +51,7 @@ describe('package-manager utility', () => {
     });
 
     it('should detect pnpm from pnpm-lock.yaml', () => {
-      vi.mocked(fs.existsSync).mockImplementation((path) => {
+      mockExistsSync.mockImplementation((path: string) => {
         return String(path).endsWith('pnpm-lock.yaml');
       });
 
@@ -57,7 +60,7 @@ describe('package-manager utility', () => {
     });
 
     it('should detect bun from bun.lockb', () => {
-      vi.mocked(fs.existsSync).mockImplementation((path) => {
+      mockExistsSync.mockImplementation((path: string) => {
         return String(path).endsWith('bun.lockb');
       });
 
@@ -66,27 +69,27 @@ describe('package-manager utility', () => {
     });
 
     it('should return null when no lockfile is found', () => {
-      vi.mocked(fs.existsSync).mockReturnValue(false);
+      mockExistsSync.mockReturnValue(false);
 
       const result = detectFromLockfile('/project');
       expect(result).toBeNull();
     });
 
     it('should check the correct paths for lockfiles', () => {
-      vi.mocked(fs.existsSync).mockReturnValue(false);
+      mockExistsSync.mockReturnValue(false);
 
       detectFromLockfile('/my/project/path');
 
-      expect(fs.existsSync).toHaveBeenCalledWith('/my/project/path/package-lock.json');
-      expect(fs.existsSync).toHaveBeenCalledWith('/my/project/path/yarn.lock');
-      expect(fs.existsSync).toHaveBeenCalledWith('/my/project/path/pnpm-lock.yaml');
-      expect(fs.existsSync).toHaveBeenCalledWith('/my/project/path/bun.lockb');
+      expect(mockExistsSync).toHaveBeenCalledWith('/my/project/path/package-lock.json');
+      expect(mockExistsSync).toHaveBeenCalledWith('/my/project/path/yarn.lock');
+      expect(mockExistsSync).toHaveBeenCalledWith('/my/project/path/pnpm-lock.yaml');
+      expect(mockExistsSync).toHaveBeenCalledWith('/my/project/path/bun.lockb');
     });
 
     it('should return the first detected package manager when multiple lockfiles exist', () => {
       // When multiple lockfiles exist, it should return the first one found
       // based on the order in LOCKFILES object (package-lock.json is first)
-      vi.mocked(fs.existsSync).mockReturnValue(true);
+      mockExistsSync.mockReturnValue(true);
 
       const result = detectFromLockfile('/project');
       expect(result).toBe('npm');
@@ -96,7 +99,7 @@ describe('package-manager utility', () => {
   describe('resolvePackageManager', () => {
     it('should return preferred package manager when provided', () => {
       // Even if a lockfile exists, preferred takes precedence
-      vi.mocked(fs.existsSync).mockReturnValue(true);
+      mockExistsSync.mockReturnValue(true);
 
       expect(resolvePackageManager('yarn')).toBe('yarn');
       expect(resolvePackageManager('pnpm')).toBe('pnpm');
@@ -105,7 +108,7 @@ describe('package-manager utility', () => {
     });
 
     it('should detect from lockfile when no preference is given', () => {
-      vi.mocked(fs.existsSync).mockImplementation((path) => {
+      mockExistsSync.mockImplementation((path: string) => {
         return String(path).endsWith('yarn.lock');
       });
 
@@ -114,7 +117,7 @@ describe('package-manager utility', () => {
     });
 
     it('should fall back to npm when no preference and no lockfile detected', () => {
-      vi.mocked(fs.existsSync).mockReturnValue(false);
+      mockExistsSync.mockReturnValue(false);
 
       const result = resolvePackageManager(undefined, '/project');
       expect(result).toBe('npm');
@@ -132,7 +135,7 @@ describe('package-manager utility', () => {
 
     it('should prioritize preference over detection', () => {
       // Lockfile says yarn, but preference says pnpm
-      vi.mocked(fs.existsSync).mockImplementation((path) => {
+      mockExistsSync.mockImplementation((path: string) => {
         return String(path).endsWith('yarn.lock');
       });
 
@@ -270,7 +273,7 @@ describe('package-manager utility', () => {
 
   describe('integration scenarios', () => {
     it('should work together: detect, validate, and get commands', () => {
-      vi.mocked(fs.existsSync).mockImplementation((path) => {
+      mockExistsSync.mockImplementation((path: string) => {
         return String(path).endsWith('pnpm-lock.yaml');
       });
 
@@ -287,7 +290,7 @@ describe('package-manager utility', () => {
     });
 
     it('should resolve and get commands in one flow', () => {
-      vi.mocked(fs.existsSync).mockImplementation((path) => {
+      mockExistsSync.mockImplementation((path: string) => {
         return String(path).endsWith('bun.lockb');
       });
 
@@ -301,7 +304,7 @@ describe('package-manager utility', () => {
 
     it('should handle preference override correctly', () => {
       // Project has yarn.lock but user prefers npm
-      vi.mocked(fs.existsSync).mockImplementation((path) => {
+      mockExistsSync.mockImplementation((path: string) => {
         return String(path).endsWith('yarn.lock');
       });
 
