@@ -11,24 +11,74 @@
 
 import { execSync } from 'child_process';
 import { existsSync } from 'fs';
-import { dirname } from 'path';
+import { dirname, join } from 'path';
+
+/**
+ * Detect package manager from environment or lockfile
+ */
+function getPackageManager(projectDir) {
+  // Check env var first (set by claudeops sync)
+  const preferred = process.env.CLAUDEOPS_PACKAGE_MANAGER;
+  if (preferred && ['npm', 'yarn', 'pnpm', 'bun'].includes(preferred)) {
+    return preferred;
+  }
+
+  // Detect from lockfile
+  const lockfiles = {
+    'package-lock.json': 'npm',
+    'yarn.lock': 'yarn',
+    'pnpm-lock.yaml': 'pnpm',
+    'bun.lockb': 'bun',
+  };
+
+  for (const [file, pm] of Object.entries(lockfiles)) {
+    if (existsSync(join(projectDir, file))) {
+      return pm;
+    }
+  }
+
+  return 'npm';
+}
+
+/**
+ * Get exec command for package manager
+ */
+function getExecCommand(pm) {
+  const commands = {
+    npm: 'npx',
+    yarn: 'yarn dlx',
+    pnpm: 'pnpm exec',
+    bun: 'bunx',
+  };
+  return commands[pm] || 'npx';
+}
+
+/**
+ * Get prettier command for the detected package manager
+ */
+function getPrettierCommand(projectDir) {
+  const pm = getPackageManager(projectDir);
+  const execCmd = getExecCommand(pm);
+  return `${execCmd} prettier --write`;
+}
 
 /**
  * Formatter configurations by file extension
+ * For prettier-based formatters, command is set dynamically based on package manager
  */
 const FORMATTERS = {
-  // JavaScript/TypeScript
-  '.js': { formatter: 'prettier', command: 'npx prettier --write' },
-  '.jsx': { formatter: 'prettier', command: 'npx prettier --write' },
-  '.ts': { formatter: 'prettier', command: 'npx prettier --write' },
-  '.tsx': { formatter: 'prettier', command: 'npx prettier --write' },
-  '.json': { formatter: 'prettier', command: 'npx prettier --write' },
-  '.css': { formatter: 'prettier', command: 'npx prettier --write' },
-  '.scss': { formatter: 'prettier', command: 'npx prettier --write' },
-  '.html': { formatter: 'prettier', command: 'npx prettier --write' },
-  '.yaml': { formatter: 'prettier', command: 'npx prettier --write' },
-  '.yml': { formatter: 'prettier', command: 'npx prettier --write' },
-  '.md': { formatter: 'prettier', command: 'npx prettier --write' },
+  // JavaScript/TypeScript (prettier - command set dynamically)
+  '.js': { formatter: 'prettier', command: null },
+  '.jsx': { formatter: 'prettier', command: null },
+  '.ts': { formatter: 'prettier', command: null },
+  '.tsx': { formatter: 'prettier', command: null },
+  '.json': { formatter: 'prettier', command: null },
+  '.css': { formatter: 'prettier', command: null },
+  '.scss': { formatter: 'prettier', command: null },
+  '.html': { formatter: 'prettier', command: null },
+  '.yaml': { formatter: 'prettier', command: null },
+  '.yml': { formatter: 'prettier', command: null },
+  '.md': { formatter: 'prettier', command: null },
 
   // Python
   '.py': { formatter: 'black', command: 'black' },
@@ -49,10 +99,12 @@ const FORMATTERS = {
 /**
  * Check if formatter is available
  */
-function isFormatterAvailable(formatter) {
+function isFormatterAvailable(formatter, projectDir) {
   try {
     if (formatter === 'prettier') {
-      execSync('npx prettier --version', { stdio: 'pipe' });
+      const pm = getPackageManager(projectDir);
+      const execCmd = getExecCommand(pm);
+      execSync(`${execCmd} prettier --version`, { stdio: 'pipe', cwd: projectDir });
       return true;
     }
     execSync(`which ${formatter}`, { stdio: 'pipe' });
@@ -73,13 +125,20 @@ function formatFile(filePath) {
     return { success: false, reason: 'no-formatter' };
   }
 
-  if (!isFormatterAvailable(config.formatter)) {
+  const cwd = dirname(filePath);
+
+  if (!isFormatterAvailable(config.formatter, cwd)) {
     return { success: false, reason: 'formatter-not-installed', formatter: config.formatter };
   }
 
   try {
-    const cwd = dirname(filePath);
-    execSync(`${config.command} "${filePath}"`, {
+    // Get the command - for prettier, build it dynamically
+    let command = config.command;
+    if (config.formatter === 'prettier') {
+      command = getPrettierCommand(cwd);
+    }
+
+    execSync(`${command} "${filePath}"`, {
       cwd,
       stdio: 'pipe',
       timeout: 10000,

@@ -10,8 +10,48 @@
  */
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
-import { join } from 'path';
+import { join, dirname } from 'path';
 import { homedir } from 'os';
+
+/**
+ * Detect package manager from environment or lockfile
+ */
+function getPackageManager(projectDir) {
+  // Check env var first (set by claudeops sync)
+  const preferred = process.env.CLAUDEOPS_PACKAGE_MANAGER;
+  if (preferred && ['npm', 'yarn', 'pnpm', 'bun'].includes(preferred)) {
+    return preferred;
+  }
+
+  // Detect from lockfile
+  const lockfiles = {
+    'package-lock.json': 'npm',
+    'yarn.lock': 'yarn',
+    'pnpm-lock.yaml': 'pnpm',
+    'bun.lockb': 'bun',
+  };
+
+  for (const [file, pm] of Object.entries(lockfiles)) {
+    if (existsSync(join(projectDir, file))) {
+      return pm;
+    }
+  }
+
+  return 'npm';
+}
+
+/**
+ * Get run command for package manager
+ */
+function getRunCommand(pm) {
+  const commands = {
+    npm: 'npm run',
+    yarn: 'yarn',
+    pnpm: 'pnpm',
+    bun: 'bun run',
+  };
+  return commands[pm] || 'npm run';
+}
 
 /**
  * File patterns that indicate source code
@@ -55,9 +95,32 @@ function saveState(state) {
 }
 
 /**
+ * Find project root by looking for package.json
+ */
+function findProjectRoot(filePath) {
+  let dir = dirname(filePath);
+  const root = '/';
+
+  while (dir !== root) {
+    if (existsSync(join(dir, 'package.json'))) {
+      return dir;
+    }
+    const parentDir = dirname(dir);
+    if (parentDir === dir) break;
+    dir = parentDir;
+  }
+
+  return dirname(filePath);
+}
+
+/**
  * Detect test framework from file content
  */
 function detectTestFramework(filePath) {
+  const projectDir = findProjectRoot(filePath);
+  const pm = getPackageManager(projectDir);
+  const runCmd = getRunCommand(pm);
+
   try {
     const content = readFileSync(filePath, 'utf8');
 
@@ -65,10 +128,10 @@ function detectTestFramework(filePath) {
       return { framework: 'pytest', command: 'pytest' };
     }
     if (content.includes('jest') || content.includes('describe(')) {
-      return { framework: 'jest', command: 'npm test' };
+      return { framework: 'jest', command: `${runCmd} test` };
     }
     if (content.includes('vitest')) {
-      return { framework: 'vitest', command: 'npm run test' };
+      return { framework: 'vitest', command: `${runCmd} test` };
     }
     if (content.includes('go test')) {
       return { framework: 'go', command: 'go test ./...' };
@@ -85,7 +148,7 @@ function detectTestFramework(filePath) {
     return { framework: 'pytest', command: 'pytest' };
   }
   if (filePath.endsWith('.ts') || filePath.endsWith('.tsx') || filePath.endsWith('.js')) {
-    return { framework: 'npm', command: 'npm test' };
+    return { framework: pm, command: `${runCmd} test` };
   }
   if (filePath.endsWith('.go')) {
     return { framework: 'go', command: 'go test ./...' };

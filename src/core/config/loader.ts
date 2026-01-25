@@ -383,6 +383,12 @@ export async function loadConfig(options?: {
     )
   );
 
+  // Merge package manager preference (project/local/global only, not from profiles)
+  result.packageManager =
+    localConfig.packageManager ??
+    projectConfig.packageManager ??
+    globalConfig.packageManager;
+
   return result;
 }
 

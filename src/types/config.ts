@@ -12,6 +12,9 @@ import { z } from 'zod';
 export const ModelNameSchema = z.enum(['haiku', 'sonnet', 'opus']);
 export type ModelName = z.infer<typeof ModelNameSchema>;
 
+export const PackageManagerSchema = z.enum(['npm', 'yarn', 'pnpm', 'bun']);
+export type PackageManager = z.infer<typeof PackageManagerSchema>;
+
 export const ModelRoutingSchema = z.object({
   simple: ModelNameSchema.optional(),
   standard: ModelNameSchema.optional(),
@@ -81,6 +84,7 @@ export const MainConfigSchema = z.object({
   cost: CostConfigSchema.optional(),
   sync: SyncConfigSchema.optional(),
   team: TeamConfigSchema.optional(),
+  packageManager: PackageManagerSchema.optional(),
 });
 export type MainConfig = z.infer<typeof MainConfigSchema>;
 
@@ -141,6 +145,7 @@ export const ProfileFileConfigSchema = z.object({
   mcp: ProfileMcpConfigSchema.optional(),
   model: ModelConfigSchema.optional(),
   cost: CostConfigSchema.optional(),
+  packageManager: PackageManagerSchema.optional(),
 });
 export type ProfileFileConfig = z.infer<typeof ProfileFileConfigSchema>;
 
@@ -157,6 +162,7 @@ export const ProjectConfigSchema = z.object({
   hooks: ProfileHooksConfigSchema.optional(),
   agents: ProfileAgentsConfigSchema.optional(),
   mcp: ProfileMcpConfigSchema.optional(),
+  packageManager: PackageManagerSchema.optional(),
 });
 export type ProjectConfig = z.infer<typeof ProjectConfigSchema>;
 
@@ -222,6 +228,9 @@ export interface MergedConfig {
     enabled: string[];
     disabled: string[];
   };
+
+  // Package manager preference
+  packageManager?: PackageManager;
 }
 
 // =============================================================================

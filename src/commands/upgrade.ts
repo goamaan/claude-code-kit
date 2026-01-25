@@ -8,6 +8,8 @@ import * as output from '../ui/output.js';
 import * as prompts from '../ui/prompts.js';
 import { VERSION } from '../index.js';
 import { handleError, ErrorCategory } from '../utils/errors.js';
+import { resolvePackageManager, getCommands } from '../utils/package-manager.js';
+import { loadConfig } from '../core/config/loader.js';
 
 // =============================================================================
 // Types
@@ -71,20 +73,21 @@ function compareVersions(a: string, b: string): number {
 async function executeUpgrade(): Promise<boolean> {
   const { spawn } = await import('node:child_process');
 
-  // Detect package manager
-  const userAgent = process.env['npm_config_user_agent'] ?? '';
-  const packageManager = userAgent.includes('yarn') ? 'yarn' :
-                        userAgent.includes('pnpm') ? 'pnpm' :
-                        userAgent.includes('bun') ? 'bun' : 'npm';
+  // Try to load config for preferred package manager
+  let preferredPm: 'npm' | 'yarn' | 'pnpm' | 'bun' | undefined;
+  try {
+    const config = await loadConfig();
+    preferredPm = config.packageManager;
+  } catch {
+    // Config loading failed, use default detection
+  }
 
-  const commands: Record<string, string[]> = {
-    npm: ['npm', 'install', '-g', 'claudeops@latest'],
-    yarn: ['yarn', 'global', 'add', 'claudeops@latest'],
-    pnpm: ['pnpm', 'add', '-g', 'claudeops@latest'],
-    bun: ['bun', 'add', '-g', 'claudeops@latest'],
-  };
+  // Resolve package manager (preference > detection > npm)
+  const pm = resolvePackageManager(preferredPm, process.cwd());
+  const commands = getCommands(pm);
 
-  const cmd = commands[packageManager] ?? commands['npm']!;
+  // Build the install command
+  const cmd = `${commands.globalInstall} claudeops@latest`.split(' ');
 
   return new Promise((resolve) => {
     const child = spawn(cmd[0]!, cmd.slice(1), {
