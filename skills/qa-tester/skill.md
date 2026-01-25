@@ -1,17 +1,8 @@
 ---
 name: qa-tester
 description: Test planning, execution, and quality assurance. Comprehensive testing strategies and verification.
-autoTrigger:
-  - test this
-  - verify the functionality
-  - qa check
-  - run tests for
-  - check if it works
-domains:
-  - testing
-  - quality
 model: sonnet
-userInvocable: true
+user-invocable: true
 ---
 
 # QA Tester Skill

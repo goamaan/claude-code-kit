@@ -5,7 +5,6 @@
 
 import type { MergedSetup, MergedConfig } from '@/types';
 import { AGENT_CATALOG } from '@/core/router/agent-catalog.js';
-import { listEnabledPacks } from '@/domain/pack/manager.js';
 
 // =============================================================================
 // Constants
@@ -373,31 +372,6 @@ async function generateDynamicContext(): Promise<string> {
   lines.push('- **Secret Scanning**: Detects sensitive data in code and commits');
   lines.push('- **Dangerous Command Detection**: Warns about risky operations');
   lines.push('');
-
-  // Installed Packs
-  try {
-    const packs = await listEnabledPacks();
-    if (packs.length > 0) {
-      lines.push('## Installed Capability Packs');
-      lines.push('');
-
-      for (const pack of packs) {
-        lines.push(`### ${pack.name}`);
-        lines.push('');
-        if (pack.components.length > 0) {
-          lines.push('**Components:**');
-          lines.push('');
-          for (const component of pack.components) {
-            const modelInfo = component.model ? ` (${component.model})` : '';
-            lines.push(`- \`${component.type}\`: ${component.name}${modelInfo} - ${component.description}`);
-          }
-          lines.push('');
-        }
-      }
-    }
-  } catch {
-    // Silently skip if pack system not available
-  }
 
   return lines.join('\n');
 }

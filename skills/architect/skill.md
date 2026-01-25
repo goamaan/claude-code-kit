@@ -1,19 +1,8 @@
 ---
 name: architect
 description: Deep architectural analysis, debugging, and code review. Expert-level reasoning for complex technical challenges.
-autoTrigger:
-  - debug
-  - why is this failing
-  - analyze the issue
-  - investigate
-  - review architecture
-  - verify implementation
-domains:
-  - architecture
-  - debugging
-  - analysis
 model: opus
-userInvocable: true
+user-invocable: true
 ---
 
 # Architect Skill

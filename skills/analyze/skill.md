@@ -1,17 +1,8 @@
 ---
 name: analyze
 description: General code analysis and investigation. Quick to medium-depth analysis for understanding code behavior and issues.
-autoTrigger:
-  - analyze this
-  - what does this do
-  - explain the code
-  - how does this work
-  - understand the
-domains:
-  - analysis
-  - investigation
 model: sonnet
-userInvocable: true
+user-invocable: true
 ---
 
 # Analyze Skill

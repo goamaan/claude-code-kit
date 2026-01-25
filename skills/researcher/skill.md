@@ -1,17 +1,8 @@
 ---
 name: researcher
 description: External documentation and API research. Finding information from libraries, frameworks, and external resources.
-autoTrigger:
-  - research
-  - look up documentation
-  - find information about
-  - how to use
-  - check the docs for
-domains:
-  - research
-  - documentation
 model: sonnet
-userInvocable: true
+user-invocable: true
 ---
 
 # Researcher Skill

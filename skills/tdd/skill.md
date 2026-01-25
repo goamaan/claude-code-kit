@@ -1,17 +1,8 @@
 ---
 name: tdd
 description: Test-driven development workflow enforcement. Red-Green-Refactor cycle for quality-first development.
-autoTrigger:
-  - tdd
-  - test first
-  - test-driven
-  - write tests first
-  - red green refactor
-domains:
-  - testing
-  - development
 model: sonnet
-userInvocable: true
+user-invocable: true
 ---
 
 # TDD Skill

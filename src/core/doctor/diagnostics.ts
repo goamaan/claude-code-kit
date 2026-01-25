@@ -10,6 +10,7 @@ import type {
   DiagnosticSeverity,
   DiagnosticCategory,
   DiagnosticCheck,
+  DiagnosticContext,
 } from '@/types/index.js';
 import {
   getGlobalConfigDir,
@@ -74,9 +75,9 @@ export const CHECKS: DiagnosticCheck[] = [
     category: 'installation',
     description: 'Verify the claudeops configuration directory exists',
     enabledByDefault: true,
-    async run() {
+    async run(context) {
       const start = performance.now();
-      const configDir = getGlobalConfigDir();
+      const configDir = context?.getConfigDir() ?? getGlobalConfigDir();
       const dirExists = await isDirectory(configDir);
 
       return createResult(this, {
@@ -84,15 +85,15 @@ export const CHECKS: DiagnosticCheck[] = [
         message: dirExists
           ? `Configuration directory exists at ${configDir}`
           : `Configuration directory not found at ${configDir}`,
-        suggestions: dirExists ? undefined : ['Run "cck init" to create the directory'],
+        suggestions: dirExists ? undefined : ['Run "cops init" to create the directory'],
         fixAvailable: !dirExists,
         fixId: 'claudeops-dir',
         duration: performance.now() - start,
       });
     },
-    async fix() {
+    async fix(context) {
       const { mkdir } = await import('@/utils/fs.js');
-      const configDir = getGlobalConfigDir();
+      const configDir = context?.getConfigDir() ?? getGlobalConfigDir();
 
       try {
         await mkdir(configDir, { recursive: true });
@@ -123,9 +124,10 @@ export const CHECKS: DiagnosticCheck[] = [
     description: 'Verify the main configuration file is valid',
     enabledByDefault: true,
     dependsOn: ['claudeops-dir'],
-    async run() {
+    async run(context) {
       const start = performance.now();
-      const configPath = join(getGlobalConfigDir(), CONFIG_FILE);
+      const configDir = context?.getConfigDir() ?? getGlobalConfigDir();
+      const configPath = join(configDir, CONFIG_FILE);
       const configExists = await isFile(configPath);
 
       if (!configExists) {
@@ -162,7 +164,7 @@ export const CHECKS: DiagnosticCheck[] = [
           passed: false,
           severity: 'error',
           message: `Configuration file has invalid syntax: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          suggestions: ['Check the TOML syntax in the config file', 'Run "cck config validate" for details'],
+          suggestions: ['Check the TOML syntax in the config file', 'Run "cops config validate" for details'],
           fixAvailable: false,
           details: { error: error instanceof Error ? error.message : String(error) },
           duration: performance.now() - start,
@@ -178,9 +180,11 @@ export const CHECKS: DiagnosticCheck[] = [
     description: 'Verify the active profile directory exists',
     enabledByDefault: true,
     dependsOn: ['claudeops-dir'],
-    async run() {
+    async run(context) {
       const start = performance.now();
-      const profileFilePath = join(getGlobalConfigDir(), PROFILE_FILE);
+      const configDir = context?.getConfigDir() ?? getGlobalConfigDir();
+      const profilesDir = context?.getProfilesDir() ?? getProfilesDir();
+      const profileFilePath = join(configDir, PROFILE_FILE);
       const profileFileExists = await isFile(profileFilePath);
 
       let activeProfile = DEFAULT_PROFILE_NAME;
@@ -191,7 +195,7 @@ export const CHECKS: DiagnosticCheck[] = [
         }
       }
 
-      const profileDir = join(getProfilesDir(), activeProfile);
+      const profileDir = join(profilesDir, activeProfile);
       const profileExists = await isDirectory(profileDir);
 
       if (profileExists) {
@@ -209,7 +213,7 @@ export const CHECKS: DiagnosticCheck[] = [
           passed: true, // Default profile not existing is OK
           severity: 'info',
           message: 'Using default profile (no explicit profile configured)',
-          suggestions: ['Run "cck profile create default" to create an explicit default profile'],
+          suggestions: ['Run "cops profile create default" to create an explicit default profile'],
           fixAvailable: true,
           fixId: 'active-profile',
           duration: performance.now() - start,
@@ -221,8 +225,8 @@ export const CHECKS: DiagnosticCheck[] = [
         severity: 'error',
         message: `Active profile "${activeProfile}" not found`,
         suggestions: [
-          `Run "cck profile create ${activeProfile}" to create it`,
-          'Run "cck profile use default" to switch to default profile',
+          `Run "cops profile create ${activeProfile}" to create it`,
+          'Run "cops profile use default" to switch to default profile',
         ],
         fixAvailable: true,
         fixId: 'active-profile',
@@ -230,9 +234,9 @@ export const CHECKS: DiagnosticCheck[] = [
         duration: performance.now() - start,
       });
     },
-    async fix() {
+    async fix(context) {
       const { mkdir, writeFile } = await import('@/utils/fs.js');
-      const profilesDir = getProfilesDir();
+      const profilesDir = context?.getProfilesDir() ?? getProfilesDir();
       const defaultProfileDir = join(profilesDir, DEFAULT_PROFILE_NAME);
       const defaultConfigPath = join(defaultProfileDir, CONFIG_FILE);
 
@@ -279,7 +283,7 @@ description = "Default claude-kit profile"
     category: 'dependencies',
     description: 'Verify Bun is installed and meets minimum version requirements',
     enabledByDefault: true,
-    async run() {
+    async run(_context) {
       const start = performance.now();
 
       try {
@@ -330,9 +334,9 @@ description = "Default claude-kit profile"
     category: 'sync',
     description: 'Verify claudeops state is synced to ~/.claude',
     enabledByDefault: true,
-    async run() {
+    async run(context) {
       const start = performance.now();
-      const claudeDir = getClaudeDir();
+      const claudeDir = context?.getClaudeDir() ?? getClaudeDir();
       const settingsPath = join(claudeDir, CLAUDE_SETTINGS_FILE);
 
       const dirExists = await isDirectory(claudeDir);
@@ -341,7 +345,7 @@ description = "Default claude-kit profile"
           passed: false,
           severity: 'warning',
           message: '~/.claude directory does not exist',
-          suggestions: ['Run "cck sync" to initialize'],
+          suggestions: ['Run "cops sync" to initialize'],
           fixAvailable: true,
           fixId: 'claude-dir-sync',
           duration: performance.now() - start,
@@ -359,28 +363,41 @@ description = "Default claude-kit profile"
       }
 
       // Verify settings file is valid JSON
-      const settings = await readJsonSafe(settingsPath);
-      if (!settings) {
+      try {
+        const settings = await readJsonSafe(settingsPath);
+        if (!settings) {
+          return createResult(this, {
+            passed: false,
+            severity: 'error',
+            message: 'Claude settings file is invalid JSON',
+            suggestions: ['Run "cops sync --force" to regenerate'],
+            fixAvailable: true,
+            fixId: 'claude-dir-sync',
+            duration: performance.now() - start,
+          });
+        }
+
+        return createResult(this, {
+          passed: true,
+          message: 'Claude directory is properly configured',
+          duration: performance.now() - start,
+        });
+      } catch (error) {
         return createResult(this, {
           passed: false,
           severity: 'error',
           message: 'Claude settings file is invalid JSON',
-          suggestions: ['Run "cck sync --force" to regenerate'],
+          suggestions: ['Run "cops sync --force" to regenerate'],
           fixAvailable: true,
           fixId: 'claude-dir-sync',
           duration: performance.now() - start,
+          details: { error: error instanceof Error ? error.message : String(error) },
         });
       }
-
-      return createResult(this, {
-        passed: true,
-        message: 'Claude directory is properly configured',
-        duration: performance.now() - start,
-      });
     },
-    async fix() {
+    async fix(context) {
       const { mkdir } = await import('@/utils/fs.js');
-      const claudeDir = getClaudeDir();
+      const claudeDir = context?.getClaudeDir() ?? getClaudeDir();
 
       try {
         await mkdir(claudeDir, { recursive: true });
@@ -390,7 +407,7 @@ description = "Default claude-kit profile"
           description: 'Created ~/.claude directory',
           actions: [{ action: 'mkdir', success: true, details: claudeDir }],
           requiresRestart: false,
-          instructions: ['Run "cck sync" to complete setup'],
+          instructions: ['Run "cops sync" to complete setup'],
         };
       } catch (error) {
         return {
@@ -415,11 +432,12 @@ description = "Default claude-kit profile"
     description: 'Verify hook handler files exist',
     enabledByDefault: true,
     dependsOn: ['claudeops-dir'],
-    async run() {
+    async run(context) {
       const start = performance.now();
 
       // Check settings file for hooks
-      const settingsPath = join(getClaudeDir(), CLAUDE_SETTINGS_FILE);
+      const claudeDir = context?.getClaudeDir() ?? getClaudeDir();
+      const settingsPath = join(claudeDir, CLAUDE_SETTINGS_FILE);
       const settings = await readJsonSafe<{ hooks?: Record<string, unknown> }>(settingsPath);
 
       if (!settings?.hooks) {
@@ -453,9 +471,9 @@ description = "Default claude-kit profile"
     description: 'Verify all installed addon manifests are valid',
     enabledByDefault: true,
     dependsOn: ['claudeops-dir'],
-    async run() {
+    async run(context) {
       const start = performance.now();
-      const addonsDir = getAddonsDir();
+      const addonsDir = context?.getAddonsDir() ?? getAddonsDir();
 
       if (!(await isDirectory(addonsDir))) {
         return createResult(this, {
@@ -528,15 +546,33 @@ description = "Default claude-kit profile"
 // =============================================================================
 
 /**
- * Run all diagnostic checks
+ * Options for running diagnostics
  */
-export async function runDiagnostics(options?: {
+export interface DiagnosticsOptions {
   categories?: DiagnosticCategory[];
   checks?: string[];
   skip?: string[];
-}): Promise<DiagnosticResult[]> {
+  // Directory overrides for testing
+  configDir?: string;
+  claudeDir?: string;
+  profilesDir?: string;
+  addonsDir?: string;
+}
+
+/**
+ * Run all diagnostic checks
+ */
+export async function runDiagnostics(options?: DiagnosticsOptions): Promise<DiagnosticResult[]> {
   const results: DiagnosticResult[] = [];
   const completedChecks = new Set<string>();
+
+  // Create context with path overrides
+  const context: DiagnosticContext = {
+    getConfigDir: () => options?.configDir ?? getGlobalConfigDir(),
+    getClaudeDir: () => options?.claudeDir ?? getClaudeDir(),
+    getProfilesDir: () => options?.profilesDir ?? getProfilesDir(),
+    getAddonsDir: () => options?.addonsDir ?? getAddonsDir(),
+  };
 
   // Filter checks based on options
   let checksToRun = CHECKS.filter((c) => c.enabledByDefault);
@@ -595,7 +631,7 @@ export async function runDiagnostics(options?: {
     }
 
     try {
-      const result = await check.run();
+      const result = await check.run(context);
       completedChecks.add(check.id);
       return result;
     } catch (error) {

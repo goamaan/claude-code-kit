@@ -2,7 +2,10 @@
  * MCP Manager Tests
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import * as fs from 'node:fs/promises';
+import * as path from 'node:path';
+import * as os from 'node:os';
 import {
   createMcpManager,
   McpServerNotFoundError,
@@ -10,46 +13,73 @@ import {
 } from './manager.js';
 import type { McpServerState, McpSettings } from '@/types/index.js';
 
-// Mock fs utilities
-// NOTE: vi.mock() is not supported in this version of Vitest
-// vi.mock('@/utils/fs.js', () => ({
-//   readJsonSafe: vi.fn(),
-//   writeJson: vi.fn(),
-//   exists: vi.fn(),
-// }));
-
-// Mock path utilities
-// vi.mock('@/utils/paths.js', () => ({
-//   getClaudeDir: vi.fn(() => '/mock/home/.claude'),
-//   getGlobalConfigDir: vi.fn(() => '/mock/home/.claude-kit'),
-// }));
-
-describe.skip('McpManager', () => {
-  let mockReadJsonSafe: ReturnType<typeof vi.fn>;
-  let mockWriteJson: ReturnType<typeof vi.fn>;
-  let mockExists: ReturnType<typeof vi.fn>;
+describe('McpManager', () => {
+  let tempDir: string;
+  let claudeDir: string;
+  let configDir: string;
 
   beforeEach(async () => {
-    const fs = await import('@/utils/fs.js');
-    mockReadJsonSafe = fs.readJsonSafe as unknown as ReturnType<typeof vi.fn>;
-    mockWriteJson = fs.writeJson as unknown as ReturnType<typeof vi.fn>;
-    mockExists = fs.exists as unknown as ReturnType<typeof vi.fn>;
+    // Create temp directory structure
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mcp-manager-test-'));
+    claudeDir = path.join(tempDir, 'claude');
+    configDir = path.join(tempDir, 'config');
 
-    // Default mocks - files exist and are readable
-    mockReadJsonSafe.mockResolvedValue(null);
-    mockWriteJson.mockResolvedValue(undefined);
-    mockExists.mockResolvedValue(true);
+    // Create directory structure
+    await fs.mkdir(claudeDir, { recursive: true });
+    await fs.mkdir(path.join(configDir, 'cache'), { recursive: true });
   });
 
-  afterEach(() => {
-    vi.clearAllMocks();
+  afterEach(async () => {
+    await fs.rm(tempDir, { recursive: true, force: true });
   });
+
+  /**
+   * Helper to write settings file
+   */
+  async function writeSettings(settings: McpSettings) {
+    await fs.writeFile(
+      path.join(claudeDir, 'claude_desktop_config.json'),
+      JSON.stringify(settings, null, 2)
+    );
+  }
+
+  /**
+   * Helper to write state file
+   */
+  async function writeState(state: Record<string, Partial<McpServerState>>) {
+    await fs.writeFile(
+      path.join(configDir, 'cache', 'mcp-servers.json'),
+      JSON.stringify(state, null, 2)
+    );
+  }
+
+  /**
+   * Helper to read settings file
+   */
+  async function readSettings(): Promise<McpSettings> {
+    const content = await fs.readFile(
+      path.join(claudeDir, 'claude_desktop_config.json'),
+      'utf-8'
+    );
+    return JSON.parse(content);
+  }
+
+  /**
+   * Helper to read state file
+   */
+  async function readState(): Promise<Record<string, Partial<McpServerState>>> {
+    const content = await fs.readFile(
+      path.join(configDir, 'cache', 'mcp-servers.json'),
+      'utf-8'
+    );
+    return JSON.parse(content);
+  }
 
   describe('list', () => {
     it('returns empty array when no servers configured', async () => {
-      mockReadJsonSafe.mockResolvedValue({ mcpServers: {} });
+      await writeSettings({ mcpServers: {} });
 
-      const manager = createMcpManager();
+      const manager = createMcpManager({ claudeDir, configDir });
       const servers = await manager.list();
 
       expect(servers).toEqual([]);
@@ -69,11 +99,9 @@ describe.skip('McpManager', () => {
         },
       };
 
-      mockReadJsonSafe
-        .mockResolvedValueOnce(settings) // Settings
-        .mockResolvedValueOnce({}); // State
+      await writeSettings(settings);
 
-      const manager = createMcpManager();
+      const manager = createMcpManager({ claudeDir, configDir });
       const servers = await manager.list();
 
       expect(servers).toHaveLength(2);
@@ -98,11 +126,10 @@ describe.skip('McpManager', () => {
         },
       };
 
-      mockReadJsonSafe
-        .mockResolvedValueOnce(settings)
-        .mockResolvedValueOnce(state);
+      await writeSettings(settings);
+      await writeState(state);
 
-      const manager = createMcpManager();
+      const manager = createMcpManager({ claudeDir, configDir });
       const servers = await manager.list();
 
       expect(servers[0]).toMatchObject({
@@ -115,9 +142,9 @@ describe.skip('McpManager', () => {
 
   describe('get', () => {
     it('returns null for non-existent server', async () => {
-      mockReadJsonSafe.mockResolvedValue({ mcpServers: {} });
+      await writeSettings({ mcpServers: {} });
 
-      const manager = createMcpManager();
+      const manager = createMcpManager({ claudeDir, configDir });
       const server = await manager.get('nonexistent');
 
       expect(server).toBeNull();
@@ -133,11 +160,9 @@ describe.skip('McpManager', () => {
         },
       };
 
-      mockReadJsonSafe
-        .mockResolvedValueOnce(settings)
-        .mockResolvedValueOnce({});
+      await writeSettings(settings);
 
-      const manager = createMcpManager();
+      const manager = createMcpManager({ claudeDir, configDir });
       const server = await manager.get('github');
 
       expect(server).not.toBeNull();
@@ -147,9 +172,9 @@ describe.skip('McpManager', () => {
 
   describe('enable', () => {
     it('throws error for non-existent server', async () => {
-      mockReadJsonSafe.mockResolvedValue({ mcpServers: {} });
+      await writeSettings({ mcpServers: {} });
 
-      const manager = createMcpManager();
+      const manager = createMcpManager({ claudeDir, configDir });
 
       await expect(manager.enable('nonexistent')).rejects.toThrow(
         McpServerNotFoundError
@@ -167,28 +192,22 @@ describe.skip('McpManager', () => {
         github: { status: 'disabled' },
       };
 
-      mockReadJsonSafe
-        .mockResolvedValueOnce(settings) // list -> loadSettings
-        .mockResolvedValueOnce(state)    // list -> loadState
-        .mockResolvedValueOnce(state);   // enable -> loadState
+      await writeSettings(settings);
+      await writeState(state);
 
-      const manager = createMcpManager();
+      const manager = createMcpManager({ claudeDir, configDir });
       await manager.enable('github');
 
-      expect(mockWriteJson).toHaveBeenCalledWith(
-        expect.stringContaining('mcp-servers.json'),
-        expect.objectContaining({
-          github: expect.objectContaining({ status: 'stopped' }),
-        })
-      );
+      const updatedState = await readState();
+      expect(updatedState['github']?.status).toBe('stopped');
     });
   });
 
   describe('disable', () => {
     it('throws error for non-existent server', async () => {
-      mockReadJsonSafe.mockResolvedValue({ mcpServers: {} });
+      await writeSettings({ mcpServers: {} });
 
-      const manager = createMcpManager();
+      const manager = createMcpManager({ claudeDir, configDir });
 
       await expect(manager.disable('nonexistent')).rejects.toThrow(
         McpServerNotFoundError
@@ -206,28 +225,22 @@ describe.skip('McpManager', () => {
         github: { status: 'running' },
       };
 
-      mockReadJsonSafe
-        .mockResolvedValueOnce(settings)
-        .mockResolvedValueOnce(state)
-        .mockResolvedValueOnce(state);
+      await writeSettings(settings);
+      await writeState(state);
 
-      const manager = createMcpManager();
+      const manager = createMcpManager({ claudeDir, configDir });
       await manager.disable('github');
 
-      expect(mockWriteJson).toHaveBeenCalledWith(
-        expect.stringContaining('mcp-servers.json'),
-        expect.objectContaining({
-          github: expect.objectContaining({ status: 'disabled' }),
-        })
-      );
+      const updatedState = await readState();
+      expect(updatedState['github']?.status).toBe('disabled');
     });
   });
 
   describe('configure', () => {
     it('throws error for non-existent server', async () => {
-      mockReadJsonSafe.mockResolvedValue({ mcpServers: {} });
+      await writeSettings({ mcpServers: {} });
 
-      const manager = createMcpManager();
+      const manager = createMcpManager({ claudeDir, configDir });
 
       await expect(
         manager.configure('nonexistent', { command: 'new-cmd' })
@@ -241,19 +254,13 @@ describe.skip('McpManager', () => {
         },
       };
 
-      mockReadJsonSafe.mockResolvedValue(settings);
+      await writeSettings(settings);
 
-      const manager = createMcpManager();
+      const manager = createMcpManager({ claudeDir, configDir });
       await manager.configure('github', { args: ['new-args'] });
 
-      expect(mockWriteJson).toHaveBeenCalledWith(
-        expect.stringContaining('claude_desktop_config.json'),
-        expect.objectContaining({
-          mcpServers: expect.objectContaining({
-            github: expect.objectContaining({ args: ['new-args'] }),
-          }),
-        })
-      );
+      const updatedSettings = await readSettings();
+      expect(updatedSettings.mcpServers?.['github']?.args).toEqual(['new-args']);
     });
   });
 
@@ -265,9 +272,9 @@ describe.skip('McpManager', () => {
         },
       };
 
-      mockReadJsonSafe.mockResolvedValue(settings);
+      await writeSettings(settings);
 
-      const manager = createMcpManager();
+      const manager = createMcpManager({ claudeDir, configDir });
 
       await expect(
         manager.add('github', { command: 'new-cmd', enabled: true })
@@ -275,36 +282,45 @@ describe.skip('McpManager', () => {
     });
 
     it('adds a new server', async () => {
-      mockReadJsonSafe
-        .mockResolvedValueOnce({ mcpServers: {} }) // loadSettings
-        .mockResolvedValueOnce({}); // loadState
+      await writeSettings({ mcpServers: {} });
 
-      const manager = createMcpManager();
+      const manager = createMcpManager({ claudeDir, configDir });
       await manager.add('github', {
         command: 'npx',
         args: ['-y', '@modelcontextprotocol/server-github'],
         enabled: true,
       });
 
-      expect(mockWriteJson).toHaveBeenCalledWith(
-        expect.stringContaining('claude_desktop_config.json'),
-        expect.objectContaining({
-          mcpServers: expect.objectContaining({
-            github: expect.objectContaining({
-              command: 'npx',
-              args: ['-y', '@modelcontextprotocol/server-github'],
-            }),
-          }),
-        })
-      );
+      const updatedSettings = await readSettings();
+      expect(updatedSettings.mcpServers?.['github']).toMatchObject({
+        command: 'npx',
+        args: ['-y', '@modelcontextprotocol/server-github'],
+      });
+
+      const state = await readState();
+      expect(state['github']?.status).toBe('stopped');
+    });
+
+    it('adds server as disabled when enabled is false', async () => {
+      await writeSettings({ mcpServers: {} });
+
+      const manager = createMcpManager({ claudeDir, configDir });
+      await manager.add('github', {
+        command: 'npx',
+        args: ['-y', '@modelcontextprotocol/server-github'],
+        enabled: false,
+      });
+
+      const state = await readState();
+      expect(state['github']?.status).toBe('disabled');
     });
   });
 
   describe('remove', () => {
     it('throws error for non-existent server', async () => {
-      mockReadJsonSafe.mockResolvedValue({ mcpServers: {} });
+      await writeSettings({ mcpServers: {} });
 
-      const manager = createMcpManager();
+      const manager = createMcpManager({ claudeDir, configDir });
 
       await expect(manager.remove('nonexistent')).rejects.toThrow(
         McpServerNotFoundError
@@ -319,22 +335,19 @@ describe.skip('McpManager', () => {
         },
       };
 
-      mockReadJsonSafe
-        .mockResolvedValueOnce(settings)
-        .mockResolvedValueOnce({ github: {}, filesystem: {} });
+      await writeSettings(settings);
+      await writeState({ github: {}, filesystem: {} });
 
-      const manager = createMcpManager();
+      const manager = createMcpManager({ claudeDir, configDir });
       await manager.remove('github');
 
-      // Verify github was removed
-      expect(mockWriteJson).toHaveBeenCalledWith(
-        expect.stringContaining('claude_desktop_config.json'),
-        expect.objectContaining({
-          mcpServers: expect.not.objectContaining({
-            github: expect.anything(),
-          }),
-        })
-      );
+      const updatedSettings = await readSettings();
+      expect(updatedSettings.mcpServers?.['github']).toBeUndefined();
+      expect(updatedSettings.mcpServers?.['filesystem']).toBeDefined();
+
+      const updatedState = await readState();
+      expect(updatedState['github']).toBeUndefined();
+      expect(updatedState['filesystem']).toBeDefined();
     });
   });
 
@@ -347,11 +360,9 @@ describe.skip('McpManager', () => {
         },
       };
 
-      mockReadJsonSafe
-        .mockResolvedValueOnce(settings)
-        .mockResolvedValueOnce({});
+      await writeSettings(settings);
 
-      const manager = createMcpManager();
+      const manager = createMcpManager({ claudeDir, configDir });
       const budget = await manager.budget();
 
       expect(budget).toMatchObject({
@@ -372,11 +383,9 @@ describe.skip('McpManager', () => {
         },
       };
 
-      mockReadJsonSafe
-        .mockResolvedValueOnce(settings)
-        .mockResolvedValueOnce({});
+      await writeSettings(settings);
 
-      const manager = createMcpManager();
+      const manager = createMcpManager({ claudeDir, configDir });
       const budgets = await manager.budgetPerServer();
 
       expect(budgets).toHaveLength(2);

@@ -115,6 +115,10 @@ export function createProfileManager(storage?: ProfileStorage): ProfileManager {
         enabled: config.skills?.enabled ?? [],
         disabled: config.skills?.disabled ?? [],
       },
+      hooks: {
+        enabled: config.hooks?.enabled ?? [],
+        disabled: config.hooks?.disabled ?? [],
+      },
       agents: {},
       mcp: {
         enabled: config.mcp?.enabled ?? [],
@@ -168,6 +172,10 @@ export function createProfileManager(storage?: ProfileStorage): ProfileManager {
         skills: {
           enabled: [...new Set([...parent.resolved.skills.enabled, ...resolved.skills.enabled])],
           disabled: [...new Set([...parent.resolved.skills.disabled, ...resolved.skills.disabled])],
+        },
+        hooks: {
+          enabled: [...new Set([...parent.resolved.hooks.enabled, ...resolved.hooks.enabled])],
+          disabled: [...new Set([...parent.resolved.hooks.disabled, ...resolved.hooks.disabled])],
         },
         agents: mergedAgents,
         mcp: {
@@ -287,6 +295,20 @@ export function createProfileManager(storage?: ProfileStorage): ProfileManager {
           ...new Set([
             ...baseDetails.resolved.skills.disabled,
             ...(projectOverrides.skills?.disabled ?? []),
+          ]),
+        ],
+      },
+      hooks: {
+        enabled: [
+          ...new Set([
+            ...baseDetails.resolved.hooks.enabled,
+            ...(projectOverrides.hooks?.enabled ?? []),
+          ]),
+        ],
+        disabled: [
+          ...new Set([
+            ...baseDetails.resolved.hooks.disabled,
+            ...(projectOverrides.hooks?.disabled ?? []),
           ]),
         ],
       },

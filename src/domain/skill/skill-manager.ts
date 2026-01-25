@@ -141,12 +141,15 @@ export class SkillManager {
   private skills: Map<string, Skill> = new Map();
   private options: SkillManagerOptions;
   private loaded = false;
+  private claudeSkillsDir: string;
 
   constructor(options: SkillManagerOptions = {}) {
+    this.claudeSkillsDir = options.claudeSkillsDir || CLAUDE_SKILLS_DIR;
     this.options = {
       builtinSkillsDir: options.builtinSkillsDir || DEFAULT_BUILTIN_SKILLS_DIR,
       globalSkillsDir: options.globalSkillsDir || DEFAULT_GLOBAL_SKILLS_DIR,
       projectSkillsDir: options.projectSkillsDir || DEFAULT_PROJECT_SKILLS_DIR,
+      claudeSkillsDir: this.claudeSkillsDir,
       profileSkills: options.profileSkills || [],
       disabledSkills: options.disabledSkills || [],
     };
@@ -358,7 +361,7 @@ export class SkillManager {
 
     try {
       // Ensure Claude skills directory exists
-      await mkdir(CLAUDE_SKILLS_DIR, { recursive: true });
+      await mkdir(this.claudeSkillsDir, { recursive: true });
 
       // Track which skills should exist in Claude Code
       const expectedSkills = new Set<string>();
@@ -366,7 +369,7 @@ export class SkillManager {
       // Sync enabled skills to Claude Code
       for (const skill of this.skills.values()) {
         try {
-          const destPath = join(CLAUDE_SKILLS_DIR, `${skill.metadata.name}.md`);
+          const destPath = join(this.claudeSkillsDir, `${skill.metadata.name}.md`);
           expectedSkills.add(`${skill.metadata.name}.md`);
 
           // Build full skill file with frontmatter
@@ -413,8 +416,8 @@ export class SkillManager {
       }
 
       // Clean up skills that were removed from claudeops
-      if (existsSync(CLAUDE_SKILLS_DIR)) {
-        const existingFiles = await readdir(CLAUDE_SKILLS_DIR);
+      if (existsSync(this.claudeSkillsDir)) {
+        const existingFiles = await readdir(this.claudeSkillsDir);
 
         for (const file of existingFiles) {
           if (!file.endsWith('.md')) continue;
@@ -425,7 +428,7 @@ export class SkillManager {
           try {
             // Remove the file (it's no longer in our skill set)
             const { unlink } = await import('fs/promises');
-            await unlink(join(CLAUDE_SKILLS_DIR, file));
+            await unlink(join(this.claudeSkillsDir, file));
             removed.push(file.replace(/\.md$/, ''));
           } catch (err) {
             errors.push(`Failed to remove ${file}: ${err instanceof Error ? err.message : 'Unknown error'}`);

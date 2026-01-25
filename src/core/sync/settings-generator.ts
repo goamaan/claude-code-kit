@@ -383,16 +383,20 @@ export function validateSettings(settings: GeneratedSettings): {
 
   // Validate hooks
   if (settings.hooks) {
-    const hookEvents = ['PreToolUse', 'PostToolUse', 'Stop', 'SubagentStop'] as const;
+    const hookEvents = ['PreToolUse', 'PostToolUse', 'Stop', 'SubagentStop', 'UserPromptSubmit'] as const;
     for (const event of hookEvents) {
       const entries = settings.hooks[event];
       if (entries) {
         for (const entry of entries) {
-          if (!entry.matcher) {
-            errors.push(`Hook in ${event} missing matcher`);
-          }
-          if (!entry.handler) {
-            errors.push(`Hook in ${event} missing handler`);
+          // Validate new hook format
+          if (!entry.hooks || !Array.isArray(entry.hooks) || entry.hooks.length === 0) {
+            errors.push(`Hook in ${event} missing hooks array`);
+          } else {
+            for (const hook of entry.hooks) {
+              if (!hook.command) {
+                errors.push(`Hook command in ${event} missing command`);
+              }
+            }
           }
         }
       }

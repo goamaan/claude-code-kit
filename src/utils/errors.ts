@@ -122,14 +122,14 @@ function categorizeError(
     const path = pathMatch?.[1];
 
     if (path?.includes('config.toml')) {
-      suggestions.push('Run: cck config init');
+      suggestions.push('Run: cops config init');
       suggestions.push('Or create the file manually');
     } else if (path?.includes('.claude')) {
       suggestions.push('Ensure Claude Code is installed');
       suggestions.push('Run Claude Code at least once to initialize');
     } else {
       suggestions.push(`The required file or directory doesn't exist`);
-      suggestions.push('Run: cck doctor --fix to diagnose and fix');
+      suggestions.push('Run: cops doctor --fix to diagnose and fix');
     }
   }
 
@@ -152,7 +152,7 @@ function categorizeError(
            message.includes('syntax') || message.includes('unexpected')) {
     detectedCategory = ErrorCategory.VALIDATION;
     suggestions.push('Check for syntax errors in your configuration file');
-    suggestions.push('Run: cck config validate');
+    suggestions.push('Run: cops config validate');
     suggestions.push('Use a validator: https://www.jsonlint.com or https://www.toml-lint.com');
   }
 
@@ -169,9 +169,9 @@ function categorizeError(
   else if (message.includes('config') || message.includes('profile') ||
            message.includes('setup')) {
     detectedCategory = ErrorCategory.CONFIG;
-    suggestions.push('Run: cck config validate');
-    suggestions.push('Run: cck doctor to diagnose issues');
-    suggestions.push('Reset config: cck config init --force');
+    suggestions.push('Run: cops config validate');
+    suggestions.push('Run: cops doctor to diagnose issues');
+    suggestions.push('Reset config: cops config init --force');
   }
 
   return { category: detectedCategory, suggestions };
@@ -186,7 +186,7 @@ export const errors = {
       `Config file not found`,
       `Looking for: ${path}`,
       [
-        'Run: cck config init',
+        'Run: cops config init',
         'Or create the file manually',
       ]
     );
@@ -197,9 +197,9 @@ export const errors = {
       `Invalid configuration`,
       `File: ${path}\nReason: ${reason}`,
       [
-        'Run: cck config validate',
+        'Run: cops config validate',
         'Check for syntax errors in the config file',
-        'Use: cck config edit to fix manually',
+        'Use: cops config edit to fix manually',
       ]
     );
   },
@@ -233,8 +233,8 @@ export const errors = {
       `Profile not found: ${name}`,
       undefined,
       [
-        'Run: cck profile list',
-        `Create it: cck profile create ${name}`,
+        'Run: cops profile list',
+        `Create it: cops profile create ${name}`,
       ]
     );
   },
@@ -244,8 +244,8 @@ export const errors = {
       `Setup not found: ${name}`,
       undefined,
       [
-        'Run: cck setup list',
-        'Search available: cck setup search',
+        'Run: cops setup list',
+        'Search available: cops setup search',
       ]
     );
   },
@@ -255,8 +255,8 @@ export const errors = {
       `Addon not found: ${name}`,
       undefined,
       [
-        'Run: cck addon list',
-        'Search available: cck addon search',
+        'Run: cops addon list',
+        'Search available: cops addon search',
       ]
     );
   },
@@ -278,7 +278,7 @@ export const errors = {
       `Field: ${field}\nReason: ${reason}`,
       [
         'Check the value and try again',
-        'Run: cck config validate',
+        'Run: cops config validate',
       ]
     );
   },

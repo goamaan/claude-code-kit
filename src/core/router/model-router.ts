@@ -15,8 +15,8 @@ import type { ModelTier } from './types.js';
  */
 const COMPLEXITY_MODEL_MAP: Record<Complexity, ModelTier> = {
   trivial: 'haiku',
-  simple: 'haiku',
-  moderate: 'sonnet',
+  simple: 'sonnet',
+  moderate: 'opus',
   complex: 'opus',
   architectural: 'opus',
 };

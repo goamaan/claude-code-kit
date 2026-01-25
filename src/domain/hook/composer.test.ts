@@ -340,10 +340,10 @@ describe('composer', () => {
       expect(result.PreToolUse).toBeDefined();
       expect(result.PreToolUse).toHaveLength(1);
       expect(result.PreToolUse![0]!.matcher).toBe('Bash');
-      expect(result.PreToolUse![0]!.priority).toBe(10);
+      expect(result.PreToolUse![0]!.hooks[0]?.command).toContain('test-hook');
     });
 
-    it('should omit priority when zero', () => {
+    it('should include hooks array', () => {
       const hooks: ComposedHooks = {
         PreToolUse: [
           {
@@ -363,10 +363,11 @@ describe('composer', () => {
 
       const result = toSettingsFormat(hooks);
 
-      expect(result.PreToolUse![0]!.priority).toBeUndefined();
+      expect(result.PreToolUse![0]!.hooks).toBeDefined();
+      expect(result.PreToolUse![0]!.hooks[0]?.type).toBe('command');
     });
 
-    it('should omit enabled when true', () => {
+    it('should include matcher for non-wildcard matchers', () => {
       const hooks: ComposedHooks = {
         PreToolUse: [
           {
@@ -386,7 +387,8 @@ describe('composer', () => {
 
       const result = toSettingsFormat(hooks);
 
-      expect(result.PreToolUse![0]!.enabled).toBeUndefined();
+      expect(result.PreToolUse![0]!.matcher).toBeDefined();
+      expect(result.PreToolUse![0]!.matcher).toBe('Bash');
     });
 
     it('should include all event types', () => {

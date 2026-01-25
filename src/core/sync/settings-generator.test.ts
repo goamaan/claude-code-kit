@@ -231,12 +231,18 @@ describe('settings-generator', () => {
     it('should merge hooks', () => {
       const base: GeneratedSettings = {
         hooks: {
-          PreToolUse: [{ matcher: 'a', handler: 'a.ts' }],
+          PreToolUse: [{
+            matcher: 'a',
+            hooks: [{ type: 'command', command: 'node a.ts' }]
+          }],
         },
       };
       const override: GeneratedSettings = {
         hooks: {
-          PreToolUse: [{ matcher: 'b', handler: 'b.ts' }],
+          PreToolUse: [{
+            matcher: 'b',
+            hooks: [{ type: 'command', command: 'node b.ts' }]
+          }],
         },
       };
 
@@ -341,32 +347,32 @@ describe('settings-generator', () => {
       expect(result.warnings.some(w => w.includes('API key'))).toBe(true);
     });
 
-    it('should error for hooks with missing matcher', () => {
+    it('should error for hooks with missing hooks array', () => {
       const settings: GeneratedSettings = {
         hooks: {
           PreToolUse: [
-            { matcher: '', handler: 'handler.ts' },
+            { matcher: 'Bash', hooks: [] },
           ],
         },
       };
 
       const result = validateSettings(settings);
 
-      expect(result.errors.some(e => e.includes('matcher'))).toBe(true);
+      expect(result.errors.some(e => e.includes('hooks'))).toBe(true);
     });
 
-    it('should error for hooks with missing handler', () => {
+    it('should error for hooks with missing command', () => {
       const settings: GeneratedSettings = {
         hooks: {
           PreToolUse: [
-            { matcher: 'test', handler: '' },
+            { hooks: [{ type: 'command', command: '' }] },
           ],
         },
       };
 
       const result = validateSettings(settings);
 
-      expect(result.errors.some(e => e.includes('handler'))).toBe(true);
+      expect(result.errors.some(e => e.includes('command'))).toBe(true);
     });
   });
 
@@ -410,7 +416,10 @@ describe('settings-generator', () => {
       const settings: GeneratedSettings = {
         model: 'claude-3-5-sonnet-20241022',
         hooks: {
-          PreToolUse: [{ matcher: 'test', handler: 'test.ts' }],
+          PreToolUse: [{
+            matcher: 'test',
+            hooks: [{ type: 'command', command: 'node test.ts' }]
+          }],
         },
         mcpServers: {
           'filesystem': { command: 'npx', args: ['@modelcontextprotocol/filesystem'] },

@@ -151,89 +151,68 @@ ALWAYS pass `model` parameter when delegating:
 ### Model Selection Guide
 | Complexity | Model | Cost | Use For |
 |------------|-------|------|---------|
-| Simple | haiku | $$ | Lookups, simple fixes, boilerplate |
-| Standard | sonnet | $$$ | Features, refactoring, testing |
-| Complex | opus | $$$$ | Architecture, debugging, planning |
+| Trivial | haiku | $ | Lookups, boilerplate, docs |
+| Simple | sonnet | $$ | Quick fixes |
+| Most work | opus | $$$$ | Everything else (default) |
 
 ### Examples
 ```
-# Simple lookup
+# Simple lookup (haiku is fine)
 Task(subagent_type="claudeops:explore",
      model="haiku",
      prompt="Find where UserService is defined")
 
-# Standard implementation
+# Standard implementation (use opus)
 Task(subagent_type="claudeops:executor",
-     model="sonnet",
+     model="opus",
      prompt="Add validation to the createUser function")
 
-# Complex debugging
+# Complex debugging (opus)
 Task(subagent_type="claudeops:architect",
      model="opus",
      prompt="Debug the race condition in the auth flow")
 ```
 
-## Agent Catalog (12 Agents)
+## Agent Catalog (11 Agents)
 
-### Execution Agents
-| Agent | Model | Use For |
-|-------|-------|---------|
-| executor-low | haiku | Boilerplate, simple changes |
-| executor | sonnet | Standard implementations, build fixes |
+### Opus Agents (Default - 8 agents)
+| Agent | Use For |
+|-------|---------|
+| executor | Standard implementations, features, bug fixes |
+| architect | Deep analysis, debugging, code review |
+| designer | UI/UX, components, styling |
+| qa-tester | Testing, TDD workflow |
+| security | Security audit |
+| researcher | External research, API analysis |
+| planner | Strategic planning |
+| critic | Plan review, gap analysis |
 
-### Analysis Agents
-| Agent | Model | Use For |
-|-------|-------|---------|
-| architect | opus | Deep analysis, debugging, code review |
+### Haiku Agents (Fast - 3 agents)
+| Agent | Use For |
+|-------|---------|
+| explore | File/code search, codebase discovery |
+| executor-low | Boilerplate, simple single-file changes |
+| writer | Documentation, comments |
 
-### Search Agents
-| Agent | Model | Use For |
-|-------|-------|---------|
-| explore | haiku | File/code search |
-
-### Frontend Agents
-| Agent | Model | Use For |
-|-------|-------|---------|
-| designer | sonnet | UI/frontend work |
-
-### Quality Agents
-| Agent | Model | Use For |
-|-------|-------|---------|
-| qa-tester | sonnet | Testing, TDD workflow |
-| security | opus | Security audit |
-
-### Support Agents
-| Agent | Model | Use For |
-|-------|-------|---------|
-| writer | haiku | Documentation |
-| researcher | sonnet | External research |
-| vision | sonnet | Image/visual analysis |
-
-### Strategic Agents
-| Agent | Model | Use For |
-|-------|-------|---------|
-| planner | opus | Strategic planning |
-| critic | opus | Plan review |
-
-**Note:** Model tiering is a parameter, not separate agents. Use `model="haiku"` for simple tasks, `model="opus"` for complex ones.
+**Philosophy:** Use opus by default. Reserve haiku for quick lookups and trivial changes.
 
 ## Delegation Patterns
 
-### Simple Task
+### Trivial Task (haiku)
 ```
 Task(subagent_type="claudeops:executor-low",
      model="haiku",
      prompt="Add a TODO comment at line 42 of utils.ts")
 ```
 
-### Standard Feature
+### Standard Feature (opus - default)
 ```
 Task(subagent_type="claudeops:executor",
-     model="sonnet",
+     model="opus",
      prompt="Implement the deleteUser method in UserService following existing patterns")
 ```
 
-### Complex Analysis
+### Complex Analysis (opus)
 ```
 Task(subagent_type="claudeops:architect",
      model="opus",

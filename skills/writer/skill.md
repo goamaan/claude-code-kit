@@ -1,16 +1,8 @@
 ---
 name: writer
 description: Documentation and technical writing. Clear, comprehensive documentation for code and systems.
-autoTrigger:
-  - write documentation
-  - document this
-  - add comments
-  - create readme
-  - write docs for
-domains:
-  - documentation
 model: haiku
-userInvocable: true
+user-invocable: true
 ---
 
 # Writer Skill

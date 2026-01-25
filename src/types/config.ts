@@ -88,11 +88,33 @@ export type MainConfig = z.infer<typeof MainConfigSchema>;
 // Profile File Configuration
 // =============================================================================
 
+/**
+ * Profile skills configuration.
+ * - `disabled`: Skills to exclude (recommended approach)
+ * - `enabled`: Skills to include (used by setups, not recommended for profiles)
+ *
+ * For profiles, prefer using `disabled` to blacklist specific skills.
+ * All skills are enabled by default unless explicitly disabled.
+ */
 export const ProfileSkillsConfigSchema = z.object({
   enabled: z.array(z.string()).optional(),
   disabled: z.array(z.string()).optional(),
 });
 export type ProfileSkillsConfig = z.infer<typeof ProfileSkillsConfigSchema>;
+
+/**
+ * Profile hooks configuration.
+ * - `disabled`: Hooks to exclude (recommended approach)
+ * - `enabled`: Hooks to include (used by setups, not recommended for profiles)
+ *
+ * For profiles, prefer using `disabled` to blacklist specific hooks.
+ * All hooks are enabled by default unless explicitly disabled.
+ */
+export const ProfileHooksConfigSchema = z.object({
+  enabled: z.array(z.string()).optional(),
+  disabled: z.array(z.string()).optional(),
+});
+export type ProfileHooksConfig = z.infer<typeof ProfileHooksConfigSchema>;
 
 export const ProfileAgentConfigSchema = z.object({
   model: ModelNameSchema.optional(),
@@ -114,6 +136,7 @@ export const ProfileFileConfigSchema = z.object({
   description: z.string().optional(),
   extends: z.string().optional(),
   skills: ProfileSkillsConfigSchema.optional(),
+  hooks: ProfileHooksConfigSchema.optional(),
   agents: ProfileAgentsConfigSchema.optional(),
   mcp: ProfileMcpConfigSchema.optional(),
   model: ModelConfigSchema.optional(),
@@ -131,6 +154,7 @@ export const ProjectConfigSchema = z.object({
   model: ModelConfigSchema.optional(),
   cost: CostConfigSchema.optional(),
   skills: ProfileSkillsConfigSchema.optional(),
+  hooks: ProfileHooksConfigSchema.optional(),
   agents: ProfileAgentsConfigSchema.optional(),
   mcp: ProfileMcpConfigSchema.optional(),
 });
@@ -177,6 +201,12 @@ export interface MergedConfig {
 
   // Skills configuration
   skills: {
+    enabled: string[];
+    disabled: string[];
+  };
+
+  // Hooks configuration
+  hooks: {
     enabled: string[];
     disabled: string[];
   };
@@ -236,6 +266,10 @@ export const DEFAULT_MERGED_CONFIG: MergedConfig = {
     watch: false,
   },
   skills: {
+    enabled: [],
+    disabled: [],
+  },
+  hooks: {
     enabled: [],
     disabled: [],
   },

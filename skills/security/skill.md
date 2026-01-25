@@ -1,17 +1,8 @@
 ---
 name: security
 description: Security review and vulnerability detection. Comprehensive security analysis and threat modeling.
-autoTrigger:
-  - security review
-  - check for vulnerabilities
-  - security audit
-  - threat model
-  - secure this code
-domains:
-  - security
-  - audit
 model: opus
-userInvocable: true
+user-invocable: true
 ---
 
 # Security Skill

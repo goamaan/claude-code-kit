@@ -24,6 +24,13 @@ import { calculateBudget, calculatePerServerBudget } from './budget.js';
 // Interface
 // =============================================================================
 
+export interface McpManagerOptions {
+  /** Override Claude config directory (default: ~/.claude) */
+  claudeDir?: string;
+  /** Override claudeops config directory (default: ~/.claudeops) */
+  configDir?: string;
+}
+
 export interface McpManager {
   /** List all MCP servers with their current state */
   list(): Promise<McpServerState[]>;
@@ -93,22 +100,25 @@ interface _McpServersConfig {
 // Implementation
 // =============================================================================
 
-export function createMcpManager(): McpManager {
+export function createMcpManager(options?: McpManagerOptions): McpManager {
   // Cache for server states (currently unused but reserved for future optimization)
   // let _cachedServers: McpServerState[] | null = null;
+
+  const claudeDir = options?.claudeDir ?? getClaudeDir();
+  const configDir = options?.configDir ?? getGlobalConfigDir();
 
   /**
    * Get path to Claude settings file
    */
   function getSettingsPath(): string {
-    return join(getClaudeDir(), CLAUDE_SETTINGS_FILE);
+    return join(claudeDir, CLAUDE_SETTINGS_FILE);
   }
 
   /**
    * Get path to MCP servers state file (for claudeops tracking)
    */
   function getStatePath(): string {
-    return join(getGlobalConfigDir(), 'cache', MCP_SERVERS_FILE);
+    return join(configDir, 'cache', MCP_SERVERS_FILE);
   }
 
   /**

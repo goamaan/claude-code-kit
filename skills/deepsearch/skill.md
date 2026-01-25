@@ -1,17 +1,8 @@
 ---
 name: deepsearch
 description: Thorough, multi-pattern codebase search. Comprehensive searches for complex queries and analysis.
-autoTrigger:
-  - deep search
-  - thorough search
-  - find all occurrences
-  - comprehensive search
-  - search everywhere for
-domains:
-  - search
-  - analysis
 model: sonnet
-userInvocable: true
+user-invocable: true
 ---
 
 # Deep Search Skill

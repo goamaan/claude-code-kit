@@ -5,7 +5,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { existsSync, mkdirSync, rmSync, writeFileSync, readFileSync } from 'fs';
 import { join } from 'path';
-import { homedir } from 'os';
 import { SkillManager } from './skill-manager.js';
 import type { Skill } from './types.js';
 
@@ -15,7 +14,7 @@ describe('SkillManager', () => {
   const builtinDir = join(testDir, 'builtin');
   const globalDir = join(testDir, 'global');
   const projectDir = join(testDir, 'project');
-  const claudeSkillsDir = join(homedir(), '.claude', 'skills');
+  let claudeSkillsDir: string;
 
   beforeEach(() => {
     // Create test directories
@@ -352,8 +351,14 @@ Autopilot skill.`
 
   describe('syncToClaudeCode', () => {
     let manager: SkillManager;
+    let tempClaudeDir: string;
 
     beforeEach(async () => {
+      // Create temp directory for Claude skills
+      tempClaudeDir = join(testDir, 'claude');
+      claudeSkillsDir = tempClaudeDir;
+      mkdirSync(tempClaudeDir, { recursive: true });
+
       writeFileSync(
         join(builtinDir, 'test-skill.md'),
         `---
@@ -379,19 +384,14 @@ Another skill content.`
         builtinSkillsDir: builtinDir,
         globalSkillsDir: globalDir,
         projectSkillsDir: projectDir,
+        claudeSkillsDir: tempClaudeDir,
       });
 
       await manager.loadSkills();
     });
 
     afterEach(() => {
-      // Clean up synced skills from Claude directory
-      if (existsSync(claudeSkillsDir)) {
-        const testSkillPath = join(claudeSkillsDir, 'test-skill.md');
-        const anotherSkillPath = join(claudeSkillsDir, 'another-skill.md');
-        if (existsSync(testSkillPath)) rmSync(testSkillPath);
-        if (existsSync(anotherSkillPath)) rmSync(anotherSkillPath);
-      }
+      // Temp directory will be cleaned up by outer afterEach
     });
 
     it('should sync skills to Claude Code directory', async () => {
@@ -442,6 +442,7 @@ Another skill content.`
         builtinSkillsDir: builtinDir,
         globalSkillsDir: globalDir,
         projectSkillsDir: projectDir,
+        claudeSkillsDir: tempClaudeDir,
         disabledSkills: ['another-skill'],
       });
 

@@ -1,17 +1,8 @@
 ---
 name: code-review
 description: Pull request and code review. Comprehensive code quality assessment and feedback.
-autoTrigger:
-  - review this code
-  - code review
-  - review the pr
-  - review pull request
-  - check this code
-domains:
-  - review
-  - quality
 model: opus
-userInvocable: true
+user-invocable: true
 ---
 
 # Code Review Skill

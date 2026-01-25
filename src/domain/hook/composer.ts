@@ -240,19 +240,20 @@ export function toSettingsFormat(hooks: ComposedHooks): SettingsHooks {
     }
 
     return handlers.map(h => {
+      const handlerPath = h.source === 'built-in' ? h.name : (h as unknown as { handlerPath?: string }).handlerPath ?? h.name;
+
       const entry: SettingsHookEntry = {
-        matcher: h.matcher,
-        handler: h.source === 'built-in' ? h.name : (h as unknown as { handlerPath?: string }).handlerPath ?? h.name,
+        hooks: [
+          {
+            type: 'command',
+            command: `node "${handlerPath}"`,
+          },
+        ],
       };
 
-      // Only include priority if non-zero
-      if (h.priority !== 0) {
-        entry.priority = h.priority;
-      }
-
-      // Only include enabled if false (default is true)
-      if (!h.enabled) {
-        entry.enabled = false;
+      // Add string matcher if not wildcard
+      if (h.matcher && h.matcher !== '*') {
+        entry.matcher = h.matcher;
       }
 
       return entry;

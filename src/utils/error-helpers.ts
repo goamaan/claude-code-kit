@@ -64,8 +64,8 @@ export function configError(
     output.dim(`  • ${fix}`);
   } else {
     output.info('To fix this:');
-    output.dim('  • Run: cck config validate');
-    output.dim('  • Edit: cck config edit');
+    output.dim('  • Run: cops config validate');
+    output.dim('  • Edit: cops config edit');
   }
   process.exit(1);
 }
@@ -144,7 +144,7 @@ export function validationError(
   console.log();
   output.info('To fix this:');
   output.dim('  • Check the value and try again');
-  output.dim('  • Run: cck config validate');
+  output.dim('  • Run: cops config validate');
   process.exit(1);
 }
 
@@ -189,6 +189,6 @@ export function installationError(
   output.dim('  • Try reinstalling: npm install -g claudeops@latest');
   output.dim('  • Clear cache: npm cache clean --force');
   output.dim('  • Check Node.js version: node --version');
-  output.dim('  • Run: cck doctor --fix');
+  output.dim('  • Run: cops doctor --fix');
   process.exit(1);
 }

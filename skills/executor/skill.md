@@ -1,19 +1,8 @@
 ---
 name: executor
 description: Standard code implementation for features and bug fixes. Balanced approach for most coding tasks.
-autoTrigger:
-  - implement
-  - add feature
-  - create function
-  - write code for
-  - build the
-  - code this
-domains:
-  - backend
-  - frontend
-  - general
 model: sonnet
-userInvocable: true
+user-invocable: true
 ---
 
 # Executor Skill

@@ -1,17 +1,8 @@
 ---
 name: explore
 description: Fast codebase exploration and file finding. Quick searches for files, functions, and patterns.
-autoTrigger:
-  - find the file
-  - where is
-  - locate
-  - search for
-  - show me the
-domains:
-  - search
-  - exploration
 model: haiku
-userInvocable: true
+user-invocable: true
 ---
 
 # Explore Skill

@@ -7,14 +7,26 @@ import { defineCommand } from 'citty';
 import * as output from '../ui/output.js';
 import { createSkillManager } from '../domain/skill/index.js';
 import type { Skill } from '../domain/skill/types.js';
+import type { Domain } from '../core/classifier/types.js';
 import { readFile, writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { homedir } from 'os';
 import { existsSync } from 'fs';
 import pc from 'picocolors';
+import { loadConfig } from '../core/config/loader.js';
 
 const GLOBAL_SKILLS_DIR = join(homedir(), '.claudeops', 'skills');
 const CLAUDE_SKILLS_DIR = join(homedir(), '.claude', 'skills');
+
+/**
+ * Create a skill manager with profile-aware disabled skills
+ */
+async function createProfileAwareSkillManager() {
+  const config = await loadConfig();
+  return createSkillManager({
+    disabledSkills: config.skills.disabled,
+  });
+}
 
 // =============================================================================
 // Subcommands
@@ -43,7 +55,7 @@ const listCommand = defineCommand({
   },
   async run({ args }) {
     try {
-      const skillManager = createSkillManager();
+      const skillManager = await createProfileAwareSkillManager();
       const skills = await skillManager.loadSkills();
 
       if (skills.length === 0) {
@@ -130,7 +142,7 @@ const infoCommand = defineCommand({
   },
   async run({ args }) {
     try {
-      const skillManager = createSkillManager();
+      const skillManager = await createProfileAwareSkillManager();
       await skillManager.loadSkills();
 
       const skill = skillManager.getSkill(args.name);
@@ -288,6 +300,167 @@ Add your skill content here.
 });
 
 /**
+ * Add (generate) a skill using AI
+ */
+const addCommand = defineCommand({
+  meta: {
+    name: 'add',
+    description: 'Generate a skill using AI',
+  },
+  args: {
+    description: {
+      type: 'positional',
+      description: 'Description of the skill to generate',
+      required: true,
+    },
+    name: {
+      type: 'string',
+      alias: 'n',
+      description: 'Skill name (optional, AI will suggest)',
+    },
+    model: {
+      type: 'string',
+      alias: 'm',
+      description: 'Model to use for generation (haiku, sonnet, opus)',
+      default: 'sonnet',
+    },
+    domains: {
+      type: 'string',
+      alias: 'd',
+      description: 'Comma-separated domains (frontend, backend, testing, etc.)',
+    },
+    reference: {
+      type: 'string',
+      alias: 'r',
+      description: 'Reference URL to fetch for context',
+    },
+    yes: {
+      type: 'boolean',
+      alias: 'y',
+      description: 'Skip confirmation and install directly',
+      default: false,
+    },
+  },
+  async run({ args }) {
+    try {
+      const { generateSkill, generateSkillTemplate, isClaudeCliAvailable, GeneratorError } = await import('../domain/generator/index.js');
+      const { createInterface } = await import('node:readline');
+
+      // Parse domains
+      const domains = args.domains
+        ? (args.domains.split(',').map(d => d.trim()) as Domain[])
+        : undefined;
+
+      // Check if Claude CLI is available
+      const cliAvailable = await isClaudeCliAvailable();
+
+      output.info('Generating skill...');
+
+      let skill;
+      try {
+        if (cliAvailable) {
+          skill = await generateSkill({
+            description: args.description,
+            name: args.name,
+            model: args.model as 'haiku' | 'sonnet' | 'opus',
+            domains,
+            referenceUrl: args.reference,
+          });
+        } else {
+          output.warn('Claude CLI not found. Using template-based generation.');
+          skill = generateSkillTemplate({
+            description: args.description,
+            name: args.name,
+            domains,
+          });
+        }
+      } catch (err) {
+        if (err instanceof GeneratorError) {
+          if (err.code === 'CLI_NOT_FOUND') {
+            output.warn('Claude CLI not available. Falling back to template.');
+            skill = generateSkillTemplate({
+              description: args.description,
+              name: args.name,
+              domains,
+            });
+          } else {
+            throw err;
+          }
+        } else {
+          throw err;
+        }
+      }
+
+      // Show preview
+      output.header('Generated Skill Preview');
+      console.log();
+      output.kv('Name', skill.name);
+      output.kv('Description', skill.description);
+      if (skill.autoTrigger.length > 0) {
+        output.kv('Auto Triggers', skill.autoTrigger.join(', '));
+      }
+      if (skill.domains.length > 0) {
+        output.kv('Domains', skill.domains.join(', '));
+      }
+      if (skill.model) {
+        output.kv('Model', skill.model);
+      }
+
+      console.log();
+      output.header('Content Preview');
+      console.log();
+      // Show first 30 lines of content
+      const lines = skill.content.split('\n');
+      const previewLines = lines.slice(0, 30);
+      for (const line of previewLines) {
+        console.log(pc.dim(line));
+      }
+      if (lines.length > 30) {
+        console.log(pc.dim(`... (${lines.length - 30} more lines)`));
+      }
+
+      // Confirm installation unless --yes
+      if (!args.yes) {
+        const rl = createInterface({
+          input: process.stdin,
+          output: process.stdout,
+        });
+
+        const answer = await new Promise<string>((resolve) => {
+          rl.question('\nInstall this skill? (y/N) ', resolve);
+        });
+        rl.close();
+
+        if (answer.toLowerCase() !== 'y' && answer.toLowerCase() !== 'yes') {
+          output.info('Cancelled');
+          return;
+        }
+      }
+
+      // Ensure directory exists
+      await mkdir(GLOBAL_SKILLS_DIR, { recursive: true });
+
+      // Install skill
+      const destPath = join(GLOBAL_SKILLS_DIR, `${skill.name}.md`);
+
+      if (existsSync(destPath)) {
+        output.warn(`Skill "${skill.name}" already exists. Overwriting.`);
+      }
+
+      await writeFile(destPath, skill.content, 'utf8');
+      output.success(`Installed skill "${skill.name}" to ${destPath}`);
+
+      // Suggest syncing
+      output.info('Run "cops skill sync" to sync to Claude Code');
+
+    } catch (err) {
+      output.error(err instanceof Error ? err.message : String(err));
+      process.exit(1);
+    }
+  },
+});
+
+/**
  * Enable a skill
  */
 const enableCommand = defineCommand({
@@ -305,7 +478,7 @@ const enableCommand = defineCommand({
   async run({ args }) {
     try {
       // For now, just verify the skill exists
-      const skillManager = createSkillManager();
+      const skillManager = await createProfileAwareSkillManager();
       await skillManager.loadSkills();
 
       const skill = skillManager.getSkill(args.name);
@@ -344,7 +517,7 @@ const disableCommand = defineCommand({
   async run({ args }) {
     try {
       // For now, just verify the skill exists
-      const skillManager = createSkillManager();
+      const skillManager = await createProfileAwareSkillManager();
       await skillManager.loadSkills();
 
       const skill = skillManager.getSkill(args.name);
@@ -383,7 +556,7 @@ const syncCommand = defineCommand({
   },
   async run({ args }) {
     try {
-      const skillManager = createSkillManager();
+      const skillManager = await createProfileAwareSkillManager();
       await skillManager.loadSkills();
 
       output.info(`Syncing skills to ${CLAUDE_SKILLS_DIR}...`);
@@ -446,6 +619,7 @@ const skillCommand = defineCommand({
     list: listCommand,
     info: infoCommand,
     install: installCommand,
+    add: addCommand,
     enable: enableCommand,
     disable: disableCommand,
     sync: syncCommand,
@@ -455,6 +629,7 @@ const skillCommand = defineCommand({
     console.log('  list       List all installed skills');
     console.log('  info       Show skill details');
     console.log('  install    Install a skill');
+    console.log('  add        Generate a skill using AI');
     console.log('  enable     Enable a skill');
     console.log('  disable    Disable a skill');
     console.log('  sync       Sync skills to Claude Code');

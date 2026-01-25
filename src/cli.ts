@@ -19,9 +19,6 @@ const main = defineCommand({
     // Add-on management
     addon: () => import("./commands/addon.js").then((m) => m.default),
 
-    // Pack management
-    pack: () => import("./commands/pack.js").then((m) => m.default),
-
     // Skill management
     skill: () => import("./commands/skill.js").then((m) => m.default),
 
@@ -59,10 +56,10 @@ const main = defineCommand({
     console.log("");
 
     console.log("Getting Started:");
-    console.log("  cck install        Interactive installation wizard");
-    console.log("  cck config init    Initialize configuration");
-    console.log("  cck doctor         Diagnose and fix issues");
-    console.log("  cck sync           Sync to Claude Code");
+    console.log("  cops install        Interactive installation wizard");
+    console.log("  cops config init    Initialize configuration");
+    console.log("  cops doctor         Diagnose and fix issues");
+    console.log("  cops sync           Sync to Claude Code");
     console.log("");
 
     console.log("Core Commands:");
@@ -74,7 +71,6 @@ const main = defineCommand({
     console.log("Extensions:");
     console.log("  setup              Manage setups (list, info, use, create)");
     console.log("  addon              Manage addons (search, install, update, remove)");
-    console.log("  pack               Manage packs (add, list, info, enable, disable)");
     console.log("  skill              Manage skills (list, info, install, sync)");
     console.log("  mcp                Manage MCP servers (list, add, enable, disable)");
     console.log("  hook               Manage hooks (list, debug, test)");
@@ -91,20 +87,19 @@ const main = defineCommand({
     console.log("");
 
     console.log("Examples:");
-    console.log("  cck config init              Create initial configuration");
-    console.log("  cck profile create work      Create a work profile");
-    console.log("  cck addon search react       Search for React addons");
-    console.log("  cck pack add typescript      Add TypeScript pack");
-    console.log("  cck upgrade --check          Check for updates");
+    console.log("  cops config init              Create initial configuration");
+    console.log("  cops profile create work      Create a work profile");
+    console.log("  cops addon search react       Search for React addons");
+    console.log("  cops upgrade --check          Check for updates");
     console.log("");
 
     console.log("For detailed help:");
-    console.log("  cck <command> --help         Show help for a specific command");
-    console.log("  cck doctor                   Diagnose installation issues");
+    console.log("  cops <command> --help         Show help for a specific command");
+    console.log("  cops doctor                   Diagnose installation issues");
     console.log("");
 
     console.log("Documentation:");
-    console.log("  https://github.com/anthropics/claudeops");
+    console.log("  https://github.com/goamaan/claudeops");
   },
 });
 

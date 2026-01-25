@@ -95,6 +95,9 @@ export interface SkillManagerOptions {
   /** Project skills directory (.claude/skills/) */
   projectSkillsDir?: string;
 
+  /** Claude Code skills directory (~/.claude/skills/) - for testing */
+  claudeSkillsDir?: string;
+
   /** Profile-specific skills to enable */
   profileSkills?: string[];
 

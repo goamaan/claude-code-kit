@@ -104,7 +104,7 @@ async function executeUpgrade(): Promise<boolean> {
 export default defineCommand({
   meta: {
     name: 'upgrade',
-    description: 'Check for and install claudeops updates\n\nExamples:\n  cck upgrade              # Check and install updates\n  cck upgrade --check      # Only check for updates\n  cck upgrade --force      # Install without confirmation',
+    description: 'Check for and install claudeops updates\n\nExamples:\n  cops upgrade              # Check and install updates\n  cops upgrade --check      # Only check for updates\n  cops upgrade --force      # Install without confirmation',
   },
   args: {
     check: {
@@ -180,7 +180,7 @@ export default defineCommand({
       if (args.force) {
         console.log();
         output.info('Use --force to reinstall the current version:');
-        output.dim('  cck upgrade --force');
+        output.dim('  cops upgrade --force');
       }
       return;
     }
@@ -210,13 +210,13 @@ export default defineCommand({
 
     console.log();
     output.info('What\'s new:');
-    output.dim('  • Visit: https://github.com/anthropics/claudeops/releases');
-    output.dim('  • Changelog: https://github.com/anthropics/claudeops/blob/main/CHANGELOG.md');
+    output.dim('  • Visit: https://github.com/goamaan/claudeops/releases');
+    output.dim('  • Changelog: https://github.com/goamaan/claudeops/blob/main/CHANGELOG.md');
 
     if (args.check) {
       console.log();
       output.info('To install this update, run:');
-      output.dim('  cck upgrade');
+      output.dim('  cops upgrade');
       return;
     }
 
@@ -245,8 +245,8 @@ export default defineCommand({
       output.success(`Successfully upgraded to version ${latestVersion}`);
       console.log();
       output.info('Next steps:');
-      output.dim('  • Run: cck doctor    (verify installation)');
-      output.dim('  • Run: cck sync      (sync configuration)');
+      output.dim('  • Run: cops doctor    (verify installation)');
+      output.dim('  • Run: cops sync      (sync configuration)');
     } else {
       console.log();
       output.error('Upgrade failed');

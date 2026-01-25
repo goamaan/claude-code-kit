@@ -1,16 +1,8 @@
 ---
 name: executor-low
 description: Simple, single-file code changes and boilerplate generation. Fast, efficient implementation for straightforward tasks.
-autoTrigger:
-  - add a comment
-  - fix typo
-  - rename variable
-  - add import
-  - simple change
-domains:
-  - general
 model: haiku
-userInvocable: true
+user-invocable: true
 ---
 
 # Executor-Low Skill

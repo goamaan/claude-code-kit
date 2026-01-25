@@ -1,17 +1,8 @@
 ---
 name: critic
 description: Critical review of plans, designs, and implementations. Expert-level critique for quality assurance.
-autoTrigger:
-  - review this plan
-  - critique the design
-  - what could go wrong
-  - find problems with
-  - critical review
-domains:
-  - review
-  - quality
 model: opus
-userInvocable: true
+user-invocable: true
 ---
 
 # Critic Skill

@@ -1,17 +1,8 @@
 ---
 name: typescript-expert
 description: TypeScript-specific guidance, patterns, and best practices. Expert-level TypeScript knowledge.
-autoTrigger:
-  - typescript help
-  - ts types
-  - typescript error
-  - how to type this
-  - typescript best practice
-domains:
-  - typescript
-  - types
 model: sonnet
-userInvocable: true
+user-invocable: true
 ---
 
 # TypeScript Expert Skill
