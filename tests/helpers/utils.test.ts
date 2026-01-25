@@ -73,7 +73,8 @@ describe('test utilities', () => {
     });
 
     it('should not throw for non-existent directory', async () => {
-      await expect(removeTempDir('/nonexistent/path')).resolves.not.toThrow();
+      // Should complete without throwing
+      await removeTempDir('/nonexistent/path');
     });
   });
 

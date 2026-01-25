@@ -356,8 +356,8 @@ ${hooksSection}
       await expect(manager.create('name_with_underscore')).rejects.toThrow(SetupManagerError);
       await expect(manager.create('name with spaces')).rejects.toThrow(SetupManagerError);
 
-      // Valid
-      await expect(manager.create('valid-name-123')).resolves.not.toThrow();
+      // Valid - should complete without throwing
+      await manager.create('valid-name-123');
     });
 
     it('should throw with INVALID_NAME code for bad names', async () => {
