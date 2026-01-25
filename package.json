@@ -31,7 +31,8 @@
     "agents",
     "skills",
     "hooks",
-    "scripts"
+    "scripts",
+    "profiles"
   ],
   "scripts": {
     "dev": "tsdown --watch",

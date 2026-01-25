@@ -1,0 +1,30 @@
+name = "fullstack"
+description = "Full-stack development profile (extends frontend and backend)"
+extends = "frontend"
+
+# Note: In a real implementation, we'd need to support multiple extends
+# For now, this extends frontend and manually includes backend capabilities
+
+[agents.architect]
+model = "opus"
+priority = 80
+
+[agents.designer]
+model = "sonnet"
+priority = 80
+
+[agents.executor]
+model = "sonnet"
+priority = 75
+
+[agents.security-reviewer]
+model = "opus"
+priority = 70
+
+[model]
+default = "sonnet"
+
+[model.routing]
+simple = "haiku"
+standard = "sonnet"
+complex = "opus"

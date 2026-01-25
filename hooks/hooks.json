@@ -34,6 +34,62 @@
       "enabled": true,
       "path": "./thinking-level.mjs",
       "description": "Detects complex tasks and adds reasoning enhancement instructions"
+    },
+    {
+      "name": "cost-warning",
+      "type": "UserPromptSubmit",
+      "enabled": false,
+      "path": "./cost-warning.mjs",
+      "description": "Warns when approaching daily cost budget based on token usage"
+    },
+    {
+      "name": "security-scan",
+      "type": "PreToolUse",
+      "enabled": false,
+      "path": "./security-scan.mjs",
+      "description": "Scans for secrets before git commits"
+    },
+    {
+      "name": "test-reminder",
+      "type": "PostToolUse",
+      "enabled": false,
+      "path": "./test-reminder.mjs",
+      "description": "Reminds to run tests after code changes"
+    },
+    {
+      "name": "format-on-save",
+      "type": "PostToolUse",
+      "enabled": false,
+      "path": "./format-on-save.mjs",
+      "description": "Auto-formats files after Write/Edit operations"
+    },
+    {
+      "name": "git-branch-check",
+      "type": "PreToolUse",
+      "enabled": false,
+      "path": "./git-branch-check.mjs",
+      "description": "Warns when committing to main/master branches"
+    },
+    {
+      "name": "todo-tracker",
+      "type": "UserPromptSubmit",
+      "enabled": false,
+      "path": "./todo-tracker.mjs",
+      "description": "Tracks TODO items mentioned in prompts"
+    },
+    {
+      "name": "session-log",
+      "type": "Stop",
+      "enabled": false,
+      "path": "./session-log.mjs",
+      "description": "Logs session summary when Claude stops"
+    },
+    {
+      "name": "large-file-warning",
+      "type": "PreToolUse",
+      "enabled": false,
+      "path": "./large-file-warning.mjs",
+      "description": "Warns before reading large files"
     }
   ]
 }

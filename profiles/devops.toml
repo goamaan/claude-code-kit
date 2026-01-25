@@ -1,0 +1,22 @@
+name = "devops"
+description = "DevOps and infrastructure profile"
+
+[agents.architect]
+model = "opus"
+priority = 85
+
+[agents.build-fixer]
+model = "sonnet"
+priority = 80
+
+[agents.executor]
+model = "sonnet"
+priority = 75
+
+[model]
+default = "sonnet"
+
+[model.routing]
+simple = "haiku"
+standard = "sonnet"
+complex = "opus"

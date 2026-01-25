@@ -33,6 +33,12 @@ export interface ProfileManager {
   /** Get full details for a profile */
   get(name: string): Promise<ProfileDetails>;
 
+  /** Get full details for a profile with project-level overrides */
+  getWithOverrides(name: string, projectOverrides?: ProfileFileConfig): Promise<ProfileDetails>;
+
+  /** Load project-level profile overrides from a directory */
+  loadProjectOverrides(projectDir: string): Promise<ProfileFileConfig | null>;
+
   /** Create a new profile */
   create(name: string, options?: Omit<CreateProfileOptions, 'name'>): Promise<void>;
 
@@ -255,6 +261,88 @@ export function createProfileManager(storage?: ProfileStorage): ProfileManager {
   }
 
   /**
+   * Get full details for a profile with project-level overrides
+   */
+  async function getWithOverrides(
+    name: string,
+    projectOverrides?: ProfileFileConfig
+  ): Promise<ProfileDetails> {
+    const baseDetails = await get(name);
+
+    // If no overrides, return base
+    if (!projectOverrides) {
+      return baseDetails;
+    }
+
+    // Merge project overrides into resolved configuration
+    const resolved: ProfileDetails['resolved'] = {
+      skills: {
+        enabled: [
+          ...new Set([
+            ...baseDetails.resolved.skills.enabled,
+            ...(projectOverrides.skills?.enabled ?? []),
+          ]),
+        ],
+        disabled: [
+          ...new Set([
+            ...baseDetails.resolved.skills.disabled,
+            ...(projectOverrides.skills?.disabled ?? []),
+          ]),
+        ],
+      },
+      agents: { ...baseDetails.resolved.agents },
+      mcp: {
+        enabled: [
+          ...new Set([
+            ...baseDetails.resolved.mcp.enabled,
+            ...(projectOverrides.mcp?.enabled ?? []),
+          ]),
+        ],
+        disabled: [
+          ...new Set([
+            ...baseDetails.resolved.mcp.disabled,
+            ...(projectOverrides.mcp?.disabled ?? []),
+          ]),
+        ],
+      },
+      model: {
+        default: projectOverrides.model?.default ?? baseDetails.resolved.model.default,
+        routing: {
+          ...baseDetails.resolved.model.routing,
+          ...projectOverrides.model?.routing,
+        },
+        overrides: {
+          ...baseDetails.resolved.model.overrides,
+          ...projectOverrides.model?.overrides,
+        },
+      },
+    };
+
+    // Merge project agent overrides
+    if (projectOverrides.agents) {
+      for (const [agentName, agentConfig] of Object.entries(projectOverrides.agents)) {
+        const baseAgent = baseDetails.resolved.agents[agentName];
+        if (baseAgent) {
+          resolved.agents[agentName] = {
+            model: agentConfig.model ?? baseAgent.model,
+            priority: agentConfig.priority ?? baseAgent.priority,
+          };
+        } else {
+          resolved.agents[agentName] = {
+            model: agentConfig.model!,
+            priority: agentConfig.priority ?? 50,
+          };
+        }
+      }
+    }
+
+    return {
+      ...baseDetails,
+      resolved,
+    };
+  }
+
+  /**
    * Create a new profile
    */
   async function create(
@@ -419,10 +507,50 @@ export function createProfileManager(storage?: ProfileStorage): ProfileManager {
     }
   }
 
+  /**
+   * Load project-level profile overrides from a directory
+   */
+  async function loadProjectOverrides(projectDir: string): Promise<ProfileFileConfig | null> {
+    // Try multiple possible locations
+    const possiblePaths = [
+      path.join(projectDir, '.claudeops', 'profile.toml'),
+      path.join(projectDir, '.claudeops', 'profile.yaml'),
+      path.join(projectDir, '.claudeops.toml'),
+      path.join(projectDir, '.claudeops.yaml'),
+    ];
+
+    for (const profilePath of possiblePaths) {
+      try {
+        const content = await fs.readFile(profilePath, 'utf-8');
+
+        // Parse based on extension
+        let config: ProfileFileConfig;
+        if (profilePath.endsWith('.json')) {
+          config = JSON.parse(content) as ProfileFileConfig;
+        } else {
+          config = parseToml(content, { bigint: false }) as ProfileFileConfig;
+        }
+
+        // Validate the config
+        ProfileFileConfigSchema.parse(config);
+
+        return config;
+      } catch {
+        // File doesn't exist or is invalid, try next path
+        continue;
+      }
+    }
+
+    // No project override found
+    return null;
+  }
+
   return {
     list,
     active,
     get,
+    getWithOverrides,
+    loadProjectOverrides,
     create,
     use,
     delete: deleteProfile,

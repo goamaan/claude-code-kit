@@ -10,6 +10,7 @@ import { getClaudeDir } from '../utils/paths.js';
 import { exists, readFile } from '../utils/fs.js';
 import { join } from 'node:path';
 import type { SettingsHooks, HookEvent } from '../types/hook.js';
+import pc from 'picocolors';
 
 // =============================================================================
 // Helper Functions
@@ -147,8 +148,8 @@ const listCommand = defineCommand({
       output.table(
         eventHooks.map(h => ({
           source: `${h.source}:${h.sourceName}`,
-          matcher: output.truncate(h.matcher, 25),
-          handler: output.truncate(h.handler, 30),
+          matcher: output.truncate(h.matcher || '*', 25),
+          handler: output.truncate(h.handler || '', 30),
           priority: h.priority,
         })),
         [
@@ -395,6 +396,305 @@ const testCommand = defineCommand({
 });
 
 // =============================================================================
+// Legacy Hooks.json Commands
+// =============================================================================
+
+interface LegacyHook {
+  name: string;
+  type: string;
+  enabled: boolean;
+  path: string;
+  description: string;
+}
+
+interface LegacyHooksConfig {
+  hooks: LegacyHook[];
+}
+
+async function loadLegacyHooks(): Promise<LegacyHooksConfig> {
+  const { join } = await import('node:path');
+  const hooksPath = join(process.cwd(), 'hooks', 'hooks.json');
+
+  try {
+    const content = await readFile(hooksPath);
+    return JSON.parse(content) as LegacyHooksConfig;
+  } catch {
+    return { hooks: [] };
+  }
+}
+
+async function saveLegacyHooks(config: LegacyHooksConfig): Promise<void> {
+  const { join } = await import('node:path');
+  const hooksPath = join(process.cwd(), 'hooks', 'hooks.json');
+  const content = JSON.stringify(config, null, 2);
+
+  const { writeFile } = await import('node:fs/promises');
+  await writeFile(hooksPath, content, 'utf8');
+}
+
+const legacyListCommand = defineCommand({
+  meta: {
+    name: 'legacy-list',
+    description: 'List legacy hooks.json hooks',
+  },
+  args: {
+    json: {
+      type: 'boolean',
+      description: 'Output as JSON',
+      default: false,
+    },
+  },
+  async run({ args }) {
+    const config = await loadLegacyHooks();
+    const hooks = config.hooks;
+
+    if (hooks.length === 0) {
+      output.info('No legacy hooks found in hooks/hooks.json');
+      return;
+    }
+
+    if (args.json) {
+      output.json(hooks);
+      return;
+    }
+
+    output.header('Legacy Hooks (hooks.json)');
+
+    for (const hook of hooks) {
+      console.log();
+      const status = hook.enabled ? pc.green('enabled') : pc.dim('disabled');
+      output.label(hook.name, status);
+      output.kv('  Type', hook.type, 2);
+      output.kv('  Path', hook.path, 2);
+      if (hook.description) {
+        output.kv('  Description', hook.description, 2);
+      }
+    }
+
+    console.log();
+    const enabledCount = hooks.filter(h => h.enabled).length;
+    output.dim(`${hooks.length} hooks (${enabledCount} enabled)`);
+  },
+});
+
+const installLegacyCommand = defineCommand({
+  meta: {
+    name: 'install-legacy',
+    description: 'Install a hook to hooks.json',
+  },
+  args: {
+    name: {
+      type: 'positional',
+      description: 'Hook name',
+      required: true,
+    },
+    from: {
+      type: 'string',
+      description: 'Install from URL or path',
+    },
+    type: {
+      type: 'string',
+      description: 'Hook event type',
+      default: 'UserPromptSubmit',
+    },
+  },
+  async run({ args }) {
+    const { join } = await import('node:path');
+    const { copyFile, writeFile } = await import('node:fs/promises');
+
+    const config = await loadLegacyHooks();
+    const existing = config.hooks.find(h => h.name === args.name);
+
+    const hookFileName = `${args.name}.mjs`;
+    const destPath = join(process.cwd(), 'hooks', hookFileName);
+
+    if (args.from) {
+      // Install from URL or path
+      if (args.from.startsWith('http://') || args.from.startsWith('https://')) {
+        output.info(`Downloading from ${args.from}...`);
+        const response = await fetch(args.from);
+        if (!response.ok) {
+          output.error(`Download failed: ${response.statusText}`);
+          process.exit(1);
+        }
+        const content = await response.text();
+        await writeFile(destPath, content, 'utf8');
+      } else {
+        if (!(await exists(args.from))) {
+          output.error(`File not found: ${args.from}`);
+          process.exit(1);
+        }
+        await copyFile(args.from, destPath);
+      }
+    } else {
+      // Create template
+      const template = `#!/usr/bin/env node
+/**
+ * ${args.name} - ${args.type} Hook
+ */
+
+import { readFileSync } from 'fs';
+
+let input;
+try {
+  const stdinData = readFileSync(0, 'utf8');
+  input = JSON.parse(stdinData);
+} catch {
+  process.exit(0);
+}
+
+const prompt = input.prompt || '';
+
+// TODO: Implement hook logic
+
+const output = {
+  hookSpecificOutput: {
+    hookEventName: '${args.type}',
+    additionalContext: ''
+  }
+};
+
+console.log(JSON.stringify(output));
+process.exit(0);
+`;
+      await writeFile(destPath, template, 'utf8');
+    }
+
+    // Update config
+    if (existing) {
+      existing.path = `./${hookFileName}`;
+      existing.type = args.type;
+    } else {
+      config.hooks.push({
+        name: args.name,
+        type: args.type,
+        enabled: true,
+        path: `./${hookFileName}`,
+        description: 'Custom hook',
+      });
+    }
+
+    await saveLegacyHooks(config);
+    output.success(`Installed legacy hook "${args.name}"`);
+  },
+});
+
+const enableLegacyCommand = defineCommand({
+  meta: {
+    name: 'enable-legacy',
+    description: 'Enable a legacy hook',
+  },
+  args: {
+    name: {
+      type: 'positional',
+      description: 'Hook name',
+      required: true,
+    },
+  },
+  async run({ args }) {
+    const config = await loadLegacyHooks();
+    const hook = config.hooks.find(h => h.name === args.name);
+
+    if (!hook) {
+      output.error(`Hook "${args.name}" not found`);
+      process.exit(1);
+    }
+
+    hook.enabled = true;
+    await saveLegacyHooks(config);
+    output.success(`Enabled "${args.name}"`);
+  },
+});
+
+const disableLegacyCommand = defineCommand({
+  meta: {
+    name: 'disable-legacy',
+    description: 'Disable a legacy hook',
+  },
+  args: {
+    name: {
+      type: 'positional',
+      description: 'Hook name',
+      required: true,
+    },
+  },
+  async run({ args }) {
+    const config = await loadLegacyHooks();
+    const hook = config.hooks.find(h => h.name === args.name);
+
+    if (!hook) {
+      output.error(`Hook "${args.name}" not found`);
+      process.exit(1);
+    }
+
+    hook.enabled = false;
+    await saveLegacyHooks(config);
+    output.success(`Disabled "${args.name}"`);
+  },
+});
+
+const infoLegacyCommand = defineCommand({
+  meta: {
+    name: 'info-legacy',
+    description: 'Show legacy hook details',
+  },
+  args: {
+    name: {
+      type: 'positional',
+      description: 'Hook name',
+      required: true,
+    },
+    json: {
+      type: 'boolean',
+      description: 'Output as JSON',
+      default: false,
+    },
+  },
+  async run({ args }) {
+    const { join } = await import('node:path');
+    const config = await loadLegacyHooks();
+    const hook = config.hooks.find(h => h.name === args.name);
+
+    if (!hook) {
+      output.error(`Hook "${args.name}" not found`);
+      process.exit(1);
+    }
+
+    if (args.json) {
+      output.json(hook);
+      return;
+    }
+
+    output.header(hook.name);
+    output.kv('Type', hook.type);
+    output.kv('Status', hook.enabled ? 'enabled' : 'disabled');
+    output.kv('Path', hook.path);
+    if (hook.description) {
+      output.kv('Description', hook.description);
+    }
+
+    // Try to read hook file
+    const hookPath = join(process.cwd(), 'hooks', hook.path);
+    if (await exists(hookPath)) {
+      const content = await readFile(hookPath);
+      const lines = content.split('\n').slice(0, 20);
+      const docLines = lines.filter(l => l.trim().startsWith('*') || l.trim().startsWith('//'));
+
+      if (docLines.length > 0) {
+        console.log();
+        output.header('Documentation');
+        for (const line of docLines.slice(0, 10)) {
+          const cleaned = line.trim().replace(/^[*/]+\s*/, '');
+          if (cleaned) {
+            console.log(output.dim(cleaned));
+          }
+        }
+      }
+    }
+  },
+});
+
+// =============================================================================
 // Main Command
 // =============================================================================
 
@@ -407,5 +707,27 @@ export default defineCommand({
     list: listCommand,
     debug: debugCommand,
     test: testCommand,
+    'legacy-list': legacyListCommand,
+    'legacy-install': installLegacyCommand,
+    'legacy-enable': enableLegacyCommand,
+    'legacy-disable': disableLegacyCommand,
+    'legacy-info': infoLegacyCommand,
+  },
+  run() {
+    console.log('Available subcommands:');
+    console.log();
+    console.log('Addon-based hooks (recommended):');
+    console.log('  list              List active hooks from addons and settings.json');
+    console.log('  debug <tool>      Debug hook execution for a specific tool');
+    console.log('  test <handler>    Test a hook handler with sample input');
+    console.log();
+    console.log('Legacy hooks.json hooks:');
+    console.log('  legacy-list       List hooks from hooks/hooks.json');
+    console.log('  legacy-install    Install a hook to hooks.json');
+    console.log('  legacy-enable     Enable a legacy hook');
+    console.log('  legacy-disable    Disable a legacy hook');
+    console.log('  legacy-info       Show legacy hook details');
+    console.log();
+    console.log('Run "cops hook <command> --help" for more information on a command.');
   },
 });
