@@ -2,7 +2,7 @@
 
 > Batteries-included Claude Code enhancement toolkit - orchestration, guardrails, profiles, and configuration management.
 
-**Version:** 4.0.0
+**Version:** 3.2.0
 **Last Updated:** 2026-01-25
 
 ---
@@ -43,7 +43,7 @@ claudeops is a configuration and orchestration layer for Claude Code that provid
 
 ## Swarm Orchestration
 
-claudeops v4.0.0 introduces swarm orchestration that builds on top of Claude Code's **native task system** rather than replacing it.
+claudeops v3.2.0 introduces swarm orchestration that builds on top of Claude Code's **native task system** rather than replacing it.
 
 ### Claude Code Task System
 
@@ -131,7 +131,7 @@ claudeops/
 │   │   ├── doctor/               # Diagnostics
 │   │   ├── guardrails/           # Safety checks
 │   │   ├── router/               # Agent/model routing
-│   │   ├── swarm/                # Swarm orchestration (v4.0.0)
+│   │   ├── swarm/                # Swarm orchestration (v3.2.0)
 │   │   └── sync/                 # Claude Code sync
 │   ├── domain/                   # Domain modules
 │   │   ├── addon/                # Addon management
@@ -444,7 +444,7 @@ Session state for classification tracking.
 
 | Command | Purpose |
 |---------|---------|
-| `cops init` | Zero-config swarm setup (v4.0.0) |
+| `cops init` | Zero-config swarm setup (v3.2.0) |
 | `cops swarm` | Swarm orchestration (status, tasks, init, stop, history) |
 | `cops sync` | Sync config to Claude Code |
 | `cops config` | Configuration management (init, edit, show, validate, pm) |
@@ -637,7 +637,7 @@ The generated CLAUDE.md includes:
 ├── cache/
 │   ├── costs/            # Cost tracking data
 │   └── mcp-servers.json  # MCP state
-├── swarms/               # Swarm metadata (v4.0.0)
+├── swarms/               # Swarm metadata (v3.2.0)
 │   ├── history.json      # Past executions
 │   └── <name>/           # Active swarm state
 │       └── state.json    # Current swarm state

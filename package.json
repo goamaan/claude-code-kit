@@ -1,6 +1,6 @@
 {
   "name": "claudeops",
-  "version": "4.0.0",
+  "version": "3.2.0",
   "type": "module",
   "description": "Batteries-included Claude Code enhancement toolkit - orchestration, guardrails, profiles, and configuration management",
   "author": "Amaan",
