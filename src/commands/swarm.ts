@@ -1,6 +1,6 @@
 /**
  * Swarm orchestration management commands
- * ck swarm [status|tasks|init|stop|history]
+ * cops swarm [status|tasks|init|stop|history]
  */
 
 import { defineCommand } from 'citty';

@@ -1,6 +1,6 @@
 /**
  * Add-on management commands
- * ck addon list|search|info|install|update|remove|create
+ * cops addon list|search|info|install|update|remove|create
  */
 
 import { defineCommand } from 'citty';

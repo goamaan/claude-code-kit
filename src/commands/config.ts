@@ -1,6 +1,6 @@
 /**
  * Config management commands
- * ck config init|edit|show|validate|export
+ * cops config init|edit|show|validate|export
  */
 
 import { defineCommand } from 'citty';

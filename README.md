@@ -59,13 +59,23 @@ claudeops doctor
 
 ```bash
 # Choose a setup template (fullstack, backend, frontend, data, devops, enterprise, minimal)
-claudeops setup use fullstack
+cops setup use fullstack
 
 # Sync configuration to Claude Code
-claudeops sync
+cops sync
 ```
 
 That's it! Start using claudeops by describing what you want naturally in Claude Code.
+
+### Command Aliases
+
+| Alias | Use For |
+|-------|---------|
+| `claudeops` | Installation, formal contexts |
+| `cops` | Day-to-day usage (recommended) |
+| `co` | Quick commands |
+
+All examples use `cops`, but any alias works.
 
 ---
 
@@ -142,15 +152,17 @@ All guardrails can be customized or disabled in `.claudeops.yaml`.
 
 ## CLI Commands
 
+All commands work with `claudeops`, `cops`, or `co` (e.g., `cops profile list` or `claudeops profile list`).
+
 ### Profile Management
 
 Profiles let you switch between different project configurations instantly.
 
 ```bash
-claudeops profile list                    # List all profiles
-claudeops profile create <name>           # Create new profile
-claudeops profile use <name>              # Switch active profile
-claudeops profile delete <name>           # Delete profile
+cops profile list                         # List all profiles
+cops profile create <name>                # Create new profile
+cops profile use <name>                   # Switch active profile
+cops profile delete <name>                # Delete profile
 ```
 
 ### Setup Templates
@@ -158,9 +170,9 @@ claudeops profile delete <name>           # Delete profile
 Pre-configured templates for common development scenarios.
 
 ```bash
-claudeops setup list                      # Show available templates
-claudeops setup use fullstack             # Use a template
-claudeops setup info <name>               # Get template details
+cops setup list                           # Show available templates
+cops setup use fullstack                  # Use a template
+cops setup info <name>                    # Get template details
 ```
 
 **Available templates:** `minimal`, `fullstack`, `frontend`, `backend`, `data`, `devops`, `enterprise`
@@ -170,13 +182,13 @@ claudeops setup info <name>               # Get template details
 Install capabilities from GitHub repositories. The AI analyzes the repo and auto-detects components.
 
 ```bash
-claudeops pack add <github-url>           # Install pack from GitHub
-claudeops pack list                       # List installed packs
-claudeops pack info <name>                # Show pack details
-claudeops pack enable <name>              # Enable pack
-claudeops pack disable <name>             # Disable pack
-claudeops pack remove <name>              # Uninstall pack
-claudeops pack update --all               # Update all packs
+cops pack add <github-url>                # Install pack from GitHub
+cops pack list                            # List installed packs
+cops pack info <name>                     # Show pack details
+cops pack enable <name>                   # Enable pack
+cops pack disable <name>                  # Disable pack
+cops pack remove <name>                   # Uninstall pack
+cops pack update --all                    # Update all packs
 ```
 
 ### Skill Management
@@ -184,12 +196,12 @@ claudeops pack update --all               # Update all packs
 Skills are reusable capabilities that can be installed and toggled.
 
 ```bash
-claudeops skill list                      # List available skills
-claudeops skill info <name>               # Show skill details
-claudeops skill install <name>            # Install skill
-claudeops skill enable <name>             # Enable skill
-claudeops skill disable <name>            # Disable skill
-claudeops skill sync                      # Sync skills to Claude Code
+cops skill list                           # List available skills
+cops skill info <name>                    # Show skill details
+cops skill install <name>                 # Install skill
+cops skill enable <name>                  # Enable skill
+cops skill disable <name>                 # Disable skill
+cops skill sync                           # Sync skills to Claude Code
 ```
 
 ### Hook Management
@@ -197,9 +209,9 @@ claudeops skill sync                      # Sync skills to Claude Code
 Hooks are lifecycle triggers for automated checks and enforcement.
 
 ```bash
-claudeops hook list                       # List installed hooks
-claudeops hook debug                      # Debug hook execution
-claudeops hook test <name>                # Test a specific hook
+cops hook list                            # List installed hooks
+cops hook debug                           # Debug hook execution
+cops hook test <name>                     # Test a specific hook
 ```
 
 ### Intent Classification
@@ -207,7 +219,7 @@ claudeops hook test <name>                # Test a specific hook
 Test the semantic classifier to see how claudeops analyzes your requests.
 
 ```bash
-claudeops classify "add email validation"
+cops classify "add email validation"
 ```
 
 Output shows:
@@ -222,10 +234,10 @@ Output shows:
 Monitor your API spending.
 
 ```bash
-claudeops cost today                      # View today's costs
-claudeops cost week                       # View this week's costs
-claudeops cost budget --set 20            # Set daily budget to $20
-claudeops cost export --format json       # Export spending history
+cops cost today                           # View today's costs
+cops cost week                            # View this week's costs
+cops cost budget --set 20                 # Set daily budget to $20
+cops cost export --format json            # Export spending history
 ```
 
 ### Configuration
@@ -233,20 +245,22 @@ claudeops cost export --format json       # Export spending history
 Manage global and project-specific settings.
 
 ```bash
-claudeops config init                     # Initialize config
-claudeops config show                     # Display current config
-claudeops config edit                     # Edit with $EDITOR
-claudeops config validate                 # Validate syntax
+cops config init                          # Initialize config
+cops config show                          # Display current config
+cops config edit                          # Edit with $EDITOR
+cops config validate                      # Validate syntax
 ```
 
 ### Synchronization & Diagnostics
 
 ```bash
-claudeops sync                            # Sync to Claude Code
-claudeops sync --dry-run                  # Preview changes
-claudeops doctor                          # Run diagnostics
-claudeops doctor --fix                    # Auto-fix issues
-claudeops upgrade                         # Check and install updates
+cops sync                                 # Sync to Claude Code
+cops sync --dry-run                       # Preview changes
+cops doctor                               # Run diagnostics
+cops doctor --fix                         # Auto-fix issues
+cops upgrade                              # Check and install updates
+cops --version                            # Show installed version
+cops -V                                   # Show installed version (short)
 ```
 
 ## Hooks
@@ -277,9 +291,9 @@ claudeops includes 13 battle-tested hooks that run automatically to enforce best
 Manage hooks:
 
 ```bash
-claudeops hook list                    # List all hooks
-claudeops hook debug                   # Debug execution
-claudeops hook test checkpoint         # Test specific hook
+cops hook list                            # List all hooks
+cops hook debug                           # Debug execution
+cops hook test checkpoint                 # Test specific hook
 ```
 
 ## Configuration
@@ -381,29 +395,29 @@ echo 'export PATH="$(npm config get prefix)/bin:$PATH"' >> ~/.zshrc
 
 ```bash
 # Diagnose all issues
-claudeops doctor
+cops doctor
 
 # Auto-fix common issues
-claudeops doctor --fix
+cops doctor --fix
 
 # Preview sync without applying
-claudeops sync --dry-run
+cops sync --dry-run
 
 # Validate configuration syntax
-claudeops config validate
+cops config validate
 ```
 
 ### Hooks Not Executing
 
 ```bash
 # List active hooks
-claudeops hook list
+cops hook list
 
 # Debug specific hook
-claudeops hook debug
+cops hook debug
 
 # Test hook execution
-claudeops hook test lint-changed
+cops hook test lint-changed
 
 # Check hook logs
 tail -f ~/.claudeops/logs/hooks.log
@@ -413,13 +427,13 @@ tail -f ~/.claudeops/logs/hooks.log
 
 ```bash
 # View all costs
-claudeops cost export --format json
+cops cost export --format json
 
 # Reset daily counter
 rm ~/.claudeops/state/daily-costs.json
 
 # Set new budget
-claudeops cost budget --set 30.0
+cops cost budget --set 30.0
 ```
 
 ## Examples
@@ -454,14 +468,14 @@ claudeops: [Provides root cause analysis with file:line references]
 
 ```bash
 # Add React development helpers from a pack
-claudeops pack add https://github.com/vercel-labs/react-pack
+cops pack add https://github.com/vercel-labs/react-pack
 
 # Enable specific skills
-claudeops skill enable react-best-practices
-claudeops skill enable tailwind-expert
+cops skill enable react-best-practices
+cops skill enable tailwind-expert
 
 # Sync to Claude Code
-claudeops sync
+cops sync
 ```
 
 ## Advanced Usage
@@ -472,13 +486,13 @@ Create a custom setup for your organization:
 
 ```bash
 # Start from fullstack template
-claudeops setup use fullstack
+cops setup use fullstack
 
 # Customize the CLAUDE.md
 $EDITOR setups/my-company/CLAUDE.md
 
 # Use your setup
-claudeops setup use my-company
+cops setup use my-company
 ```
 
 ### Model Routing Strategy

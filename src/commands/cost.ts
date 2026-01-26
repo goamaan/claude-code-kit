@@ -1,6 +1,6 @@
 /**
  * Cost tracking commands
- * ck cost [today|week|budget|export]
+ * cops cost [today|week|budget|export]
  */
 
 import { defineCommand } from 'citty';

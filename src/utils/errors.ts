@@ -80,7 +80,7 @@ export function handleError(error: unknown, category?: ErrorCategory): void {
     }
 
     // Show stack trace in debug mode
-    if (process.env['CLAUDE_KIT_LOG_LEVEL'] === 'debug' && error.stack) {
+    if (process.env['CLAUDEOPS_LOG_LEVEL'] === 'debug' && error.stack) {
       console.log();
       console.log(pc.dim('Stack trace:'));
       console.log(pc.dim(error.stack));

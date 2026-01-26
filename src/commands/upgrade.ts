@@ -1,6 +1,6 @@
 /**
  * Upgrade command
- * ck upgrade [--check] [--force]
+ * cops upgrade [--check] [--force]
  */
 
 import { defineCommand } from 'citty';

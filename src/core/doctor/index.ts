@@ -200,7 +200,7 @@ export function createDoctor(): Doctor {
 async function getSystemInfo(): Promise<DiagnosticReport['system']> {
   const { execSync } = await import('node:child_process');
 
-  let claudeKitVersion = '0.0.0';
+  let claudeopsVersion = '0.0.0';
   let claudeCodeVersion: string | undefined;
 
   // Try to get claudeops version from package.json
@@ -208,7 +208,7 @@ async function getSystemInfo(): Promise<DiagnosticReport['system']> {
     const packageJson = await import('../../../package.json', {
       assert: { type: 'json' },
     });
-    claudeKitVersion = packageJson.default.version;
+    claudeopsVersion = packageJson.default.version;
   } catch {
     // Ignore if package.json can't be loaded
   }
@@ -228,7 +228,7 @@ async function getSystemInfo(): Promise<DiagnosticReport['system']> {
   return {
     platform: process.platform,
     nodeVersion: process.version,
-    claudeKitVersion,
+    claudeopsVersion,
     claudeCodeVersion,
   };
 }
@@ -284,7 +284,7 @@ export function formatReport(report: DiagnosticReport): string {
   lines.push('## System Information');
   lines.push(`- Platform: ${report.system.platform}`);
   lines.push(`- Node.js: ${report.system.nodeVersion}`);
-  lines.push(`- claudeops: ${report.system.claudeKitVersion}`);
+  lines.push(`- claudeops: ${report.system.claudeopsVersion}`);
   if (report.system.claudeCodeVersion) {
     lines.push(`- Claude Code: ${report.system.claudeCodeVersion}`);
   }

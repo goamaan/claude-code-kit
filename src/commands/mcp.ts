@@ -1,6 +1,6 @@
 /**
  * MCP server management commands
- * ck mcp list|enable|disable|budget
+ * cops mcp list|enable|disable|budget
  */
 
 import { defineCommand } from 'citty';

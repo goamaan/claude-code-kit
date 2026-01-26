@@ -205,7 +205,7 @@ export interface DiagnosticReport {
   system: {
     platform: string;
     nodeVersion: string;
-    claudeKitVersion: string;
+    claudeopsVersion: string;
     claudeCodeVersion?: string;
   };
 

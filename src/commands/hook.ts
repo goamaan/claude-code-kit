@@ -1,6 +1,6 @@
 /**
  * Hook management commands
- * ck hook list|debug
+ * cops hook list|debug
  */
 
 import { defineCommand } from 'citty';

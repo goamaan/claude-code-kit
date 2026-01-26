@@ -1,6 +1,6 @@
 /**
  * Doctor command
- * ck doctor [--fix] [--json]
+ * cops doctor [--fix] [--json]
  * Diagnoses and optionally fixes configuration issues
  */
 
@@ -417,7 +417,7 @@ async function runDiagnostics(
     system: {
       platform: process.platform,
       nodeVersion: process.version,
-      claudeKitVersion: VERSION,
+      claudeopsVersion: VERSION,
     },
     duration: Date.now() - startTime,
   };
@@ -550,7 +550,7 @@ export default defineCommand({
     output.header('System Info');
     output.kv('Platform', report.system.platform);
     output.kv('Node.js', report.system.nodeVersion);
-    output.kv('claudeops', report.system.claudeKitVersion);
+    output.kv('claudeops', report.system.claudeopsVersion);
 
     // Exit with appropriate code
     if (report.status === 'unhealthy') {

@@ -1,6 +1,6 @@
 /**
  * Setup management commands
- * ck setup list|info|use|create|export|import
+ * cops setup list|info|use|create|export|import
  */
 
 import { defineCommand } from 'citty';

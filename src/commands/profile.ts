@@ -1,6 +1,6 @@
 /**
  * Profile management commands
- * ck profile list|use|create|delete|export|import
+ * cops profile list|use|create|delete|export|import
  */
 
 import { defineCommand } from 'citty';
@@ -38,7 +38,7 @@ const listCommand = defineCommand({
     }
 
     if (profiles.length === 0) {
-      output.info('No profiles found. Create one with: ck profile create <name>');
+      output.info('No profiles found. Create one with: cops profile create <name>');
       return;
     }
 

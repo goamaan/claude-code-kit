@@ -1,6 +1,6 @@
 /**
  * Install command - Interactive installation wizard
- * ck install [--setup <name>] [--minimal]
+ * cops install [--setup <name>] [--minimal]
  */
 
 import { defineCommand } from 'citty';
@@ -102,7 +102,7 @@ export default defineCommand({
 
       s.stop('Configuration created');
 
-      prompts.outro('Installation complete! Run `ck doctor` to verify.');
+      prompts.outro('Installation complete! Run `cops doctor` to verify.');
       return;
     }
 
@@ -317,11 +317,11 @@ export default defineCommand({
       output.header('Next Steps');
 
       output.list([
-        'Run `ck doctor` to verify your installation',
-        'Run `ck config show` to view your configuration',
-        'Run `ck profile list` to see your profiles',
-        selectedSetup ? '' : 'Run `ck setup list` to see available setups',
-        'Run `ck addon search` to find addons',
+        'Run `cops doctor` to verify your installation',
+        'Run `cops config show` to view your configuration',
+        'Run `cops profile list` to see your profiles',
+        selectedSetup ? '' : 'Run `cops setup list` to see available setups',
+        'Run `cops addon search` to find addons',
       ].filter(Boolean));
 
       prompts.outro('Welcome to claudeops!');

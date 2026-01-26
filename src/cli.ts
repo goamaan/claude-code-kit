@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { defineCommand, runMain } from "citty";
+import pc from "picocolors";
 import { VERSION, NAME } from "./index.js";
 
 const main = defineCommand({
@@ -57,57 +58,81 @@ const main = defineCommand({
   },
   run({ args: _args }) {
     // Default behavior when no subcommand is provided
-    console.log(`${NAME} v${VERSION}`);
+    // Header
+    console.log(pc.bold(pc.cyan(NAME)) + pc.dim(` v${VERSION}`));
     console.log("Batteries-included Claude Code enhancement toolkit");
     console.log("");
 
-    console.log("Getting Started:");
-    console.log("  cops init           Zero-config swarm setup (recommended)");
-    console.log("  cops install        Interactive installation wizard");
-    console.log("  cops config init    Initialize configuration");
-    console.log("  cops doctor         Diagnose and fix issues");
-    console.log("  cops sync           Sync to Claude Code");
-    console.log("");
+    // Usage
+    console.log(pc.bold("Usage:"));
+    console.log(`  ${pc.cyan("cops")} ${pc.yellow("<command>")} ${pc.dim("[options]")}`);
 
-    console.log("Core Commands:");
-    console.log("  profile            Manage profiles (list, use, create, delete)");
-    console.log("  config             Manage configuration (init, edit, show, validate)");
-    console.log("  sync               Sync configuration to Claude Code");
-    console.log("");
+    // Aliases
+    console.log(pc.bold("\nAliases:"));
+    console.log(`  ${pc.cyan("claudeops")}  ${pc.dim("Full name")}`);
+    console.log(`  ${pc.cyan("cops")}       ${pc.dim("Recommended")}`);
+    console.log(`  ${pc.cyan("co")}         ${pc.dim("Shorthand")}`);
 
-    console.log("Extensions:");
-    console.log("  setup              Manage setups (list, info, use, create)");
-    console.log("  addon              Manage addons (search, install, update, remove)");
-    console.log("  skill              Manage skills (list, info, install, sync)");
-    console.log("  mcp                Manage MCP servers (list, add, enable, disable)");
-    console.log("  hook               Manage hooks (list, debug, test)");
-    console.log("");
+    // Global Options
+    console.log(pc.bold("\nGlobal Options:"));
+    console.log(`  ${pc.yellow("-h, --help")}     Show help`);
+    console.log(`  ${pc.yellow("-V, --version")}  Show version`);
 
-    console.log("AI Features:");
-    console.log("  classify           Test intent classification and routing");
-    console.log("");
+    // Getting Started
+    console.log(pc.bold("\nGetting Started:"));
+    console.log(`  ${pc.cyan("init")}           ${pc.dim("Zero-config swarm setup (recommended)")}`);
+    console.log(`  ${pc.cyan("install")}        ${pc.dim("Interactive installation wizard")}`);
+    console.log(`  ${pc.cyan("config init")}    ${pc.dim("Initialize configuration")}`);
+    console.log(`  ${pc.cyan("doctor")}         ${pc.dim("Diagnose and fix issues")}`);
+    console.log(`  ${pc.cyan("sync")}           ${pc.dim("Sync to Claude Code")}`);
 
-    console.log("Utilities:");
-    console.log("  cost               Cost tracking (today, week, budget, pricing)");
-    console.log("  swarm              Swarm orchestration (status, tasks, init, stop)");
-    console.log("  doctor             Diagnose configuration issues");
-    console.log("  upgrade            Check for and install updates");
-    console.log("");
+    // Core Commands
+    console.log(pc.bold("\nCore Commands:"));
+    console.log(`  ${pc.cyan("profile")}        ${pc.dim("Manage profiles (list, use, create, delete)")}`);
+    console.log(`  ${pc.cyan("config")}         ${pc.dim("Manage configuration (init, edit, show, validate)")}`);
+    console.log(`  ${pc.cyan("sync")}           ${pc.dim("Sync configuration to Claude Code")}`);
 
-    console.log("Examples:");
-    console.log("  cops config init              Create initial configuration");
-    console.log("  cops profile create work      Create a work profile");
-    console.log("  cops addon search react       Search for React addons");
-    console.log("  cops upgrade --check          Check for updates");
-    console.log("");
+    // Extensions
+    console.log(pc.bold("\nExtensions:"));
+    console.log(`  ${pc.cyan("setup")}          ${pc.dim("Manage setups (list, info, use, create)")}`);
+    console.log(`  ${pc.cyan("addon")}          ${pc.dim("Manage addons (search, install, update, remove)")}`);
+    console.log(`  ${pc.cyan("skill")}          ${pc.dim("Manage skills (list, info, install, sync)")}`);
+    console.log(`  ${pc.cyan("mcp")}            ${pc.dim("Manage MCP servers (list, add, enable, disable)")}`);
+    console.log(`  ${pc.cyan("hook")}           ${pc.dim("Manage hooks (list, debug, test)")}`);
 
-    console.log("For detailed help:");
-    console.log("  cops <command> --help         Show help for a specific command");
-    console.log("  cops doctor                   Diagnose installation issues");
-    console.log("");
+    // AI Features
+    console.log(pc.bold("\nAI Features:"));
+    console.log(`  ${pc.cyan("classify")}       ${pc.dim("Test intent classification and routing")}`);
 
-    console.log("Documentation:");
-    console.log("  https://github.com/goamaan/claudeops");
+    // Utilities
+    console.log(pc.bold("\nUtilities:"));
+    console.log(`  ${pc.cyan("cost")}           ${pc.dim("Cost tracking (today, week, budget, pricing)")}`);
+    console.log(`  ${pc.cyan("swarm")}          ${pc.dim("Swarm orchestration (status, tasks, init, stop)")}`);
+    console.log(`  ${pc.cyan("doctor")}         ${pc.dim("Diagnose configuration issues")}`);
+    console.log(`  ${pc.cyan("upgrade")}        ${pc.dim("Check for and install updates")}`);
+
+    // Examples
+    console.log(pc.bold("\nExamples:"));
+    console.log(pc.dim("  # Create initial configuration"));
+    console.log(`  ${pc.cyan("cops config init")}`);
+    console.log("");
+    console.log(pc.dim("  # Create a work profile"));
+    console.log(`  ${pc.cyan("cops profile create work")}`);
+    console.log("");
+    console.log(pc.dim("  # Search for React addons"));
+    console.log(`  ${pc.cyan("cops addon search react")}`);
+    console.log("");
+    console.log(pc.dim("  # Check for updates"));
+    console.log(`  ${pc.cyan("cops upgrade --check")}`);
+
+    // Help
+    console.log(pc.bold("\nFor detailed help:"));
+    console.log(`  ${pc.cyan("cops <command> --help")}   ${pc.dim("Show help for a specific command")}`);
+    console.log(`  ${pc.cyan("cops doctor")}             ${pc.dim("Diagnose installation issues")}`);
+
+    // Documentation
+    console.log(pc.bold("\nDocumentation:"));
+    console.log(`  ${pc.dim("https://github.com/goamaan/claudeops")}`);
   },
 });
 
