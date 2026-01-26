@@ -65,6 +65,31 @@ export const SyncConfigSchema = z.object({
 export type SyncConfig = z.infer<typeof SyncConfigSchema>;
 
 // =============================================================================
+// Swarm Configuration
+// =============================================================================
+
+export const SwarmPersistenceConfigSchema = z.object({
+  enabled: z.boolean().optional().default(false),
+  directory: z.string().optional(),
+});
+export type SwarmPersistenceConfig = z.infer<typeof SwarmPersistenceConfigSchema>;
+
+export const SwarmCostTrackingConfigSchema = z.object({
+  enabled: z.boolean().optional().default(true),
+  perTask: z.boolean().optional().default(true),
+});
+export type SwarmCostTrackingConfig = z.infer<typeof SwarmCostTrackingConfigSchema>;
+
+export const SwarmConfigSchema = z.object({
+  enabled: z.boolean().optional().default(true),
+  defaultParallelism: z.enum(['sequential', 'parallel', 'hybrid']).optional().default('parallel'),
+  maxConcurrentWorkers: z.number().int().min(1).max(10).optional().default(5),
+  persistence: SwarmPersistenceConfigSchema.optional(),
+  costTracking: SwarmCostTrackingConfigSchema.optional(),
+});
+export type SwarmConfig = z.infer<typeof SwarmConfigSchema>;
+
+// =============================================================================
 // Team Configuration
 // =============================================================================
 
@@ -83,6 +108,7 @@ export const MainConfigSchema = z.object({
   model: ModelConfigSchema.optional(),
   cost: CostConfigSchema.optional(),
   sync: SyncConfigSchema.optional(),
+  swarm: SwarmConfigSchema.optional(),
   team: TeamConfigSchema.optional(),
   packageManager: PackageManagerSchema.optional(),
 });
@@ -199,6 +225,21 @@ export interface MergedConfig {
     watch: boolean;
   };
 
+  // Swarm configuration
+  swarm: {
+    enabled: boolean;
+    defaultParallelism: 'sequential' | 'parallel' | 'hybrid';
+    maxConcurrentWorkers: number;
+    persistence: {
+      enabled: boolean;
+      directory?: string;
+    };
+    costTracking: {
+      enabled: boolean;
+      perTask: boolean;
+    };
+  };
+
   // Team configuration
   team?: {
     extends?: string;
@@ -273,6 +314,18 @@ export const DEFAULT_MERGED_CONFIG: MergedConfig = {
   sync: {
     auto: false,
     watch: false,
+  },
+  swarm: {
+    enabled: true,
+    defaultParallelism: 'parallel',
+    maxConcurrentWorkers: 5,
+    persistence: {
+      enabled: false,
+    },
+    costTracking: {
+      enabled: true,
+      perTask: true,
+    },
   },
   skills: {
     enabled: [],

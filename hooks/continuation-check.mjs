@@ -56,7 +56,10 @@ function checkPendingTasks() {
       for (const file of files.slice(0, 10)) { // Limit to prevent slowdown
         try {
           const content = JSON.parse(readFileSync(file, 'utf8'));
-          if (content.status === 'pending' || content.status === 'in_progress') {
+          // Claude Code uses 'open'/'resolved' status, claudeops uses 'pending'/'in_progress'/'completed'/'failed'
+          // Check both schemas for compatibility
+          const isOpen = content.status === 'open' || content.status === 'pending' || content.status === 'in_progress';
+          if (isOpen) {
             pendingTasks.push(content.subject || 'Unknown task');
           }
         } catch {

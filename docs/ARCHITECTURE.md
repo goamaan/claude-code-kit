@@ -2,7 +2,7 @@
 
 > Batteries-included Claude Code enhancement toolkit - orchestration, guardrails, profiles, and configuration management.
 
-**Version:** 3.1.0
+**Version:** 4.0.0
 **Last Updated:** 2026-01-25
 
 ---
@@ -30,13 +30,90 @@
 
 claudeops is a configuration and orchestration layer for Claude Code that provides:
 
+- **Swarm Orchestration** - Multi-agent task coordination built on Claude Code's native task system
 - **Semantic Intent Classification** - AI-powered analysis of user prompts to determine intent, complexity, and domain
 - **Intelligent Routing** - Automatic agent and model selection based on task characteristics
 - **Safety Guardrails** - Protection against destructive deletions, secret exposure, and dangerous commands
 - **Profile Management** - Named configurations with inheritance for different projects/contexts
 - **Skills Library** - 21 specialized skills for different development tasks
-- **Hooks System** - 13 hooks for workflow automation and safety checks
+- **Hooks System** - 14 hooks for workflow automation and safety checks
 - **Configuration Sync** - Seamless integration with Claude Code via CLAUDE.md and settings.json
+
+---
+
+## Swarm Orchestration
+
+claudeops v4.0.0 introduces swarm orchestration that builds on top of Claude Code's **native task system** rather than replacing it.
+
+### Claude Code Task System
+
+Claude Code (2.1.16+) provides native task tools:
+
+| Tool | Purpose |
+|------|---------|
+| `TaskCreate` | Create a new task |
+| `TaskGet` | Retrieve task details |
+| `TaskList` | List all tasks |
+| `TaskUpdate` | Update task status/dependencies |
+
+**Native Task Schema:**
+```typescript
+interface Task {
+  id: string;              // Numeric string ("1", "2", "3")
+  subject: string;         // Short description
+  description: string;     // Detailed description
+  status: 'open' | 'resolved';  // Native status values
+  owner?: string;          // Assignee
+  blocks: string[];        // Tasks this blocks
+  blockedBy: string[];     // Dependencies
+  comments: TaskComment[]; // Discussion
+  references: string[];    // Related files/URLs
+}
+```
+
+**Storage:** `~/.claude/tasks/<team_name>/`
+
+### How claudeops Integrates
+
+claudeops **enhances** the native task system without replacing it:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     Claude Code Native                          │
+├─────────────────────────────────────────────────────────────────┤
+│  TaskCreate ──▶ ~/.claude/tasks/<team>/<id>.json                │
+│  TaskUpdate ──▶ status: 'open' | 'resolved'                     │
+│  TaskList   ──▶ blocks/blockedBy for dependencies               │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                     claudeops Layer                             │
+├─────────────────────────────────────────────────────────────────┤
+│  Swarm Planner  ──▶ Task breakdown + dependency graph           │
+│  Worker Spawner ──▶ Model selection + prompt generation         │
+│  Swarm Metadata ──▶ ~/.claudeops/swarms/<name>/                 │
+│  Cost Tracking  ──▶ Per-task cost aggregation                   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Key Design Principles
+
+1. **Use native tools**: Let Claude Code's TaskCreate/TaskUpdate handle task CRUD
+2. **Store metadata separately**: Swarm costs, history, and config go to `~/.claudeops/swarms/`
+3. **Respect native schema**: Use `open/resolved` status, not custom values
+4. **Leverage blockedBy**: Dependencies are enforced by Claude Code's task system
+5. **CLAUDE_CODE_TASK_LIST_ID**: Use this to persist tasks across sessions
+
+### Swarm Module (`src/core/swarm/`)
+
+| File | Purpose |
+|------|---------|
+| `planner.ts` | Classification → task breakdown with dependencies |
+| `dependency-graph.ts` | Topological sort, parallel groups, cycle detection |
+| `spawner.ts` | Worker prompt generation, model routing |
+| `persistence.ts` | Swarm metadata (not task storage) |
+| `index.ts` | Public exports |
 
 ---
 
@@ -54,6 +131,7 @@ claudeops/
 │   │   ├── doctor/               # Diagnostics
 │   │   ├── guardrails/           # Safety checks
 │   │   ├── router/               # Agent/model routing
+│   │   ├── swarm/                # Swarm orchestration (v4.0.0)
 │   │   └── sync/                 # Claude Code sync
 │   ├── domain/                   # Domain modules
 │   │   ├── addon/                # Addon management
@@ -366,6 +444,8 @@ Session state for classification tracking.
 
 | Command | Purpose |
 |---------|---------|
+| `cops init` | Zero-config swarm setup (v4.0.0) |
+| `cops swarm` | Swarm orchestration (status, tasks, init, stop, history) |
 | `cops sync` | Sync config to Claude Code |
 | `cops config` | Configuration management (init, edit, show, validate, pm) |
 | `cops profile` | Profile operations (list, use, create, delete) |
@@ -518,7 +598,7 @@ The generated CLAUDE.md includes:
 | tdd | sonnet | Test-driven development |
 | typescript-expert | sonnet | TypeScript guidance |
 
-### Built-in Hooks (13)
+### Built-in Hooks (14)
 
 | Hook | Event | Default | Purpose |
 |------|-------|---------|---------|
@@ -535,6 +615,7 @@ The generated CLAUDE.md includes:
 | git-branch-check | PreToolUse | Disabled | Protected branch warnings |
 | todo-tracker | UserPromptSubmit | Disabled | TODO tracking |
 | session-log | Stop | Disabled | Session logging |
+| swarm-lifecycle | SubagentStop | Enabled | Swarm task completion tracking |
 
 ---
 
@@ -556,6 +637,10 @@ The generated CLAUDE.md includes:
 ├── cache/
 │   ├── costs/            # Cost tracking data
 │   └── mcp-servers.json  # MCP state
+├── swarms/               # Swarm metadata (v4.0.0)
+│   ├── history.json      # Past executions
+│   └── <name>/           # Active swarm state
+│       └── state.json    # Current swarm state
 └── backups/              # Sync backups
 ```
 

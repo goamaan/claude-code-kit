@@ -34,6 +34,9 @@ const main = defineCommand({
     // Cost tracking
     cost: () => import("./commands/cost.js").then((m) => m.default),
 
+    // Swarm orchestration
+    swarm: () => import("./commands/swarm.js").then((m) => m.default),
+
     // Hook management
     hook: () => import("./commands/hook.js").then((m) => m.default),
 
@@ -46,6 +49,9 @@ const main = defineCommand({
     // Installation wizard
     install: () => import("./commands/install.js").then((m) => m.default),
 
+    // Zero-config swarm setup
+    init: () => import("./commands/init.js").then((m) => m.default),
+
     // Upgrade claudeops
     upgrade: () => import("./commands/upgrade.js").then((m) => m.default),
   },
@@ -56,6 +62,7 @@ const main = defineCommand({
     console.log("");
 
     console.log("Getting Started:");
+    console.log("  cops init           Zero-config swarm setup (recommended)");
     console.log("  cops install        Interactive installation wizard");
     console.log("  cops config init    Initialize configuration");
     console.log("  cops doctor         Diagnose and fix issues");
@@ -82,6 +89,7 @@ const main = defineCommand({
 
     console.log("Utilities:");
     console.log("  cost               Cost tracking (today, week, budget, pricing)");
+    console.log("  swarm              Swarm orchestration (status, tasks, init, stop)");
     console.log("  doctor             Diagnose configuration issues");
     console.log("  upgrade            Check for and install updates");
     console.log("");

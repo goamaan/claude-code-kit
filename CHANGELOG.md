@@ -1,3 +1,39 @@
+## [4.0.0] - 2026-01-25
+
+### Added
+
+#### Swarm Orchestration
+- **Multi-agent task orchestration with automatic parallelization**
+  - New `cops init` command for zero-config swarm setup
+  - New `cops swarm` command with subcommands: status, tasks, init, stop, history
+  - Task dependency graph with topological sorting and parallel execution groups
+  - Worker spawner with model selection based on task complexity
+  - State persistence for swarm executions
+  - Per-task cost tracking
+
+#### Enhanced Router
+- **Integrated swarm recommendation into routing decisions**
+  - Automatic task decomposition suggestions
+  - Parallelism mode recommendations (sequential, parallel, hybrid)
+
+#### New Swarm Module (`src/core/swarm/`)
+- `dependency-graph.ts` - Task dependency analysis
+- `spawner.ts` - Worker agent prompt generation
+- `persistence.ts` - Swarm state management
+- `planner.ts` - Task planning and decomposition
+
+#### Swarm Lifecycle Hook
+- **`hooks/swarm-lifecycle.mjs`**
+  - Tracks task completion and cost
+  - Monitors parallel group progress
+
+### Changed
+- Enhanced orchestrate skill with conductor/worker patterns
+- Updated cost tracker for per-task cost tracking
+- Router types extended with swarm recommendation
+
+---
+
 ## [3.1.0] - 2026-01-25
 
 ### Added

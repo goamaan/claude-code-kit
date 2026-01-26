@@ -173,6 +173,43 @@ Task(subagent_type="claudeops:architect",
      prompt="Debug the race condition in the auth flow")
 ```
 
+## Model Selection Decision Tree
+
+### Quick Reference
+| Task Type | Model | Agent |
+|-----------|-------|-------|
+| File lookup, grep | haiku | explore |
+| Add comment, simple edit | haiku | executor-low |
+| Documentation | haiku | writer |
+| Standard feature | opus | executor |
+| Bug fix | opus | executor |
+| Complex debugging | opus | architect |
+| Security audit | opus | security |
+| Architecture decision | opus | architect |
+
+### Decision Logic
+```
+if task.complexity == 'trivial':
+    return 'haiku'
+elif task.complexity == 'simple':
+    if task.type in ['lookup', 'docs', 'comment']:
+        return 'haiku'
+    else:
+        return 'sonnet'
+elif task.complexity == 'moderate':
+    return 'sonnet'
+else:  # complex, architectural
+    return 'opus'
+```
+
+### Complexity Assessment
+| Complexity | Indicators |
+|------------|------------|
+| Trivial | Single file, no logic, read-only or comment |
+| Simple | Single file, minor logic, clear pattern to follow |
+| Moderate | Multiple files, some logic, existing patterns |
+| Complex | Cross-cutting concerns, new patterns, architecture |
+
 ## Agent Catalog (11 Agents)
 
 ### Opus Agents (Default - 8 agents)
@@ -219,6 +256,129 @@ Task(subagent_type="claudeops:architect",
      prompt="Analyze the authentication flow and identify the race condition causing intermittent failures")
 ```
 
+## Orchestration Patterns
+
+### Pattern 1: Fan-Out (Parallel Independent Work)
+When tasks are independent, spawn multiple agents simultaneously:
+```
+# Create tasks
+TaskCreate({subject: "Implement auth API"})      # #1
+TaskCreate({subject: "Implement payment API"})   # #2
+TaskCreate({subject: "Implement user API"})      # #3
+
+# Spawn agents in parallel (single message, multiple Task calls)
+Task(subagent_type="claudeops:executor", model="opus", run_in_background=true,
+     prompt="Implement auth API...")
+Task(subagent_type="claudeops:executor", model="opus", run_in_background=true,
+     prompt="Implement payment API...")
+Task(subagent_type="claudeops:executor", model="opus", run_in_background=true,
+     prompt="Implement user API...")
+```
+
+### Pattern 2: Pipeline (Sequential with Dependencies)
+When tasks must complete in order:
+```
+TaskCreate({subject: "Analyze requirements"})                    # #1
+TaskCreate({subject: "Design schema", addBlockedBy: ["1"]})      # #2
+TaskCreate({subject: "Implement", addBlockedBy: ["2"]})          # #3
+TaskCreate({subject: "Write tests", addBlockedBy: ["3"]})        # #4
+```
+
+### Pattern 3: Map-Reduce (Divide, Process, Combine)
+For large tasks that can be parallelized:
+```
+# Map phase - parallel exploration
+Task(subagent_type="claudeops:explore", model="haiku",
+     prompt="Find all auth-related files")
+Task(subagent_type="claudeops:explore", model="haiku",
+     prompt="Find all session-related files")
+Task(subagent_type="claudeops:explore", model="haiku",
+     prompt="Find all token-related files")
+
+# Wait for results, then reduce
+Task(subagent_type="claudeops:architect", model="opus",
+     prompt="Synthesize findings and create unified implementation plan...")
+```
+
+### Pattern 4: Implementation with Verification
+Standard pattern for most features:
+```
+# Phase 1: Discovery (parallel)
+Task(subagent_type="claudeops:explore", model="haiku",
+     prompt="Find existing patterns for this feature type...")
+Task(subagent_type="claudeops:explore", model="haiku",
+     prompt="Find test patterns used in this codebase...")
+
+# Phase 2: Planning
+Task(subagent_type="claudeops:architect", model="opus",
+     prompt="Create implementation plan based on discovered patterns...")
+
+# Phase 3: Implementation + Testing (parallel)
+Task(subagent_type="claudeops:executor", model="opus", run_in_background=true,
+     prompt="Implement the feature according to the plan...")
+Task(subagent_type="claudeops:qa-tester", model="opus", run_in_background=true,
+     prompt="Write comprehensive tests for the feature...")
+
+# Phase 4: Verification
+Task(subagent_type="claudeops:architect", model="opus",
+     prompt="Verify implementation meets requirements and tests pass...")
+```
+
+### Pattern 5: Swarm Coordination
+For large-scale work with many parallel workers:
+```
+# Create work items as tasks
+for item in work_items:
+    TaskCreate({subject: item.name, owner: "worker-pool"})
+
+# Spawn worker swarm
+Task(subagent_type="claudeops:executor", model="opus", run_in_background=true,
+     prompt="You are worker-1. Find tasks owned by worker-pool, claim one, complete it.")
+Task(subagent_type="claudeops:executor", model="opus", run_in_background=true,
+     prompt="You are worker-2. Find tasks owned by worker-pool, claim one, complete it.")
+Task(subagent_type="claudeops:executor", model="opus", run_in_background=true,
+     prompt="You are worker-3. Find tasks owned by worker-pool, claim one, complete it.")
+
+# Workers self-coordinate via TaskList - no central orchestration needed
+```
+
+## Background Execution Rules
+
+### Always Use Background for Workers
+When spawning worker agents, use `run_in_background=true`:
+```
+Task(subagent_type="claudeops:executor",
+     model="opus",
+     run_in_background=true,  # REQUIRED for workers
+     prompt="Implement feature...")
+```
+
+### Parallel Execution
+Multiple Task calls in a single message = parallel execution:
+```
+# These three run simultaneously
+Task(..., run_in_background=true, prompt="Task A")
+Task(..., run_in_background=true, prompt="Task B")
+Task(..., run_in_background=true, prompt="Task C")
+```
+
+### Checking Background Task Status
+Use TaskOutput to check on background workers:
+```
+TaskOutput({task_id: "abc123", block: false})  # Non-blocking check
+TaskOutput({task_id: "abc123", block: true})   # Wait for completion
+```
+
+### When to Use Background vs Foreground
+| Scenario | Background | Foreground |
+|----------|------------|------------|
+| Parallel workers | Yes | - |
+| Long-running tests | Yes | - |
+| Independent tasks | Yes | - |
+| Need result immediately | - | Yes |
+| Sequential dependency | - | Yes |
+| Single quick task | - | Yes |
+
 ## Verification Protocol
 
 ### Mandatory for All Complex Work
@@ -237,6 +397,138 @@ Before claiming completion:
 3. **If APPROVED:** Report completion with evidence
 
 4. **If REJECTED:** Fix issues and re-verify
+
+## AskUserQuestion Patterns
+
+### When to Ask
+- Ambiguous requirements
+- Multiple valid approaches with trade-offs
+- Decisions that significantly affect scope or cost
+- User preference matters (UI, naming, etc.)
+
+### When NOT to Ask
+- Technical implementation details
+- Code style (follow existing patterns)
+- File locations (follow conventions)
+- Test coverage approach
+
+### Format Guidelines
+- Maximum 4 questions per interaction
+- Maximum 4 options per question
+- Include rich descriptions for trade-off decisions
+- First option should be the recommended default with "(Recommended)"
+
+### Example
+```
+AskUserQuestion({
+  questions: [{
+    question: "Which authentication method should we implement?",
+    header: "Auth method",
+    options: [
+      {
+        label: "JWT tokens (Recommended)",
+        description: "Stateless, scalable, industry standard. Good for APIs and SPAs."
+      },
+      {
+        label: "Session cookies",
+        description: "Traditional approach, easier CSRF protection. Good for server-rendered apps."
+      },
+      {
+        label: "OAuth 2.0 only",
+        description: "Delegate auth to providers like Google/GitHub. Reduces password management."
+      }
+    ],
+    multiSelect: false
+  }]
+})
+```
+
+### Multi-Question Example
+```
+AskUserQuestion({
+  questions: [
+    {
+      question: "What database should we use?",
+      header: "Database",
+      options: [
+        {label: "PostgreSQL (Recommended)", description: "Robust, full-featured relational DB"},
+        {label: "SQLite", description: "Simple, file-based, good for dev/small apps"},
+        {label: "MongoDB", description: "Document store, flexible schema"}
+      ]
+    },
+    {
+      question: "Include caching layer?",
+      header: "Caching",
+      options: [
+        {label: "Yes - Redis", description: "Fast in-memory cache, widely supported"},
+        {label: "Yes - Memcached", description: "Simple, high-performance caching"},
+        {label: "No caching", description: "Keep it simple for now"}
+      ]
+    }
+  ]
+})
+```
+
+## Worker Prompt Template
+
+When delegating to worker agents, use this template:
+
+```
+You are a {agent} worker agent.
+
+## Task: {subject}
+{description}
+
+## Context
+{relevant_context_from_codebase}
+
+## Instructions
+1. Focus ONLY on this specific task
+2. Use appropriate tools for your specialization
+3. Follow existing code patterns
+4. Mark complete when done: TaskUpdate(taskId="{id}", status="completed")
+
+## On Completion
+Provide summary of:
+- What was accomplished
+- Files changed
+- Any issues encountered
+```
+
+### Template Variables
+| Variable | Description |
+|----------|-------------|
+| `{agent}` | Agent type: executor, architect, designer, etc. |
+| `{subject}` | Task subject from TaskCreate |
+| `{description}` | Detailed task description |
+| `{id}` | Task ID for status updates |
+| `{relevant_context_from_codebase}` | File contents, patterns, constraints |
+
+### Specialization-Specific Additions
+
+**For executor agents:**
+```
+## Code Standards
+- Follow existing patterns in {similar_file}
+- Use TypeScript strict mode
+- Add JSDoc comments for public APIs
+```
+
+**For qa-tester agents:**
+```
+## Testing Requirements
+- Cover happy path and edge cases
+- Use existing test utilities from {test_utils_path}
+- Aim for >80% coverage of new code
+```
+
+**For architect agents:**
+```
+## Analysis Scope
+- Consider performance implications
+- Identify potential security concerns
+- Evaluate maintainability
+```
 
 ## Task Management
 

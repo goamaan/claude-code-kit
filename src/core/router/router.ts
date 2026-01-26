@@ -18,6 +18,7 @@ import {
   selectParallelismStrategy,
   explainParallelismStrategy,
 } from './parallelism.js';
+import { getSwarmRecommendation } from '../swarm/index.js';
 
 // =============================================================================
 // Main Router Function
@@ -60,13 +61,17 @@ export function routeIntent(
     agents,
   );
 
-  // 7. Generate reasoning
+  // 7. Get swarm recommendation
+  const swarmRecommendation = getSwarmRecommendation(classification);
+
+  // 8. Generate reasoning
   const reasoning = generateRoutingReasoning(
     classification,
     agents,
     primaryModel,
     parallelism,
     verification,
+    swarmRecommendation,
   );
 
   return {
@@ -75,6 +80,7 @@ export function routeIntent(
     parallelism,
     verification,
     reasoning,
+    swarmRecommendation,
   };
 }
 
@@ -137,6 +143,7 @@ function generateRoutingReasoning(
   primaryModel: RoutingDecision['primaryModel'],
   parallelism: RoutingDecision['parallelism'],
   verification: boolean,
+  swarmRecommendation?: RoutingDecision['swarmRecommendation'],
 ): string {
   const { type, complexity, domains, signals } = classification;
 
@@ -190,6 +197,13 @@ function generateRoutingReasoning(
     parts.push(`Verification: yes (${reasons.join(', ')})`);
   }
 
+  // Swarm recommendation
+  if (swarmRecommendation?.decompose) {
+    parts.push(
+      `Swarm: decompose into ${swarmRecommendation.suggestedSubtasks} subtasks (${swarmRecommendation.parallelism})`,
+    );
+  }
+
   return parts.join(' | ');
 }
 
@@ -218,6 +232,7 @@ export function createSimpleRoutingDecision(
     parallelism: 'sequential',
     verification: false,
     reasoning,
+    swarmRecommendation: undefined,
   };
 }
 
@@ -231,5 +246,6 @@ export function createConversationRoutingDecision(): RoutingDecision {
     parallelism: 'sequential',
     verification: false,
     reasoning: 'Conversation - no agents needed',
+    swarmRecommendation: undefined,
   };
 }

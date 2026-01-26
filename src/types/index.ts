@@ -222,3 +222,42 @@ export {
   type DiagnosticCheckId,
   DIAGNOSTIC_CHECKS,
 } from './diagnostic.js';
+
+// =============================================================================
+// Swarm Types
+// =============================================================================
+
+export {
+  // Schemas
+  ModelTierSchema,
+  SwarmTaskStatusSchema,
+  TaskCostEntrySchema,
+  SwarmTaskSchema,
+  ParallelismModeSchema,
+  SwarmPlanSchema,
+  DependencyNodeSchema,
+  SwarmPersistenceConfigSchema,
+  SwarmCostTrackingConfigSchema,
+  SwarmConfigSchema,
+  SwarmStateStatusSchema,
+  SwarmStateSchema,
+  SwarmExecutionStatusSchema,
+  SwarmExecutionSchema,
+  SwarmRecommendationSchema,
+  // Types
+  type ModelTier,
+  type SwarmTaskStatus,
+  type TaskCostEntry,
+  type SwarmTask,
+  type ParallelismMode,
+  type SwarmPlan,
+  type DependencyNode,
+  type SwarmPersistenceConfig,
+  type SwarmCostTrackingConfig,
+  type SwarmConfig,
+  type SwarmStateStatus,
+  type SwarmState,
+  type SwarmExecutionStatus,
+  type SwarmExecution,
+  type SwarmRecommendation,
+} from './swarm.js';
