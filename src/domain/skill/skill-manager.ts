@@ -3,7 +3,7 @@
  * Loads, matches, and formats skills for Claude Code integration
  */
 
-import { readdir, readFile, mkdir, writeFile as fsWriteFile } from 'fs/promises';
+import { readdir, readFile, mkdir, writeFile as fsWriteFile, stat, copyFile } from 'fs/promises';
 import { join, basename, dirname } from 'path';
 import { existsSync } from 'fs';
 import { homedir } from 'os';
@@ -346,6 +346,49 @@ export class SkillManager {
   }
 
   /**
+   * Recursively sync a skill's references directory if it exists
+   */
+  private async syncSkillReferences(skillName: string, sourceDir: string): Promise<void> {
+    const sourceReferencesDir = join(sourceDir, 'references');
+
+    // Check if references directory exists
+    try {
+      const refsStat = await stat(sourceReferencesDir);
+      if (!refsStat.isDirectory()) return;
+    } catch {
+      // References directory doesn't exist, skip
+      return;
+    }
+
+    // Create destination skill directory and references subdirectory
+    const destSkillDir = join(this.claudeSkillsDir, skillName);
+    const destReferencesDir = join(destSkillDir, 'references');
+    await mkdir(destReferencesDir, { recursive: true });
+
+    // Recursively copy all files from source to destination
+    await this.copyDirectoryRecursive(sourceReferencesDir, destReferencesDir);
+  }
+
+  /**
+   * Recursively copy directory contents
+   */
+  private async copyDirectoryRecursive(sourceDir: string, destDir: string): Promise<void> {
+    const entries = await readdir(sourceDir, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const sourcePath = join(sourceDir, entry.name);
+      const destPath = join(destDir, entry.name);
+
+      if (entry.isDirectory()) {
+        await mkdir(destPath, { recursive: true });
+        await this.copyDirectoryRecursive(sourcePath, destPath);
+      } else {
+        await copyFile(sourcePath, destPath);
+      }
+    }
+  }
+
+  /**
    * Sync skills to Claude Code's native skill directory
    */
   async syncToClaudeCode(): Promise<{
@@ -363,7 +406,7 @@ export class SkillManager {
       // Ensure Claude skills directory exists
       await mkdir(this.claudeSkillsDir, { recursive: true });
 
-      // Track which skills should exist in Claude Code
+      // Track which skills should exist in Claude Code (files and directories)
       const expectedSkills = new Set<string>();
 
       // Sync enabled skills to Claude Code
@@ -371,6 +414,7 @@ export class SkillManager {
         try {
           const destPath = join(this.claudeSkillsDir, `${skill.metadata.name}.md`);
           expectedSkills.add(`${skill.metadata.name}.md`);
+          expectedSkills.add(skill.metadata.name); // Track directory name for references
 
           // Build full skill file with frontmatter
           const frontmatter = [
@@ -405,6 +449,10 @@ export class SkillManager {
           // Write to Claude skills directory
           await fsWriteFile(destPath, fullContent, 'utf8');
 
+          // Sync references directory if it exists
+          const skillSourceDir = dirname(skill.sourcePath);
+          await this.syncSkillReferences(skill.metadata.name, skillSourceDir);
+
           if (fileExists) {
             updated.push(skill.metadata.name);
           } else {
@@ -417,21 +465,28 @@ export class SkillManager {
 
       // Clean up skills that were removed from claudeops
       if (existsSync(this.claudeSkillsDir)) {
-        const existingFiles = await readdir(this.claudeSkillsDir);
+        const existingEntries = await readdir(this.claudeSkillsDir, { withFileTypes: true });
 
-        for (const file of existingFiles) {
-          if (!file.endsWith('.md')) continue;
-
-          // Skip if this skill is expected
-          if (expectedSkills.has(file)) continue;
+        for (const entry of existingEntries) {
+          // Skip if this entry is expected
+          if (expectedSkills.has(entry.name)) continue;
 
           try {
-            // Remove the file (it's no longer in our skill set)
-            const { unlink } = await import('fs/promises');
-            await unlink(join(this.claudeSkillsDir, file));
-            removed.push(file.replace(/\.md$/, ''));
+            const entryPath = join(this.claudeSkillsDir, entry.name);
+
+            if (entry.isDirectory()) {
+              // Remove skill directory (references)
+              const { rm } = await import('fs/promises');
+              await rm(entryPath, { recursive: true, force: true });
+              removed.push(entry.name);
+            } else if (entry.name.endsWith('.md')) {
+              // Remove skill file
+              const { unlink } = await import('fs/promises');
+              await unlink(entryPath);
+              removed.push(entry.name.replace(/\.md$/, ''));
+            }
           } catch (err) {
-            errors.push(`Failed to remove ${file}: ${err instanceof Error ? err.message : 'Unknown error'}`);
+            errors.push(`Failed to remove ${entry.name}: ${err instanceof Error ? err.message : 'Unknown error'}`);
           }
         }
       }

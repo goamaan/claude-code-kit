@@ -359,7 +359,7 @@ async function generateDynamicContext(): Promise<string> {
   const lines: string[] = [
     '## Intelligent Orchestration',
     '',
-    'claudeops v3 uses semantic intent classification - no keywords required.',
+    'claudeops uses semantic intent classification - no keywords required.',
     '',
     '### How It Works',
     '',

@@ -1,293 +1,224 @@
 ---
 name: autopilot
-description: Full autonomous execution from idea to working, tested code. 5-phase workflow with parallel agent execution. Use for building complete features, creating new projects, or hands-off development.
+description: Full autonomous execution from idea to working code with self-organizing swarm support
+triggers:
+  - autopilot
+  - build me
+  - create a complete
+  - make me a
+  - implement everything
 ---
 
-# Autopilot Skill
+# Autopilot Skill (v5.0)
 
-Full autonomous execution from high-level idea to working, tested code. No manual intervention required.
-
-## Purpose
-
-Autopilot is the flagship feature for autonomous development. When activated, it:
-- Gathers requirements automatically
-- Creates a comprehensive plan
-- Executes in parallel with specialized agents
-- Verifies and tests continuously
-- Self-corrects until complete
+Full autonomous execution from idea to working code. Gathers requirements, creates comprehensive plan, executes in parallel, verifies continuously, and self-corrects until complete.
 
 ## When to Activate
 
-Activate when user says:
-- "autopilot: [description]"
-- "build me a [thing]"
-- "I want a [thing]"
-- "create a [system/feature]"
-- "make me a [application]"
+User says one of:
+- "autopilot: [task]"
+- "build me a [feature]"
+- "create a complete [system]"
+- "make me a [thing]"
+- "implement everything for [feature]"
 
-## The 5-Phase Workflow
+## Execution Modes
 
-### Phase 1: Discovery (1-2 minutes)
+### Mode A: Self-Organizing Swarm (TeammateTool Available)
 
-**Objective:** Understand what needs to be built.
+When TeammateTool is detected in available tools:
 
-1. Parse user's request for explicit requirements
-2. Spawn `explore` agent to understand existing codebase:
-   ```
-   Task(subagent_type="claudeops:explore",
-        prompt="Analyze codebase structure, patterns, and conventions")
-   ```
-3. Spawn `architect` agent for requirement analysis:
-   ```
-   Task(subagent_type="claudeops:architect",
-        model="opus",
-        prompt="Analyze requirements and identify gaps, risks, dependencies")
-   ```
-4. Identify implicit requirements based on context
-5. Determine success criteria
+1. **Discovery** — Spawn explore + architect agents to understand scope
+2. **Plan** — Create task pool with all tasks and dependencies up front
+3. **Swarm** — Create team via `spawnTeam`, spawn N worker teammates that race to claim tasks
+4. **Monitor** — Workers self-report via inbox messaging. Orchestrator monitors, spawns additional workers if throughput stalls
+5. **Shutdown** — Graceful shutdown via `requestShutdown` when all tasks complete
+6. **Verify** — Architect teammate does final review
 
-**Output:** Requirements document with explicit and implicit needs.
+### Mode B: Pipeline (Fallback / Default)
 
-### Phase 2: Planning (2-3 minutes)
+When TeammateTool is NOT available, use the 5-phase pipeline:
 
-**Objective:** Create an executable plan.
+## Phase 1: Discovery
 
-1. Spawn `planner` agent to create strategic plan:
-   ```
-   Task(subagent_type="claudeops:planner",
-        model="opus",
-        prompt="Create implementation plan for: [requirements]")
-   ```
-2. Spawn `architect` agent to design architecture:
-   ```
-   Task(subagent_type="claudeops:architect",
-        model="opus",
-        prompt="Design system architecture for: [requirements]")
-   ```
-3. Break down into parallelizable work streams
-4. Create comprehensive task list with TaskCreate for all tasks
-5. Identify critical path and dependencies
+Understand what needs to be built.
 
-**Output:**
-- Architecture diagram/description
-- Task breakdown with dependencies
-- Parallel execution strategy
+### Actions
+1. Load relevant domain guide from `references/domains/`
+2. Spawn explore agent (haiku) to map codebase structure
+3. Spawn architect agent (opus) to analyze requirements and existing patterns
+4. If requirements are ambiguous, use AskUserQuestion (max 4 questions, 4 options each, rich descriptions)
 
-### Phase 3: Execution (parallel)
+### Gate
+- Codebase structure understood
+- Requirements clear
+- Relevant files identified
 
-**Objective:** Build everything in parallel.
-
-1. Activate ultrawork mode for maximum parallelism
-2. Spawn multiple executor agents in parallel:
-   ```
-   # For each independent work stream:
-   Task(subagent_type="claudeops:executor",
-        model="sonnet",
-        prompt="Implement [specific component]")
-   ```
-3. Use appropriate model tiers:
-   - `executor-low` with `model="haiku"` for simple files/boilerplate
-   - `executor` with `model="sonnet"` for standard features
-   - `executor` with `model="opus"` for complex logic
-4. Coordinate shared resources/interfaces
-5. Track progress via TaskUpdate
-
-**Parallelization Strategy:**
-- Group tasks by domain (frontend, backend, tests)
-- Run independent domains in parallel
-- Within domains, run independent files in parallel
-- Sequential only for true dependencies
-
-### Phase 4: Verification (continuous)
-
-**Objective:** Ensure everything works.
-
-1. After each component, spawn verification:
-   ```
-   Task(subagent_type="claudeops:qa-tester",
-        prompt="Test [component] functionality")
-   ```
-2. Run build after significant changes:
-   ```
-   Bash(command="npm run build", run_in_background=true)
-   ```
-3. Run tests continuously:
-   ```
-   Bash(command="npm test", run_in_background=true)
-   ```
-4. Check for type errors:
-   ```
-   Bash(command="npm run typecheck", run_in_background=true)
-   ```
-5. If errors found, spawn fix agents immediately
-
-**Self-Correction Loop:**
+### Output
 ```
-while (errors_exist):
-    identify_error_type()
-    spawn_appropriate_fixer()
-    verify_fix()
+[Phase 1] Discovery complete
+  → Codebase: [language/framework]
+  → Structure: [key directories]
+  → Relevant files: [N files identified]
+  → Requirements: [summary]
 ```
 
-### Phase 5: Completion
+## Phase 2: Planning
 
-**Objective:** Confirm done and report.
+Create strategic plan and architecture.
 
-1. Final architect verification:
-   ```
-   Task(subagent_type="claudeops:architect",
-        model="opus",
-        prompt="Verify complete implementation meets all requirements")
-   ```
-2. Generate completion report
-3. List all created/modified files
-4. Provide usage instructions
-5. Suggest next steps
+### Actions
+1. Spawn planner agent (opus) to create task breakdown
+2. Spawn architect agent (opus) to define technical approach
+3. Spawn critic agent (opus) to review the plan
+4. Create all tasks with TaskCreate, including dependencies
+5. Identify parallelization opportunities
 
-## Agent Delegation Patterns
+### Gate
+- Plan reviewed and approved by critic
+- All tasks created with clear dependencies
+- Parallelization opportunities identified
 
-### Discovery Phase
-| Task | Agent | Model |
-|------|-------|-------|
-| Codebase analysis | explore | haiku |
-| Requirement analysis | architect | opus |
-| Risk assessment | architect | opus |
+### Output
+```
+[Phase 2] Planning complete
+  → Tasks: [N] total ([M] parallelizable)
+  → Architecture: [approach summary]
+  → Risk areas: [identified risks]
+```
 
-### Planning Phase
-| Task | Agent | Model |
-|------|-------|-------|
-| Strategic planning | planner | opus |
-| Architecture design | architect | opus |
-| Task breakdown | architect | opus |
+## Phase 3: Execution
 
-### Execution Phase
-| Task | Agent | Model |
-|------|-------|-------|
-| Boilerplate/simple | executor-low | haiku |
+Execute the plan with maximum parallelism.
+
+### Actions
+1. Check TaskList for ready tasks (pending, no blockers)
+2. Spawn executor agents for independent tasks in parallel:
+   - Use `Task(run_in_background=True)` for parallel execution
+   - Assign appropriate model tier based on task complexity
+   - Use the 5-element worker prompt template
+3. As tasks complete, check for newly unblocked tasks
+4. Spawn additional agents for newly ready tasks
+5. Continue until all execution tasks complete
+
+### Model Routing for Execution
+| Task Type | Agent | Model |
+|-----------|-------|-------|
+| Simple file changes | executor-low | haiku |
 | Standard features | executor | sonnet |
-| Complex logic | executor | opus |
-| UI components | designer | sonnet |
-| Documentation | writer | haiku |
+| Complex implementation | executor | opus |
+| UI/frontend work | designer | sonnet/opus |
+| Test writing | qa-tester | sonnet |
 
-### Verification Phase
-| Task | Agent | Model |
-|------|-------|-------|
-| Testing | qa-tester | sonnet |
-| Code review | architect | haiku |
-| Build fixes | executor | sonnet |
+### Parallel Execution Rules
+- Maximum 5-7 agents running simultaneously
+- Never have two agents editing the same file
+- Group related file changes to single agents
+- Include verification in each agent's prompt
 
-## Output Format
+### Gate
+- All execution tasks completed
+- No critical failures
 
-### During Execution
+## Phase 4: Verification
+
+Continuous testing and self-correction.
+
+### Actions
+1. Spawn qa-tester agent to run full test suite
+2. Spawn architect agent to verify implementation matches plan
+3. Run build: `npm run build` (or project equivalent)
+4. Run tests: `npm test` (or project equivalent)
+5. If failures found:
+   - Create fix tasks with TaskCreate
+   - Spawn executor agents to fix issues
+   - Re-run verification (max 3 cycles)
+
+### Self-Correction Loop
 ```
-## Autopilot Status
-
-### Phase: [Current Phase]
-Progress: [X/Y tasks complete]
-
-### Active Agents
-- executor: Implementing user service
-- designer: Creating dashboard component
-- qa-tester: Testing auth flow
-
-### Completed
-- [x] Project structure
-- [x] Database schema
-- [x] API routes
-
-### In Progress
-- [ ] Frontend components
-- [ ] Integration tests
+while (failures exist AND retries < 3):
+  1. Analyze failure (architect agent)
+  2. Create fix task (TaskCreate)
+  3. Execute fix (executor agent)
+  4. Re-verify (qa-tester agent)
 ```
 
-### On Completion
+### Gate
+- Build compiles successfully
+- All tests pass
+- Architect approves implementation
+
+## Phase 5: Completion
+
+Final review and user handoff.
+
+### Actions
+1. Spawn architect agent for final verification (if not done in Phase 4)
+2. Generate completion report
+3. Provide usage instructions to user
+
+### Output
 ```
 ## Autopilot Complete
 
-### Summary
-Built [description] with [N] files across [M] components.
+### What Was Built
+[Description of the feature/system]
 
-### Files Created
-- src/services/user.ts - User service with CRUD operations
-- src/components/Dashboard.tsx - Main dashboard view
-- src/api/routes.ts - API route definitions
-- tests/user.test.ts - User service tests
+### Files Created/Modified
+- [file:line] — [description]
 
-### Files Modified
-- src/index.ts - Added new routes
-- package.json - Added dependencies
+### Verification Results
+- Build: ✓ Pass
+- Tests: ✓ Pass ([N] tests)
 
-### Verification
-- Build: PASS
-- Tests: 15/15 passing
-- Types: No errors
-- Architect: APPROVED
+### How to Use
+[Usage instructions, examples, or next steps]
 
-### Usage
-[How to use what was built]
-
-### Next Steps
-- Consider adding [enhancement]
-- May want to [optimization]
+### Architecture Notes
+[Key architectural decisions and their rationale]
 ```
-
-## Anti-Patterns to Avoid
-
-1. **Starting without discovery**
-   - BAD: Immediately coding based on vague request
-   - GOOD: Always run discovery phase first
-
-2. **Sequential execution**
-   - BAD: Waiting for one task before starting another
-   - GOOD: Parallelize everything possible
-
-3. **Skipping verification**
-   - BAD: Claiming done without testing
-   - GOOD: Continuous verification throughout
-
-4. **Ignoring errors**
-   - BAD: Continuing past build/test failures
-   - GOOD: Self-correct immediately when errors detected
-
-5. **Doing work directly**
-   - BAD: Writing code yourself
-   - GOOD: Delegate ALL code changes to executor agents
-
-6. **No progress tracking**
-   - BAD: Losing track of what's done
-   - GOOD: TaskCreate for everything, TaskUpdate continuously
-
-7. **Over-planning**
-   - BAD: Spending 30 minutes planning a 10-minute task
-   - GOOD: Scale planning to task complexity
-
-8. **Under-parallelizing**
-   - BAD: Running 5 agents when 15 could run
-   - GOOD: Maximize parallel execution
-
-## Interruption Handling
-
-If user says "stop", "cancel", or "pause":
-1. Note current state via TaskUpdate
-2. Stop spawning new agents
-3. Wait for active agents to complete or timeout
-4. Report current progress
-5. Provide resume instructions
 
 ## Resume Capability
 
-To resume an interrupted autopilot session:
-1. Read existing task state via TaskList
-2. Identify incomplete tasks
-3. Re-enter at appropriate phase
-4. Continue execution
+If autopilot is interrupted:
+1. TaskList state persists across sessions
+2. On resume, check TaskList for incomplete tasks
+3. Skip completed tasks, resume from last incomplete
+4. Re-run verification on completed work before continuing
 
-## Success Criteria
+To resume: "resume autopilot" or "continue where you left off"
 
-Autopilot is complete when:
-- [ ] All tasks marked complete via TaskUpdate
-- [ ] Build passes
-- [ ] Tests pass (or no test failures introduced)
-- [ ] No type errors
-- [ ] Architect verification passed
-- [ ] User's original request fully addressed
+## Agent Delegation by Phase
+
+| Phase | Agent | Model | Purpose |
+|-------|-------|-------|---------|
+| Discovery | explore | haiku | File discovery, structure mapping |
+| Discovery | architect | opus | Requirements analysis |
+| Planning | planner | opus | Task decomposition |
+| Planning | architect | opus | Technical approach |
+| Planning | critic | opus | Plan review |
+| Execution | executor | sonnet/opus | Code implementation |
+| Execution | executor-low | haiku | Simple changes |
+| Execution | designer | sonnet/opus | UI components |
+| Execution | qa-tester | sonnet | Test writing |
+| Verification | qa-tester | sonnet | Test execution |
+| Verification | architect | opus | Implementation review |
+| Completion | architect | opus | Final verification |
+
+## Anti-Patterns to Avoid
+
+1. **Starting without discovery** — Always explore the codebase first
+2. **Sequential execution** — Parallelize independent tasks
+3. **Skipping verification** — Always run build and tests
+4. **Ignoring critic feedback** — Address plan review findings
+5. **No self-correction** — Retry failed tasks, don't give up
+6. **Implementing directly** — ALWAYS delegate to agents
+7. **Missing task tracking** — Use TaskCreate for every work item
+8. **Vague agent prompts** — Use 5-element prompt template
+
+## Interruption Handling
+
+- **"stop autopilot"** — Stop execution, save state, report progress
+- **"pause"** — Stop spawning new agents, wait for running ones
+- **"skip to phase N"** — Jump to specified phase
+- **"change plan"** — Re-enter Phase 2 with new requirements

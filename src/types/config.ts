@@ -65,29 +65,27 @@ export const SyncConfigSchema = z.object({
 export type SyncConfig = z.infer<typeof SyncConfigSchema>;
 
 // =============================================================================
-// Swarm Configuration
+// Swarm Configuration (v5 - Native Teams)
 // =============================================================================
 
-export const SwarmPersistenceConfigSchema = z.object({
-  enabled: z.boolean().optional().default(false),
-  directory: z.string().optional(),
-});
-export type SwarmPersistenceConfig = z.infer<typeof SwarmPersistenceConfigSchema>;
-
-export const SwarmCostTrackingConfigSchema = z.object({
-  enabled: z.boolean().optional().default(true),
-  perTask: z.boolean().optional().default(true),
-});
-export type SwarmCostTrackingConfig = z.infer<typeof SwarmCostTrackingConfigSchema>;
+export const SpawnBackendSchema = z.enum(['auto', 'in-process', 'tmux', 'iterm2']);
+export type SpawnBackend = z.infer<typeof SpawnBackendSchema>;
 
 export const SwarmConfigSchema = z.object({
-  enabled: z.boolean().optional().default(true),
-  defaultParallelism: z.enum(['sequential', 'parallel', 'hybrid']).optional().default('parallel'),
-  maxConcurrentWorkers: z.number().int().min(1).max(10).optional().default(5),
-  persistence: SwarmPersistenceConfigSchema.optional(),
-  costTracking: SwarmCostTrackingConfigSchema.optional(),
+  defaultBackend: SpawnBackendSchema.optional().default('auto'),
+  defaultTeammateCount: z.number().int().min(1).max(10).optional().default(3),
+  planApprovalRequired: z.boolean().optional().default(false),
 });
 export type SwarmConfig = z.infer<typeof SwarmConfigSchema>;
+
+// =============================================================================
+// Review Configuration
+// =============================================================================
+
+export const ReviewConfigSchema = z.object({
+  specialists: z.array(z.string()).optional().default(['security', 'performance', 'architecture', 'simplicity']),
+});
+export type ReviewConfig = z.infer<typeof ReviewConfigSchema>;
 
 // =============================================================================
 // Team Configuration
@@ -110,6 +108,7 @@ export const MainConfigSchema = z.object({
   sync: SyncConfigSchema.optional(),
   swarm: SwarmConfigSchema.optional(),
   team: TeamConfigSchema.optional(),
+  review: ReviewConfigSchema.optional(),
   packageManager: PackageManagerSchema.optional(),
 });
 export type MainConfig = z.infer<typeof MainConfigSchema>;
@@ -225,19 +224,16 @@ export interface MergedConfig {
     watch: boolean;
   };
 
-  // Swarm configuration
+  // Swarm configuration (v5 - Native Teams)
   swarm: {
-    enabled: boolean;
-    defaultParallelism: 'sequential' | 'parallel' | 'hybrid';
-    maxConcurrentWorkers: number;
-    persistence: {
-      enabled: boolean;
-      directory?: string;
-    };
-    costTracking: {
-      enabled: boolean;
-      perTask: boolean;
-    };
+    defaultBackend: 'auto' | 'in-process' | 'tmux' | 'iterm2';
+    defaultTeammateCount: number;
+    planApprovalRequired: boolean;
+  };
+
+  // Review configuration
+  review: {
+    specialists: string[];
   };
 
   // Team configuration
@@ -316,16 +312,12 @@ export const DEFAULT_MERGED_CONFIG: MergedConfig = {
     watch: false,
   },
   swarm: {
-    enabled: true,
-    defaultParallelism: 'parallel',
-    maxConcurrentWorkers: 5,
-    persistence: {
-      enabled: false,
-    },
-    costTracking: {
-      enabled: true,
-      perTask: true,
-    },
+    defaultBackend: 'auto',
+    defaultTeammateCount: 3,
+    planApprovalRequired: false,
+  },
+  review: {
+    specialists: ['security', 'performance', 'architecture', 'simplicity'],
   },
   skills: {
     enabled: [],

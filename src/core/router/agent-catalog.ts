@@ -107,6 +107,51 @@ export const AGENT_CATALOG: Record<string, AgentConfig> = {
     description: 'Plan review and critical analysis',
     domains: ['general'],
   },
+
+  // ---------------------------------------------------------------------------
+  // Specialist Agents (v5)
+  // ---------------------------------------------------------------------------
+  'security-sentinel': {
+    name: 'security-sentinel',
+    model: 'opus',
+    description: 'Security vulnerability review and OWASP compliance',
+    domains: ['security', 'backend'],
+  },
+
+  'performance-oracle': {
+    name: 'performance-oracle',
+    model: 'opus',
+    description: 'Performance bottleneck analysis and optimization',
+    domains: ['backend', 'frontend', 'database'],
+  },
+
+  'architecture-strategist': {
+    name: 'architecture-strategist',
+    model: 'opus',
+    description: 'Architectural compliance and design pattern review',
+    domains: ['general', 'backend', 'frontend'],
+  },
+
+  'code-simplicity-reviewer': {
+    name: 'code-simplicity-reviewer',
+    model: 'sonnet',
+    description: 'YAGNI and over-engineering detection',
+    domains: ['general'],
+  },
+
+  'best-practices-researcher': {
+    name: 'best-practices-researcher',
+    model: 'sonnet',
+    description: 'Framework best practices and convention research',
+    domains: ['general', 'documentation'],
+  },
+
+  'git-history-analyzer': {
+    name: 'git-history-analyzer',
+    model: 'haiku',
+    description: 'Code archaeology and git history analysis',
+    domains: ['general'],
+  },
 } as const;
 
 // =============================================================================

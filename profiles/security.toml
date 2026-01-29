@@ -24,3 +24,11 @@ default = "opus"
 simple = "sonnet"
 standard = "opus"
 complex = "opus"
+
+[swarm]
+defaultBackend = "auto"
+defaultTeammateCount = 3
+planApprovalRequired = true
+
+[review]
+specialists = ["security", "performance", "architecture", "simplicity"]

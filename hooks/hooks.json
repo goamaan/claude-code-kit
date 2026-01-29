@@ -90,6 +90,20 @@
       "enabled": false,
       "path": "./large-file-warning.mjs",
       "description": "Warns before reading large files"
+    },
+    {
+      "name": "team-lifecycle",
+      "type": "SubagentStop",
+      "enabled": false,
+      "path": "./team-lifecycle.mjs",
+      "description": "Logs team creation and shutdown events for native Claude Code Teams"
+    },
+    {
+      "name": "swarm-cost-tracker",
+      "type": "PostToolUse",
+      "enabled": false,
+      "path": "./swarm-cost-tracker.mjs",
+      "description": "Tracks per-agent costs when Task tool is used for orchestration"
     }
   ]
 }

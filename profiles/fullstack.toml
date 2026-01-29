@@ -28,3 +28,11 @@ default = "sonnet"
 simple = "haiku"
 standard = "sonnet"
 complex = "opus"
+
+[swarm]
+defaultBackend = "auto"
+defaultTeammateCount = 4
+planApprovalRequired = false
+
+[review]
+specialists = ["security", "performance", "architecture", "simplicity"]

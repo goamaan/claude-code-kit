@@ -224,40 +224,22 @@ export {
 } from './diagnostic.js';
 
 // =============================================================================
-// Swarm Types
+// Team Types (Native Claude Code Teams)
 // =============================================================================
 
 export {
   // Schemas
-  ModelTierSchema,
-  SwarmTaskStatusSchema,
-  TaskCostEntrySchema,
-  SwarmTaskSchema,
-  ParallelismModeSchema,
-  SwarmPlanSchema,
-  DependencyNodeSchema,
-  SwarmPersistenceConfigSchema,
-  SwarmCostTrackingConfigSchema,
-  SwarmConfigSchema,
-  SwarmStateStatusSchema,
-  SwarmStateSchema,
-  SwarmExecutionStatusSchema,
-  SwarmExecutionSchema,
-  SwarmRecommendationSchema,
+  TeamMemberStatusSchema,
+  TeamMemberSchema,
+  TeamStatusSchema,
+  TeamSchema,
+  TeamTaskStatusSchema,
+  TeamTaskSchema,
   // Types
-  type ModelTier,
-  type SwarmTaskStatus,
-  type TaskCostEntry,
-  type SwarmTask,
-  type ParallelismMode,
-  type SwarmPlan,
-  type DependencyNode,
-  type SwarmPersistenceConfig,
-  type SwarmCostTrackingConfig,
-  type SwarmConfig,
-  type SwarmStateStatus,
-  type SwarmState,
-  type SwarmExecutionStatus,
-  type SwarmExecution,
-  type SwarmRecommendation,
-} from './swarm.js';
+  type TeamMemberStatus,
+  type TeamMember,
+  type TeamStatus,
+  type Team,
+  type TeamTaskStatus,
+  type TeamTask,
+} from './team.js';

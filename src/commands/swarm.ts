@@ -1,129 +1,58 @@
 /**
- * Swarm orchestration management commands
- * cops swarm [status|tasks|init|stop|history]
+ * Swarm orchestration management commands (v5)
+ * Reads from native Claude Code team/task state
+ * cops swarm [status|tasks] + cops team [list|cleanup]
  */
 
 import { defineCommand } from 'citty';
+import { join } from 'node:path';
+import { homedir } from 'node:os';
 import pc from 'picocolors';
 import * as output from '../ui/output.js';
-import {
-  getActiveSwarms,
-  loadSwarmState,
-  initPersistence,
-  setTaskListId,
-  recordSwarmCompletion,
-  getSwarmHistory,
-} from '../core/swarm/persistence.js';
-import type { SwarmTask, SwarmState } from '../types/swarm.js';
+
+// =============================================================================
+// Constants
+// =============================================================================
+
+const CLAUDE_DIR = join(homedir(), '.claude');
+const TEAMS_DIR = join(CLAUDE_DIR, 'teams');
 
 // =============================================================================
 // Helper Functions
 // =============================================================================
 
 /**
- * Get status symbol for a task
+ * Read JSON file safely, returning null on any error
  */
-function getTaskStatusSymbol(status: SwarmTask['status']): string {
-  const symbols = {
-    completed: pc.green('+'),
-    in_progress: pc.yellow('*'),
-    pending: pc.dim('o'),
-    failed: pc.red('x'),
-  };
-  return symbols[status];
-}
-
-/**
- * Get status color for a task
- */
-function getTaskStatusColor(status: SwarmTask['status']): (str: string) => string {
-  const colors = {
-    completed: pc.green,
-    in_progress: pc.yellow,
-    pending: pc.dim,
-    failed: pc.red,
-  };
-  return colors[status];
-}
-
-/**
- * Print task counts summary
- */
-function printTaskCounts(state: SwarmState): void {
-  const tasks = state.plan.tasks;
-  const counts = {
-    pending: tasks.filter(t => t.status === 'pending').length,
-    in_progress: tasks.filter(t => t.status === 'in_progress').length,
-    completed: tasks.filter(t => t.status === 'completed').length,
-    failed: tasks.filter(t => t.status === 'failed').length,
-  };
-
-  output.kv('Total tasks', tasks.length.toString());
-  output.kv('Pending', pc.dim(counts.pending.toString()));
-  output.kv('In Progress', pc.yellow(counts.in_progress.toString()));
-  output.kv('Completed', pc.green(counts.completed.toString()));
-  if (counts.failed > 0) {
-    output.kv('Failed', pc.red(counts.failed.toString()));
+async function readJsonSafe<T>(path: string): Promise<T | null> {
+  try {
+    const { readFile } = await import('node:fs/promises');
+    const content = await readFile(path, 'utf-8');
+    return JSON.parse(content) as T;
+  } catch {
+    return null;
   }
 }
 
 /**
- * Build a tree visualization of task dependencies
+ * List directories in a path
  */
-function buildTaskTree(tasks: SwarmTask[]): string[] {
-  const lines: string[] = [];
-  const taskMap = new Map(tasks.map(t => [t.id, t]));
-  const processed = new Set<string>();
-
-  // Find root tasks (no blockedBy dependencies)
-  const roots = tasks.filter(t => t.blockedBy.length === 0);
-
-  // Recursive function to build tree
-  function buildNode(task: SwarmTask, prefix: string, isLast: boolean): void {
-    if (processed.has(task.id)) {
-      return;
-    }
-    processed.add(task.id);
-
-    const connector = isLast ? '`-- ' : '|-- ';
-    const statusSymbol = getTaskStatusSymbol(task.status);
-    const colorFn = getTaskStatusColor(task.status);
-    const taskLabel = colorFn(`${task.id}: ${task.subject}`);
-
-    lines.push(`${pc.dim(prefix + connector)}${statusSymbol} ${taskLabel}`);
-
-    // Get tasks that depend on this one
-    const children = task.blocks
-      .map(id => taskMap.get(id))
-      .filter((t): t is SwarmTask => t !== undefined);
-
-    if (children.length > 0) {
-      const childPrefix = prefix + (isLast ? '    ' : '|   ');
-      children.forEach((child, index) => {
-        buildNode(child, childPrefix, index === children.length - 1);
-      });
-    }
+async function listDirs(path: string): Promise<string[]> {
+  try {
+    const { readdir } = await import('node:fs/promises');
+    const entries = await readdir(path, { withFileTypes: true });
+    return entries.filter(e => e.isDirectory()).map(e => e.name);
+  } catch {
+    return [];
   }
+}
 
-  // Build tree from each root
-  roots.forEach((root, index) => {
-    buildNode(root, '', index === roots.length - 1);
-  });
-
-  // Handle orphaned tasks (shouldn't happen but just in case)
-  const orphans = tasks.filter(t => !processed.has(t.id));
-  if (orphans.length > 0) {
-    lines.push('');
-    lines.push(pc.yellow('Orphaned tasks (no dependencies):'));
-    orphans.forEach(task => {
-      const statusSymbol = getTaskStatusSymbol(task.status);
-      const colorFn = getTaskStatusColor(task.status);
-      const taskLabel = colorFn(`${task.id}: ${task.subject}`);
-      lines.push(`  ${statusSymbol} ${taskLabel}`);
-    });
-  }
-
-  return lines;
+/**
+ * Remove a directory recursively
+ */
+async function removeDir(path: string): Promise<void> {
+  const { rm } = await import('node:fs/promises');
+  await rm(path, { recursive: true, force: true });
 }
 
 // =============================================================================
@@ -133,7 +62,7 @@ function buildTaskTree(tasks: SwarmTask[]): string[] {
 const statusCommand = defineCommand({
   meta: {
     name: 'status',
-    description: 'Show active swarm state and task counts',
+    description: 'Show active teams from native Claude Code state',
   },
   args: {
     json: {
@@ -143,69 +72,38 @@ const statusCommand = defineCommand({
     },
   },
   async run({ args }) {
-    const activeSwarms = await getActiveSwarms();
+    const teamDirs = await listDirs(TEAMS_DIR);
 
-    if (activeSwarms.length === 0) {
-      output.info('No active swarms.');
-      output.dim('Use "ck swarm init <name>" to create a swarm.');
-      return;
-    }
-
-    // Load the first active swarm (typically there's only one)
-    const swarmName = activeSwarms[0]!;
-    const state = await loadSwarmState(swarmName);
-
-    if (!state) {
-      output.error(`Failed to load swarm state for: ${swarmName}`);
+    if (teamDirs.length === 0) {
+      output.info('No active teams.');
+      output.dim('Teams are created automatically by Claude Code when using TeammateTool.');
       return;
     }
 
     if (args.json) {
-      output.json({
-        name: state.name,
-        status: state.status,
-        taskCounts: {
-          total: state.plan.tasks.length,
-          pending: state.plan.tasks.filter(t => t.status === 'pending').length,
-          in_progress: state.plan.tasks.filter(t => t.status === 'in_progress').length,
-          completed: state.plan.tasks.filter(t => t.status === 'completed').length,
-          failed: state.plan.tasks.filter(t => t.status === 'failed').length,
-        },
-        totalCost: state.totalCost,
-        startedAt: state.startedAt,
-        completedAt: state.completedAt,
-      });
+      const teams = [];
+      for (const dir of teamDirs) {
+        const configPath = join(TEAMS_DIR, dir, 'config.json');
+        const config = await readJsonSafe<Record<string, unknown>>(configPath);
+        if (config) {
+          teams.push({ name: dir, ...config });
+        }
+      }
+      output.json(teams);
       return;
     }
 
-    // Format output
-    output.header(`Swarm Status: ${state.name}`);
-    output.kv('Status', state.status);
-    output.kv('Started', state.startedAt.toLocaleString());
-    if (state.completedAt) {
-      output.kv('Completed', state.completedAt.toLocaleString());
-    }
+    output.header('Active Teams');
+    for (const dir of teamDirs) {
+      const configPath = join(TEAMS_DIR, dir, 'config.json');
+      const config = await readJsonSafe<Record<string, unknown>>(configPath);
 
-    console.log();
-    output.header('Task Counts');
-    printTaskCounts(state);
-
-    if (state.totalCost > 0) {
-      console.log();
-      output.kv('Total Cost', output.formatCurrency(state.totalCost));
-    }
-
-    // Show active workers if any
-    const activeWorkers = state.plan.tasks.filter(t => t.status === 'in_progress');
-    if (activeWorkers.length > 0) {
-      console.log();
-      output.header('Active Workers');
-      activeWorkers.forEach(task => {
-        output.status(
-          `${task.id}: ${task.subject} (${task.agent}/${task.model})`,
-          'info'
-        );
-      });
+      if (config) {
+        const memberCount = Array.isArray(config['members']) ? config['members'].length : 0;
+        output.kv(dir, `${memberCount} members`);
+      } else {
+        output.kv(dir, pc.dim('(no config)'));
+      }
     }
   },
 });
@@ -217,7 +115,7 @@ const statusCommand = defineCommand({
 const tasksCommand = defineCommand({
   meta: {
     name: 'tasks',
-    description: 'Show task dependency visualization',
+    description: 'Show tasks from native Claude Code state',
   },
   args: {
     json: {
@@ -225,235 +123,163 @@ const tasksCommand = defineCommand({
       description: 'Output as JSON',
       default: false,
     },
-  },
-  async run({ args }) {
-    const activeSwarms = await getActiveSwarms();
-
-    if (activeSwarms.length === 0) {
-      output.info('No active swarms.');
-      output.dim('Use "ck swarm init <name>" to create a swarm.');
-      return;
-    }
-
-    // Load the first active swarm
-    const swarmName = activeSwarms[0]!;
-    const state = await loadSwarmState(swarmName);
-
-    if (!state) {
-      output.error(`Failed to load swarm state for: ${swarmName}`);
-      return;
-    }
-
-    if (args.json) {
-      output.json({
-        name: state.name,
-        tasks: state.plan.tasks.map(t => ({
-          id: t.id,
-          subject: t.subject,
-          status: t.status,
-          agent: t.agent,
-          model: t.model,
-          blockedBy: t.blockedBy,
-          blocks: t.blocks,
-        })),
-      });
-      return;
-    }
-
-    // Print header
-    output.header(`Task Dependencies: ${state.name}`);
-
-    // Print legend
-    console.log(pc.dim('Legend:'));
-    console.log(`  ${pc.green('+')} completed  ${pc.yellow('*')} in_progress  ${pc.dim('o')} pending  ${pc.red('x')} failed`);
-    console.log();
-
-    // Build and print tree
-    const treeLines = buildTaskTree(state.plan.tasks);
-    treeLines.forEach(line => console.log(line));
-
-    // Print summary
-    console.log();
-    printTaskCounts(state);
-  },
-});
-
-// =============================================================================
-// Init Command
-// =============================================================================
-
-const initCommand = defineCommand({
-  meta: {
-    name: 'init',
-    description: 'Create a named swarm for persistence',
-  },
-  args: {
-    name: {
-      type: 'positional',
-      description: 'Name of the swarm',
-      required: false,
-      default: 'default',
-    },
-    'set-task-list': {
-      type: 'boolean',
-      description: 'Set CLAUDE_CODE_TASK_LIST_ID environment variable',
-      default: true,
-    },
-  },
-  async run({ args }) {
-    const swarmName = args.name as string;
-
-    try {
-      // Initialize persistence
-      await initPersistence(swarmName);
-
-      // Set task list ID if requested
-      if (args['set-task-list']) {
-        await setTaskListId(swarmName);
-      }
-
-      output.success(`Initialized swarm: ${swarmName}`);
-      if (args['set-task-list']) {
-        output.info('Set CLAUDE_CODE_TASK_LIST_ID in ~/.claude/settings.json');
-      }
-      output.dim('Swarm state will be persisted to:');
-      output.dim(`  ~/.claudeops/swarms/${swarmName}/`);
-    } catch (err) {
-      output.error(`Failed to initialize swarm: ${err instanceof Error ? err.message : String(err)}`);
-      process.exit(1);
-    }
-  },
-});
-
-// =============================================================================
-// Stop Command
-// =============================================================================
-
-const stopCommand = defineCommand({
-  meta: {
-    name: 'stop',
-    description: 'Gracefully stop active swarm',
-  },
-  args: {
-    name: {
-      type: 'positional',
-      description: 'Name of the swarm to stop',
-      required: false,
-    },
-  },
-  async run({ args }) {
-    const activeSwarms = await getActiveSwarms();
-
-    if (activeSwarms.length === 0) {
-      output.info('No active swarms to stop.');
-      return;
-    }
-
-    // Determine which swarm to stop
-    let swarmName: string;
-    if (args.name) {
-      swarmName = args.name as string;
-      if (!activeSwarms.includes(swarmName)) {
-        output.error(`Swarm not found: ${swarmName}`);
-        output.info('Active swarms:');
-        activeSwarms.forEach(name => output.dim(`  - ${name}`));
-        return;
-      }
-    } else {
-      swarmName = activeSwarms[0]!;
-    }
-
-    // Load state
-    const state = await loadSwarmState(swarmName);
-
-    if (!state) {
-      output.error(`Failed to load swarm state for: ${swarmName}`);
-      return;
-    }
-
-    // Mark as stopped
-    state.status = 'stopped';
-    state.completedAt = new Date();
-
-    // Record completion
-    await recordSwarmCompletion(state);
-
-    output.success(`Stopped swarm: ${swarmName}`);
-    output.info('Execution recorded to history.');
-  },
-});
-
-// =============================================================================
-// History Command
-// =============================================================================
-
-const historyCommand = defineCommand({
-  meta: {
-    name: 'history',
-    description: 'Show past swarm executions',
-  },
-  args: {
-    json: {
-      type: 'boolean',
-      description: 'Output as JSON',
-      default: false,
-    },
-    limit: {
+    team: {
       type: 'string',
-      alias: 'n',
-      description: 'Limit number of results',
-      default: '10',
+      description: 'Team name to show tasks for',
     },
   },
   async run({ args }) {
-    const history = await getSwarmHistory();
+    const teamDirs = await listDirs(TEAMS_DIR);
 
-    if (history.length === 0) {
-      output.info('No swarm execution history.');
-      output.dim('Completed swarms will appear here.');
+    if (teamDirs.length === 0) {
+      output.info('No active teams with tasks.');
       return;
     }
 
-    // Sort by completion time (most recent first)
-    const sorted = history.sort((a, b) =>
-      b.completedAt.getTime() - a.completedAt.getTime()
-    );
+    // Find tasks across teams
+    const teamName = args.team as string | undefined;
+    const targetDirs = teamName ? [teamName] : teamDirs;
 
-    // Apply limit
-    const limit = parseInt(args.limit as string, 10);
-    const limited = isNaN(limit) ? sorted : sorted.slice(0, limit);
+    for (const dir of targetDirs) {
+      const tasksPath = join(TEAMS_DIR, dir, 'tasks.json');
+      const tasks = await readJsonSafe<Array<Record<string, unknown>>>(tasksPath);
+
+      if (!tasks || tasks.length === 0) continue;
+
+      if (args.json) {
+        output.json({ team: dir, tasks });
+        continue;
+      }
+
+      output.header(`Tasks: ${dir}`);
+
+      const statusSymbols: Record<string, string> = {
+        completed: pc.green('+'),
+        in_progress: pc.yellow('*'),
+        pending: pc.dim('o'),
+        claimed: pc.blue('>'),
+        failed: pc.red('x'),
+      };
+
+      for (const task of tasks) {
+        const status = String(task['status'] ?? 'pending');
+        const symbol = statusSymbols[status] ?? pc.dim('?');
+        const desc = String(task['description'] ?? task['id'] ?? 'unknown');
+        const claimedBy = task['claimedBy'] ? pc.dim(` (${task['claimedBy']})`) : '';
+        console.log(`  ${symbol} ${desc}${claimedBy}`);
+      }
+    }
+  },
+});
+
+// =============================================================================
+// Team List Command
+// =============================================================================
+
+const teamListCommand = defineCommand({
+  meta: {
+    name: 'list',
+    description: 'List active teams from ~/.claude/teams/',
+  },
+  args: {
+    json: {
+      type: 'boolean',
+      description: 'Output as JSON',
+      default: false,
+    },
+  },
+  async run({ args }) {
+    const teamDirs = await listDirs(TEAMS_DIR);
+
+    if (teamDirs.length === 0) {
+      output.info('No teams found.');
+      output.dim('Teams are created by Claude Code when using TeammateTool.');
+      return;
+    }
 
     if (args.json) {
-      output.json(limited);
+      output.json(teamDirs);
       return;
     }
 
-    output.header('Swarm Execution History');
-
-    // Print table
-    output.table(
-      limited.map(exec => ({
-        name: exec.name,
-        status: exec.status,
-        tasks: `${exec.completedCount}/${exec.taskCount}`,
-        duration: output.formatDuration(exec.duration),
-        cost: output.formatCurrency(exec.totalCost),
-        completed: output.formatRelativeTime(exec.completedAt),
-      })),
-      [
-        { key: 'name', header: 'Name', width: 20 },
-        { key: 'status', header: 'Status', width: 10 },
-        { key: 'tasks', header: 'Tasks', width: 10, align: 'right' },
-        { key: 'duration', header: 'Duration', width: 12, align: 'right' },
-        { key: 'cost', header: 'Cost', width: 12, align: 'right' },
-        { key: 'completed', header: 'Completed', width: 15 },
-      ]
-    );
-
-    if (limited.length < sorted.length) {
-      console.log();
-      output.dim(`Showing ${limited.length} of ${sorted.length} executions. Use --limit to show more.`);
+    output.header('Teams');
+    for (const dir of teamDirs) {
+      console.log(`  ${pc.cyan(dir)}`);
     }
+    output.dim(`\n${teamDirs.length} team(s) found in ${TEAMS_DIR}`);
+  },
+});
+
+// =============================================================================
+// Team Cleanup Command
+// =============================================================================
+
+const teamCleanupCommand = defineCommand({
+  meta: {
+    name: 'cleanup',
+    description: 'Remove orphaned team directories',
+  },
+  args: {
+    'dry-run': {
+      type: 'boolean',
+      description: 'Show what would be removed without removing',
+      default: false,
+    },
+  },
+  async run({ args }) {
+    const teamDirs = await listDirs(TEAMS_DIR);
+
+    if (teamDirs.length === 0) {
+      output.info('No team directories to clean up.');
+      return;
+    }
+
+    const orphaned: string[] = [];
+    for (const dir of teamDirs) {
+      const configPath = join(TEAMS_DIR, dir, 'config.json');
+      const config = await readJsonSafe<Record<string, unknown>>(configPath);
+
+      // Consider orphaned if no config or status is 'shutdown'/'completed'
+      if (!config || config['status'] === 'shutdown' || config['status'] === 'completed') {
+        orphaned.push(dir);
+      }
+    }
+
+    if (orphaned.length === 0) {
+      output.info('No orphaned teams to clean up.');
+      return;
+    }
+
+    if (args['dry-run']) {
+      output.header('Would remove (dry run)');
+      for (const dir of orphaned) {
+        console.log(`  ${pc.red('-')} ${dir}`);
+      }
+      return;
+    }
+
+    output.header('Cleaning up orphaned teams');
+    for (const dir of orphaned) {
+      const teamPath = join(TEAMS_DIR, dir);
+      await removeDir(teamPath);
+      output.status(`Removed: ${dir}`, 'success');
+    }
+    output.success(`Cleaned up ${orphaned.length} orphaned team(s).`);
+  },
+});
+
+// =============================================================================
+// Team Parent Command
+// =============================================================================
+
+const teamCommand = defineCommand({
+  meta: {
+    name: 'team',
+    description: 'Native Claude Code team management',
+  },
+  subCommands: {
+    list: teamListCommand,
+    cleanup: teamCleanupCommand,
   },
 });
 
@@ -464,13 +290,11 @@ const historyCommand = defineCommand({
 export default defineCommand({
   meta: {
     name: 'swarm',
-    description: 'Swarm orchestration management',
+    description: 'Swarm orchestration and team management',
   },
   subCommands: {
     status: statusCommand,
     tasks: tasksCommand,
-    init: initCommand,
-    stop: stopCommand,
-    history: historyCommand,
+    team: teamCommand,
   },
 });

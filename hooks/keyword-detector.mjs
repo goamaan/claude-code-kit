@@ -63,8 +63,8 @@ ULTRAWORK RULES:
 5. SMART MODEL ROUTING: Use haiku for simple, sonnet for standard, opus for complex
 
 CRITICAL: Always pass model parameter explicitly:
-- Task(subagent_type="claudeops:executor", model="sonnet", prompt="...")
-- Task(subagent_type="claudeops:architect", model="opus", prompt="...")
+- Task(subagent_type="executor", model="sonnet", prompt="...")
+- Task(subagent_type="architect", model="opus", prompt="...")
 
 DO NOT stop until:
 - All tasks marked complete
@@ -126,7 +126,7 @@ Start by exploring the codebase, then interview the user.`
 
 Deep analysis requested. Delegate to architect agent:
 
-Task(subagent_type="claudeops:architect", model="opus",
+Task(subagent_type="architect", model="opus",
      prompt="Perform deep analysis: [topic]. Investigate root causes, trace execution paths, provide evidence-based conclusions.")
 
 Gather context with parallel explore agents first if needed.`
@@ -138,7 +138,7 @@ Gather context with parallel explore agents first if needed.`
 
 Codebase search requested. Use explore agent:
 
-Task(subagent_type="claudeops:explore", model="haiku",
+Task(subagent_type="explore", model="haiku",
      prompt="Search codebase for: [target]. Check multiple patterns and locations.")
 
 For comprehensive searches, spawn multiple explore agents in parallel with different search strategies.`

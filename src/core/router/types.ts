@@ -4,7 +4,6 @@
  */
 
 import type { IntentClassification } from '../classifier/types.js';
-import type { SwarmRecommendation } from '../../types/swarm.js';
 
 // =============================================================================
 // Model and Agent Types
@@ -45,9 +44,6 @@ export interface RoutingDecision {
 
   /** Explanation of routing decision */
   reasoning: string;
-
-  /** Swarm orchestration recommendation for complex tasks */
-  swarmRecommendation?: SwarmRecommendation;
 }
 
 // =============================================================================

@@ -7,6 +7,10 @@
  *
  * Hook type: Stop
  * Triggers: Before session/conversation ends
+ * Async: true
+ *
+ * This hook runs asynchronously (in background) since it only writes
+ * log files and doesn't need to block Claude Code's execution.
  */
 
 import { writeFileSync, readFileSync, existsSync, mkdirSync, appendFileSync } from 'fs';

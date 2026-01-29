@@ -124,8 +124,9 @@ interface ClaudeSettings {
  */
 async function configurePersistence(swarmName: string): Promise<{ configured: boolean; error?: string }> {
   try {
-    const claudeDir = getClaudeDir();
-    const settingsPath = join(claudeDir, 'settings.json');
+    // Use project-local .claude directory instead of global
+    const projectClaudeDir = join(process.cwd(), '.claude');
+    const settingsPath = join(projectClaudeDir, 'settings.json');
 
     // Read existing settings or create empty object
     let settings: ClaudeSettings = {};
@@ -140,8 +141,8 @@ async function configurePersistence(swarmName: string): Promise<{ configured: bo
     settings.env = settings.env || {};
     settings.env['CLAUDE_CODE_TASK_LIST_ID'] = swarmName;
 
-    // Write settings back
-    await ensureDir(claudeDir);
+    // Write settings back to project-local .claude directory
+    await ensureDir(projectClaudeDir);
     await writeJson(settingsPath, settings);
 
     // Create swarm state directory

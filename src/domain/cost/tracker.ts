@@ -10,7 +10,6 @@ import type {
   CostSummary,
   ModelPricing,
   ModelName,
-  TaskCostEntry,
 } from '@/types/index.js';
 import { DEFAULT_PRICING } from '@/types/index.js';
 import { getGlobalConfigDir } from '@/utils/paths.js';
@@ -61,15 +60,6 @@ export interface CostTracker {
 
   /** Get current pricing configuration */
   getPricing(): Promise<Record<ModelName, ModelPricing>>;
-
-  /** Record cost for a specific task */
-  recordTaskCost(entry: TaskCostEntry): Promise<void>;
-
-  /** Get costs for all tasks in a swarm */
-  getTaskCosts(swarmId: string): Promise<TaskCostEntry[]>;
-
-  /** Get total cost for a swarm */
-  getSwarmTotalCost(swarmId: string): Promise<number>;
 }
 
 // =============================================================================
@@ -78,7 +68,6 @@ export interface CostTracker {
 
 const BUDGET_FILE = 'cost-budget.json';
 const PRICING_FILE = 'cost-pricing.json';
-const TASK_COSTS_FILE = 'task-costs.json';
 
 // =============================================================================
 // Helpers
@@ -489,43 +478,6 @@ export function createCostTracker(storage?: CostStorage, configDir?: string): Co
     return loadPricing();
   }
 
-  /**
-   * Record cost for a specific task
-   */
-  async function recordTaskCost(entry: TaskCostEntry): Promise<void> {
-    const taskCostsPath = join(getConfigDir(), TASK_COSTS_FILE);
-    const existing = (await readJsonSafe<Record<string, TaskCostEntry[]>>(taskCostsPath)) ?? {};
-
-    // Group by swarm (using first part of taskId before colon, or 'default')
-    const swarmId = entry.taskId.includes(':')
-      ? entry.taskId.split(':')[0]!
-      : 'default';
-
-    if (!existing[swarmId]) {
-      existing[swarmId] = [];
-    }
-    existing[swarmId].push(entry);
-
-    await writeJson(taskCostsPath, existing);
-  }
-
-  /**
-   * Get costs for all tasks in a swarm
-   */
-  async function getTaskCosts(swarmId: string): Promise<TaskCostEntry[]> {
-    const taskCostsPath = join(getConfigDir(), TASK_COSTS_FILE);
-    const existing = (await readJsonSafe<Record<string, TaskCostEntry[]>>(taskCostsPath)) ?? {};
-    return existing[swarmId] ?? [];
-  }
-
-  /**
-   * Get total cost for a swarm
-   */
-  async function getSwarmTotalCost(swarmId: string): Promise<number> {
-    const costs = await getTaskCosts(swarmId);
-    return costs.reduce((sum, entry) => sum + entry.cost, 0);
-  }
-
   return {
     record,
     today,
@@ -539,8 +491,5 @@ export function createCostTracker(storage?: CostStorage, configDir?: string): Co
     getEntries,
     setPricing,
     getPricing,
-    recordTaskCost,
-    getTaskCosts,
-    getSwarmTotalCost,
   };
 }
