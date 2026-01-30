@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 /**
+ * Hook: session-log
+ * Event: Stop
+ * Description: Logs session summary when Claude stops
+ * Matcher: *
+ * Enabled: false
+ *
  * session-log - Stop Hook
  *
  * Logs session summary when Claude stops.

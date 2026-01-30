@@ -1,4 +1,10 @@
 /**
+ * Hook: team-lifecycle
+ * Event: SubagentStop
+ * Description: Logs team creation and shutdown events for native Claude Code Teams
+ * Matcher: *
+ * Enabled: false
+ *
  * Team Lifecycle Hook
  * Logs team creation and shutdown events for native Claude Code Teams
  *

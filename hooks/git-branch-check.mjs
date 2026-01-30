@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 /**
+ * Hook: git-branch-check
+ * Event: PreToolUse
+ * Description: Warns when committing to main/master branches
+ * Matcher: Bash
+ * Enabled: false
+ *
  * git-branch-check - PreToolUse Hook
  *
  * Warns when attempting to commit or push to main/master branches.

@@ -130,7 +130,7 @@ export function parseAddonManifest(toml: string): AddonManifest {
 
   try {
     // j-toml returns a Section object, we need the raw data
-    parsed = parseTOML(toml, { bigint: false });
+    parsed = parseTOML(toml, { joiner: '\n', bigint: false });
   } catch (err) {
     throw new ManifestParseError(
       `Failed to parse TOML: ${err instanceof Error ? err.message : String(err)}`,

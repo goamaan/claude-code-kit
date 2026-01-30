@@ -1,4 +1,10 @@
 /**
+ * Hook: checkpoint
+ * Event: Stop
+ * Description: Creates git stash checkpoint before session ends if uncommitted changes exist
+ * Matcher: *
+ * Enabled: true
+ *
  * checkpoint - Stop Hook
  *
  * Creates a git stash as a checkpoint before session ends.

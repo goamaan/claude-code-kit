@@ -20,7 +20,22 @@ import type {
 // Constants
 // =============================================================================
 
-const DEFAULT_BUILTIN_HOOKS_DIR = join(dirname(dirname(dirname(__dirname))), 'hooks');
+/**
+ * Find the package root by walking up from a start directory
+ * looking for package.json. Works in both source and bundled (dist/) contexts.
+ */
+function findPackageRoot(startDir: string): string {
+  let dir = startDir;
+  for (let i = 0; i < 10; i++) {
+    if (existsSync(join(dir, 'package.json'))) return dir;
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return startDir;
+}
+
+const DEFAULT_BUILTIN_HOOKS_DIR = join(findPackageRoot(__dirname), 'hooks');
 const DEFAULT_GLOBAL_HOOKS_DIR = join(homedir(), '.claudeops', 'hooks');
 const DEFAULT_PROJECT_HOOKS_DIR = '.claude/hooks';
 const CLAUDE_SETTINGS_PATH = join(homedir(), '.claude', 'settings.json');

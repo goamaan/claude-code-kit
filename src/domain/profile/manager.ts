@@ -499,7 +499,7 @@ export function createProfileManager(storage?: ProfileStorage): ProfileManager {
     if (source.endsWith('.json')) {
       config = JSON.parse(content) as ProfileFileConfig;
     } else {
-      config = parseToml(content, { bigint: false }) as ProfileFileConfig;
+      config = parseToml(content, { joiner: '\n', bigint: false }) as ProfileFileConfig;
     }
 
     // Validate

@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 /**
+ * Hook: continuation-check
+ * Event: Stop
+ * Description: Evaluates completion status and blocks premature stopping when tasks remain
+ * Matcher: *
+ * Enabled: true
+ *
  * Continuation Check Hook - Stop
  *
  * Evaluates whether Claude should stop or continue working.

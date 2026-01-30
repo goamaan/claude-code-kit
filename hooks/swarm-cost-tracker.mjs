@@ -1,4 +1,10 @@
 /**
+ * Hook: swarm-cost-tracker
+ * Event: PostToolUse
+ * Description: Tracks per-agent costs when Task tool is used for orchestration
+ * Matcher: Task
+ * Enabled: false
+ *
  * Swarm Cost Tracker Hook
  * Tracks per-agent costs when Task tool is used for orchestration
  *

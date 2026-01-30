@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 /**
+ * Hook: format-on-save
+ * Event: PostToolUse
+ * Description: Auto-formats files after Write/Edit operations
+ * Matcher: Write
+ * Enabled: false
+ *
  * format-on-save - PostToolUse Hook
  *
  * Automatically formats files after Write/Edit operations.

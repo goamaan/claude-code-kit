@@ -152,7 +152,7 @@ export const CHECKS: DiagnosticCheck[] = [
 
         // Try to parse TOML
         const { parse } = await import('@ltd/j-toml');
-        parse(content, { bigint: false });
+        parse(content, { joiner: '\n', bigint: false });
 
         return createResult(this, {
           passed: true,
@@ -512,7 +512,7 @@ description = "Default claude-kit profile"
           const content = await readFileSafe(manifestPath);
           if (content) {
             const { parse } = await import('@ltd/j-toml');
-            parse(content, { bigint: false });
+            parse(content, { joiner: '\n', bigint: false });
             validAddons.push(addon.name);
           }
         } catch (error) {

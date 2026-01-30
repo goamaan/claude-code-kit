@@ -21,7 +21,22 @@ import type {
 // Constants
 // =============================================================================
 
-const DEFAULT_BUILTIN_SKILLS_DIR = join(dirname(dirname(dirname(__dirname))), 'skills');
+/**
+ * Find the package root by walking up from a start directory
+ * looking for package.json. Works in both source and bundled (dist/) contexts.
+ */
+function findPackageRoot(startDir: string): string {
+  let dir = startDir;
+  for (let i = 0; i < 10; i++) {
+    if (existsSync(join(dir, 'package.json'))) return dir;
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return startDir;
+}
+
+const DEFAULT_BUILTIN_SKILLS_DIR = join(findPackageRoot(__dirname), 'skills');
 const DEFAULT_GLOBAL_SKILLS_DIR = join(homedir(), '.claudeops', 'skills');
 const DEFAULT_PROJECT_SKILLS_DIR = '.claude/skills';
 const CLAUDE_SKILLS_DIR = join(homedir(), '.claude', 'skills');

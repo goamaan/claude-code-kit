@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 /**
+ * Hook: swarm-lifecycle
+ * Event: SubagentStop
+ * Description: Handles SubagentStop events for swarm task lifecycle management
+ * Matcher: *
+ * Enabled: true
+ *
  * swarm-lifecycle - SubagentStop Hook
  *
  * Handles SubagentStop events for swarm task lifecycle management.

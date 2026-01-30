@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 /**
+ * Hook: keyword-detector
+ * Event: UserPromptSubmit
+ * Description: Detects keywords in user prompts and injects mode-specific context
+ * Matcher: *
+ * Enabled: true
+ *
  * @deprecated This hook is deprecated in favor of the semantic intent-classifier hook.
  * The intent-classifier uses AI-powered classification instead of keyword patterns,
  * providing more accurate intent detection and skill matching.

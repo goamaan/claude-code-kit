@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 /**
+ * Hook: test-reminder
+ * Event: PostToolUse
+ * Description: Reminds to run tests after code changes
+ * Matcher: Write
+ * Enabled: false
+ *
  * test-reminder - PostToolUse Hook
  *
  * Reminds to run tests after code changes.

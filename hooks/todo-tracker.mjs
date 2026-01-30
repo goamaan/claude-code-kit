@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 /**
+ * Hook: todo-tracker
+ * Event: UserPromptSubmit
+ * Description: Tracks TODO items mentioned in prompts
+ * Matcher: *
+ * Enabled: false
+ *
  * todo-tracker - UserPromptSubmit Hook
  *
  * Tracks TODO items mentioned in user prompts.

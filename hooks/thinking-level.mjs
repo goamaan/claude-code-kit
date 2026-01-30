@@ -1,4 +1,10 @@
 /**
+ * Hook: thinking-level
+ * Event: UserPromptSubmit
+ * Description: Detects complex tasks and adds reasoning enhancement instructions
+ * Matcher: *
+ * Enabled: true
+ *
  * thinking-level - UserPromptSubmit Hook
  *
  * Detects complex tasks from user prompts and adds reasoning enhancement instructions.

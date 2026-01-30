@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 /**
+ * Hook: version-bump-prompt
+ * Event: Stop
+ * Description: Prompts user to consider version bump after work is complete
+ * Matcher: *
+ * Enabled: true
+ *
  * Claude Code Hook: Stop
  * Prompts user to consider version bump after work is complete
  *
