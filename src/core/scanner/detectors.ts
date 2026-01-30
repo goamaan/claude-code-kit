@@ -145,8 +145,8 @@ export function detectFrameworks(root: string): FrameworkInfo[] {
   const pkgJson = readJsonSafe(join(root, 'package.json'));
   if (pkgJson) {
     const deps = {
-      ...(pkgJson.dependencies as Record<string, string> ?? {}),
-      ...(pkgJson.devDependencies as Record<string, string> ?? {}),
+      ...((pkgJson['dependencies'] as Record<string, string>) ?? {}),
+      ...((pkgJson['devDependencies'] as Record<string, string>) ?? {}),
     };
 
     const JS_FRAMEWORKS: Array<{ name: string; packages: string[] }> = [
@@ -245,10 +245,10 @@ export function detectFrameworks(root: string): FrameworkInfo[] {
 export function detectBuild(root: string): BuildInfo | null {
   // package.json scripts
   const pkgJson = readJsonSafe(join(root, 'package.json'));
-  if (pkgJson?.scripts) {
+  if (pkgJson?.['scripts']) {
     return {
       tool: 'npm scripts',
-      scripts: pkgJson.scripts as Record<string, string>,
+      scripts: pkgJson['scripts'] as Record<string, string>,
       source: 'package.json',
     };
   }
@@ -440,7 +440,7 @@ export function detectDatabase(root: string): DatabaseInfo[] {
   // MongoDB / Mongoose
   const pkgJson = readJsonSafe(join(root, 'package.json'));
   if (pkgJson) {
-    const deps = { ...(pkgJson.dependencies as Record<string, string> ?? {}) };
+    const deps = { ...((pkgJson['dependencies'] as Record<string, string>) ?? {}) };
     if (deps['mongoose']) databases.push({ type: 'MongoDB', orm: 'Mongoose' });
     if (deps['mongodb']) databases.push({ type: 'MongoDB' });
   }
@@ -471,7 +471,7 @@ export function detectAPI(root: string): APIInfo[] {
   // tRPC
   const pkgJson = readJsonSafe(join(root, 'package.json'));
   if (pkgJson) {
-    const deps = { ...(pkgJson.dependencies as Record<string, string> ?? {}), ...(pkgJson.devDependencies as Record<string, string> ?? {}) };
+    const deps = { ...((pkgJson['dependencies'] as Record<string, string>) ?? {}), ...((pkgJson['devDependencies'] as Record<string, string>) ?? {}) };
     if (deps['@trpc/server']) apis.push({ style: 'tRPC', evidence: ['@trpc/server dependency'] });
   }
 
@@ -500,10 +500,10 @@ export function detectMonorepo(root: string): MonorepoInfo | null {
   const pkgJson = readJsonSafe(join(root, 'package.json'));
 
   // npm/yarn workspaces
-  if (pkgJson?.workspaces) {
-    const workspaces = Array.isArray(pkgJson.workspaces)
-      ? pkgJson.workspaces
-      : (pkgJson.workspaces as Record<string, unknown>)?.packages ?? [];
+  if (pkgJson?.['workspaces']) {
+    const workspaces = Array.isArray(pkgJson['workspaces'])
+      ? pkgJson['workspaces']
+      : ((pkgJson['workspaces'] as Record<string, unknown>)?.['packages'] ?? []);
     return { tool: 'workspaces', packages: workspaces as string[] };
   }
 
