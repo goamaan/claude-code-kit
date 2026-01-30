@@ -36,7 +36,7 @@
   "scripts": {
     "dev": "tsdown --watch",
     "build": "tsdown",
-    "postbuild": "cops sync --force --backup",
+    "postbuild": "cops sync --force --backup || true",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/",
     "test": "vitest run",
