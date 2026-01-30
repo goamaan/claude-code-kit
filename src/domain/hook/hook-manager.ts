@@ -20,7 +20,22 @@ import type {
 // Constants
 // =============================================================================
 
-const DEFAULT_BUILTIN_HOOKS_DIR = join(dirname(dirname(dirname(__dirname))), 'hooks');
+/**
+ * Find the package root by walking up from a start directory
+ * looking for package.json. Works in both source and bundled (dist/) contexts.
+ */
+function findPackageRoot(startDir: string): string {
+  let dir = startDir;
+  for (let i = 0; i < 10; i++) {
+    if (existsSync(join(dir, 'package.json'))) return dir;
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return startDir;
+}
+
+const DEFAULT_BUILTIN_HOOKS_DIR = join(findPackageRoot(__dirname), 'hooks');
 const DEFAULT_GLOBAL_HOOKS_DIR = join(homedir(), '.claudeops', 'hooks');
 const DEFAULT_PROJECT_HOOKS_DIR = '.claude/hooks';
 const CLAUDE_SETTINGS_PATH = join(homedir(), '.claude', 'settings.json');
@@ -80,6 +95,10 @@ function parseHookFile(fileContent: string, filePath: string): ParsedHookFile | 
     // Parse Timeout: line
     const timeoutMatch = header.match(/\*\s*Timeout:\s*(\d+)/);
     if (timeoutMatch?.[1]) metadata.timeout = parseInt(timeoutMatch[1], 10);
+
+    // Parse Async: line
+    const asyncMatch = header.match(/\*\s*Async:\s*(true|false)/i);
+    if (asyncMatch?.[1]) metadata.async = asyncMatch[1].toLowerCase() === 'true';
   }
 
   return {
@@ -271,6 +290,10 @@ export class HookManager {
 
           if (hook.metadata.timeout) {
             commandObj.timeout = hook.metadata.timeout;
+          }
+
+          if (hook.metadata.async) {
+            commandObj.async = true;
           }
 
           // Build the entry with string matcher

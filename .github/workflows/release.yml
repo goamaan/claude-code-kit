@@ -59,10 +59,30 @@ jobs:
         if: steps.check.outputs.exists == 'false'
         run: npm publish --provenance --access public
 
+      - name: Extract changelog for this version
+        if: steps.check.outputs.exists == 'false'
+        id: changelog
+        run: |
+          # Extract the changelog section for this version
+          VERSION="${{ steps.pkg.outputs.version }}"
+          # Get content between this version header and the next version header (or end)
+          CHANGELOG=$(awk -v ver="$VERSION" '
+            /^## \[/ {
+              if (found) exit
+              if ($0 ~ "\\[" ver "\\]") found=1
+            }
+            found { print }
+          ' CHANGELOG.md | tail -n +2)
+
+          # Store in file to handle multiline
+          echo "$CHANGELOG" > /tmp/changelog.md
+
       - name: Create GitHub Release
         if: steps.check.outputs.exists == 'false'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.pkg.outputs.version }}
           name: v${{ steps.pkg.outputs.version }}
+          body_path: /tmp/changelog.md
           generate_release_notes: true
+          append_body: true

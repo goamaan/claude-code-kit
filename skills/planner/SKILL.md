@@ -1,272 +1,234 @@
 ---
 name: planner
-description: Strategic planning with structured user interview for complex tasks. Converts vague requests into actionable, parallelizable task plans. Use when user asks to plan, architect, or scope work, or when requirements are unclear.
+description: Strategic planning with plan approval workflow and maximal requirement gathering
+triggers:
+  - plan this
+  - how should I approach
+  - design a plan
+  - help me plan
 ---
 
-# Planner Skill
+# Planner Skill (v5.0)
 
-Strategic planning through structured user interview. Converts vague requests into actionable, parallelizable task plans.
-
-## Purpose
-
-Planner mode ensures complex tasks are properly scoped and planned:
-- Interviews user to clarify requirements
-- Gathers codebase context automatically
-- Creates comprehensive execution plan
-- Identifies parallelization opportunities
-- Produces actionable task breakdown
+Strategic planning skill that converts vague requests into actionable, executable task plans. Interviews the user, explores the codebase automatically, and produces comprehensive plans with dependency graphs and parallelization opportunities.
 
 ## When to Activate
 
-Activate when:
-- User says "plan this", "plan the [feature]"
-- User asks "how should I approach..."
-- User has a broad/vague request
-- Task affects 3+ unrelated areas
-- No clear deliverable specified
+- User says "plan this", "how should I approach", "design a plan for"
+- User has a broad/vague request affecting 3+ areas
+- Complex task where the approach is unclear
+- Major feature or system redesign
 
-### Broad Request Detection
+## Execution Modes
 
-A request is BROAD if ANY of:
-- Uses vague verbs: "improve", "enhance", "fix", "refactor" without targets
-- No specific file or function mentioned
-- Touches multiple unrelated areas
-- Single sentence without clear deliverable
+### Mode A: Plan Approval Workflow (TeammateTool Available)
 
-## Pre-Planning Phase
+When TeammateTool is detected:
 
-Before interviewing user, AUTOMATICALLY gather context:
+1. Spawn architect teammate with `plan_mode_required`
+2. Architect explores codebase, drafts plan, submits for approval
+3. Leader (you, the orchestrator) reviews and approves/rejects with feedback
+4. Approved plan becomes the task graph for execution
+5. Hand off to autopilot or orchestrate for execution
 
-1. **Explore codebase:**
-   ```
-   Task(subagent_type="claudeops:explore",
-        prompt="Analyze codebase structure, patterns, tech stack")
-   ```
+### Mode B: Subagent Planning (Fallback / Default)
 
-2. **Find relevant code:**
-   ```
-   Grep(pattern="[relevant patterns]")
-   Glob(pattern="**/*[relevant files]*")
-   ```
+When TeammateTool is NOT available:
 
-3. **Read key files:**
-   ```
-   Read existing AGENTS.md files
-   Read package.json, tsconfig.json, etc.
-   ```
+1. Interview user for requirements (maximal AskUserQuestion)
+2. Spawn explore + architect agents to gather codebase context
+3. Synthesize plan from interview + exploration
+4. Submit for user approval via plan mode or report
 
-This happens BEFORE asking user questions.
+## Pre-Planning: Automatic Discovery
+
+Before asking ANY questions, explore the codebase automatically:
+
+1. **Spawn explore agent** (haiku) to:
+   - Map directory structure
+   - Find relevant files for the request
+   - Identify existing patterns and conventions
+   - Discover tech stack and dependencies
+
+2. **Load domain guide** from `references/domains/` based on detected task type
+
+3. **ONLY THEN** start the interview with discovered context
 
 ## The Planning Interview
 
-Ask ONLY questions about USER PREFERENCES. Never ask about codebase facts.
+### Golden Rule
+> Ask ONLY preference questions. Never ask questions you can answer by exploring the codebase.
 
-### Question Categories
+### What to Ask (Preferences & Decisions)
+- "Would you prefer approach A or B?"
+- "How important is X vs Y?"
+- "Should we prioritize Z?"
+- "What's the scope boundary?"
+- "Are there constraints I should know about?"
 
-**Preference Questions (ASK):**
-- "Would you prefer [A] or [B] approach?"
-- "How important is [performance/maintainability/speed]?"
-- "Should we prioritize [feature X] or [feature Y] first?"
-- "What's your timeline expectation?"
+### What NOT to Ask (Discoverable Facts)
+- "What framework do you use?" → Explore and find out
+- "Where are the config files?" → Use Glob/Grep to find them
+- "What's the folder structure?" → Read the directory layout
+- "What testing library?" → Check package.json/go.mod/etc.
 
-**Requirement Questions (ASK if unclear):**
-- "What should happen when [edge case]?"
-- "Who will use this feature?"
-- "Any specific constraints?"
+## AskUserQuestion: Maximal Usage
 
-**Factual Questions (DON'T ASK - discover yourself):**
-- "What framework is used?" - explore codebase
-- "Where is the auth logic?" - search codebase
-- "What's the folder structure?" - glob codebase
-
-### Using AskUserQuestion Tool
-
-For interview questions, use AskUserQuestion for better UX:
+Use AskUserQuestion with maximum richness:
 
 ```
-AskUserQuestion(
-  questions=[{
-    header="API Type",
-    question="Would you prefer a REST API or GraphQL for this feature?",
-    options=[
-      {label: "REST API", description: "Simpler, well-understood"},
-      {label: "GraphQL", description: "Flexible queries, single endpoint"}
+AskUserQuestion(questions=[
+  {
+    question: "What's the primary goal for this feature?",
+    header: "Goal",
+    options: [
+      {label: "User-facing functionality (Recommended)", description: "Build the feature end-to-end with full UI, API, and storage. Most value delivered."},
+      {label: "Internal tooling", description: "Backend/CLI tool for internal use. Simpler UI requirements."},
+      {label: "Infrastructure/foundation", description: "Lay groundwork for future features. No user-visible changes yet."},
+      {label: "Proof of concept", description: "Quick prototype to validate approach. Minimal polish expected."}
     ],
-    multiSelect=false
-  }]
-)
+    multiSelect: false
+  },
+  {
+    question: "What quality level should we target?",
+    header: "Quality",
+    options: [
+      {label: "Production-ready (Recommended)", description: "Full test coverage, error handling, documentation. Ready to ship."},
+      {label: "Beta quality", description: "Core functionality works. Some edge cases and polish deferred."},
+      {label: "MVP", description: "Happy path only. Get it working, iterate later."}
+    ],
+    multiSelect: false
+  },
+  {
+    question: "Any specific constraints or requirements?",
+    header: "Constraints",
+    options: [
+      {label: "Must be backwards compatible", description: "Cannot break existing APIs or data formats."},
+      {label: "Performance-critical", description: "Must handle high load. Needs benchmarking."},
+      {label: "Security-sensitive", description: "Handles sensitive data. Needs security review."},
+      {label: "No special constraints", description: "Standard development practices apply."}
+    ],
+    multiSelect: true
+  },
+  {
+    question: "How should we handle the existing code in this area?",
+    header: "Approach",
+    options: [
+      {label: "Extend existing patterns (Recommended)", description: "Follow current architecture. Minimal disruption to codebase."},
+      {label: "Refactor as needed", description: "Improve existing code while adding new. May change existing interfaces."},
+      {label: "Greenfield implementation", description: "Build fresh, migrate later. Higher effort but cleaner result."}
+    ],
+    multiSelect: false
+  }
+])
 ```
 
-### Interview Flow
+## Plan Creation Process
 
-1. **Open with context:** Show what you learned from exploration
-2. **Ask 3-5 focused questions max**
-3. **Propose approach based on answers**
-4. **Confirm or refine**
+### Step 1: Gather Context (Automatic)
+- Explore codebase structure
+- Identify relevant files and patterns
+- Load domain guide
 
-Example:
-```
-Based on exploring your codebase, I see you're using:
-- Express with TypeScript
-- Prisma for database
-- Jest for testing
+### Step 2: Interview User
+- Ask 3-4 focused preference questions (not factual questions)
+- Use AskUserQuestion with rich options and descriptions
+- Show discovered context to demonstrate understanding
 
-For [feature], I have a few preference questions:
+### Step 3: Draft Plan
+Based on interview + exploration, create structured plan:
 
-1. Should this be a new service or extend UserService?
-   - [ ] New service (better separation)
-   - [ ] Extend existing (less files)
-
-2. How comprehensive should the testing be?
-   - [ ] Essential tests only (faster delivery)
-   - [ ] Full coverage (more robust)
-```
-
-## Plan Creation
-
-After interview, create actionable plan:
-
-### Plan Structure
 ```markdown
-## Plan: [Feature Name]
+## Plan: [Title]
 
 ### Overview
-[1-2 sentence summary]
+[2-3 sentence description of what will be built and the approach]
 
 ### Requirements
-- [Explicit requirements from user]
-- [Implicit requirements from context]
+1. [Requirement from user interview]
+2. [Requirement derived from exploration]
+3. [Technical requirement from constraints]
 
 ### Architecture
-[How it fits into existing system]
+[Technical approach, key design decisions, patterns to follow]
 
 ### Task Breakdown
 
-#### Phase 1: Setup (parallel)
-- [ ] Create types/interfaces
-- [ ] Set up folder structure
+#### Phase 1: Foundation
+| # | Task | Agent | Model | Blocked By |
+|---|------|-------|-------|------------|
+| 1 | [task description] | executor | sonnet | - |
+| 2 | [task description] | executor | sonnet | - |
 
-#### Phase 2: Core Implementation (parallel)
-- [ ] Implement service layer
-- [ ] Implement data access
-- [ ] Create utilities
+#### Phase 2: Implementation
+| # | Task | Agent | Model | Blocked By |
+|---|------|-------|-------|------------|
+| 3 | [task description] | executor | opus | 1, 2 |
+| 4 | [task description] | designer | sonnet | 1 |
 
-#### Phase 3: Integration (sequential)
-- [ ] Wire into existing system
-- [ ] Update routes
+#### Phase 3: Verification
+| # | Task | Agent | Model | Blocked By |
+|---|------|-------|-------|------------|
+| 5 | [task description] | qa-tester | sonnet | 3, 4 |
+| 6 | [task description] | architect | opus | 5 |
 
-#### Phase 4: Testing (parallel)
-- [ ] Unit tests
-- [ ] Integration tests
+### Parallelization
+- Tasks [X] and [Y] can run in parallel (no dependencies)
+- Phase 2 has [N] parallelizable tasks
 
-#### Phase 5: Verification
-- [ ] Full system test
-- [ ] Documentation update
-
-### Parallelization Strategy
-- Phase 1 & 2 can run simultaneously
-- Phase 3 must wait for Phase 2
-- Phase 4 can start after Phase 2
-
-### Risk Mitigation
-- [Identified risk]: [Mitigation strategy]
+### Risks
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| [risk] | [High/Medium/Low] | [mitigation strategy] |
 
 ### Success Criteria
-- [ ] [Measurable criterion 1]
-- [ ] [Measurable criterion 2]
+1. [Measurable criterion]
+2. [Measurable criterion]
+3. Build compiles, tests pass
 ```
+
+### Step 4: Review
+- Spawn critic agent (opus) to review the plan for gaps
+- Address critic feedback
+- Present final plan to user
+
+### Step 5: Handoff
+- If user approves, hand off to autopilot for execution
+- Or create tasks with TaskCreate for manual orchestration
 
 ## Agent Delegation for Planning
 
-| Task | Agent | Model |
-|------|-------|-------|
-| Codebase exploration | explore | haiku |
-| Requirement analysis | architect | opus |
-| Architecture review | architect | opus |
-| Plan critique | critic | opus |
-
-### Plan Review (Optional)
-
-For complex plans, get critique:
-```
-Task(subagent_type="claudeops:critic",
-     model="opus",
-     prompt="Review this plan for gaps, risks, improvements: [plan]")
-```
-
-## Output Format
-
-### During Planning
-```
-## Planning Session
-
-### Context Gathered
-- Codebase: Express + TypeScript + Prisma
-- Related code: src/services/user.ts, src/routes/api.ts
-- Patterns: Service-repository pattern
-
-### Questions for You
-[Interview questions using AskUserQuestion]
-
-### Waiting for Input
-Please answer the questions above to continue planning.
-```
-
-### Plan Complete
-```
-## Plan Ready
-
-### Plan: [Feature Name]
-[Full plan structure as above]
-
-### Recommended Execution
-- Use autopilot for hands-off execution
-- Or use ralph for persistent execution
-- Estimated time: [X minutes/hours]
-
-### Ready to Execute?
-Say "go" to start execution, or ask to modify the plan.
-```
+| Phase | Agent | Model | Purpose |
+|-------|-------|-------|---------|
+| Discovery | explore | haiku | Codebase mapping |
+| Discovery | architect | opus | Technical analysis |
+| Interview | (you) | - | Direct user questions |
+| Plan Draft | architect | opus | Technical plan |
+| Review | critic | opus | Gap analysis |
 
 ## Anti-Patterns to Avoid
 
-1. **Asking questions you can answer yourself**
-   - BAD: "What testing framework do you use?"
-   - GOOD: Search codebase, find Jest, confirm with user
-
-2. **Too many questions**
-   - BAD: 15-question interview
-   - GOOD: 3-5 essential preference questions
-
-3. **Vague tasks in plan**
-   - BAD: "Implement the feature"
-   - GOOD: "Implement UserService.createWithProfile() method"
-
-4. **Missing parallelization**
-   - BAD: All tasks sequential
-   - GOOD: Identify and mark parallel opportunities
-
-5. **No success criteria**
-   - BAD: Plan without measurable completion
-   - GOOD: Clear, verifiable success criteria
-
-6. **Ignoring existing patterns**
-   - BAD: Propose new pattern when existing one works
-   - GOOD: Follow codebase conventions
+1. **Asking discoverable questions** — Explore first, ask preferences only
+2. **Too many questions** — Maximum 4 questions, each with clear purpose
+3. **Vague task descriptions** — Each task must be atomic and actionable
+4. **Missing dependencies** — All task relationships must be explicit
+5. **No risks section** — Every plan should identify potential risks
+6. **No success criteria** — Define how to know when the plan is complete
 
 ## Combining with Other Skills
 
-- **autopilot**: Planner creates plan, autopilot executes
-- **ralph**: Planner creates plan, ralph persists through execution
-- **ralplan**: Iterative planning with Architect and Critic
+- **Plan → Autopilot**: After plan approval, hand off to autopilot for execution
+- **Plan → Orchestrate**: For smaller plans, hand off to orchestrate directly
+- **Plan → Review**: After implementation, trigger review for quality check
 
-## Success Criteria
+## Success Criteria for Planning
 
-Planning is complete when:
-- [ ] Codebase context gathered
-- [ ] User preferences clarified
-- [ ] All requirements documented
-- [ ] Tasks broken into actionable items
+- [ ] User requirements captured via interview
+- [ ] Codebase explored automatically (no factual questions asked)
+- [ ] Domain guide loaded and applied
+- [ ] Plan includes all tasks with dependencies
 - [ ] Parallelization opportunities identified
+- [ ] Risks documented with mitigations
 - [ ] Success criteria defined
-- [ ] User approves plan
+- [ ] Critic has reviewed the plan
+- [ ] User has approved the plan

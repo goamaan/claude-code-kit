@@ -193,7 +193,45 @@ tracking = true
 budget_daily = 10.0
 budget_weekly = 50.0
 budget_monthly = 200.0
+
+content = """
+# Frontend Development Guidelines
+
+## Component Patterns
+- Use functional components with hooks
+- Prefer composition over inheritance
+- Follow the container/presentational pattern
+
+## Styling
+- Use Tailwind CSS utility classes
+- Keep component-specific styles colocated
+"""
 ```
+
+### Content Field
+
+The `content` field allows you to embed custom CLAUDE.md instructions directly in your profile. This content is merged into the generated `~/.claude/CLAUDE.md` when you run `cops sync`.
+
+Use TOML triple-quoted strings (`"""`) for multiline content:
+
+```toml
+name = "my-profile"
+
+content = """
+# My Custom Instructions
+
+## Project Conventions
+- Use camelCase for variables
+- Use PascalCase for components
+- Always add JSDoc comments to public functions
+
+## Architecture
+- Follow clean architecture principles
+- Keep domain logic separate from infrastructure
+"""
+```
+
+The content field supports full Markdown formatting. When a profile extends another profile, the child's content is appended after the parent's content.
 
 ## Profile Inheritance
 
@@ -229,25 +267,49 @@ name = "base"
 [skills]
 enabled = ["autopilot"]
 
+content = """
+# Base Standards
+- Always write tests for new code
+- Follow conventional commits
+"""
+
 # frontend.toml
 name = "frontend"
 extends = "base"
 [skills]
 enabled = ["designer"]
 
+[agents.designer]
+model = "opus"
+priority = 90
+
+content = """
+# Frontend Standards
+- Use React functional components
+- Follow accessibility guidelines (WCAG 2.1)
+"""
+
 # react.toml
 name = "react"
 extends = "frontend"
+
 [agents.designer]
 model = "opus"
+priority = 95
+
+content = """
+# React Specific
+- Use React Server Components where applicable
+- Prefer Zustand for state management
+"""
 ```
 
 The `react` profile will inherit from `frontend`, which inherits from `base`. The inheritance chain is: `base -> frontend -> react`.
 
 When resolved, `react` will have:
-- All skills from `base` and `frontend`
-- All agent settings from `frontend` and its overrides
-- Any custom agent settings defined in `react`
+- All skills from `base` and `frontend` (merged)
+- Agent settings from `frontend` overridden by `react` (designer priority becomes 95)
+- Content from all three profiles concatenated in order (base, then frontend, then react)
 
 ### Circular Inheritance
 
@@ -371,6 +433,12 @@ Profiles are plain TOML files that you can edit directly:
 ```bash
 # Open in your default editor
 $EDITOR ~/.claudeops/profiles/frontend.toml
+```
+
+You can also edit the global configuration:
+
+```bash
+$EDITOR ~/.claudeops/config.toml
 ```
 
 The file will be validated when next read, and invalid configurations will be rejected.
@@ -499,7 +567,7 @@ Common skills:
 
 ### Agents
 
-Configure specific AI agents that handle different tasks:
+Configure specific AI agents that handle different tasks. Agents are subagent types that Claude Code can delegate to, each with a model tier and priority level:
 
 ```toml
 [agents.executor]
@@ -518,6 +586,18 @@ priority = 40
 Agent properties:
 - `model` - Which Claude model to use: `haiku`, `sonnet`, or `opus`
 - `priority` - Task priority (0-100, default 50). Higher = more important
+
+Available built-in agents include:
+- `executor` / `executor-low` - Standard and simple implementations
+- `architect` - Deep analysis, architecture decisions, debugging
+- `designer` - UI/UX design and component work
+- `qa-tester` - Testing and TDD
+- `security` - Security audits and review
+- `explore` - Fast codebase search
+- `researcher` - External research
+- `writer` - Documentation
+- `planner` - Strategic planning
+- `critic` - Plan review
 
 ### Models
 

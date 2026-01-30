@@ -1,6 +1,6 @@
 /**
  * Doctor command
- * ck doctor [--fix] [--json]
+ * cops doctor [--fix] [--json]
  * Diagnoses and optionally fixes configuration issues
  */
 
@@ -9,7 +9,6 @@ import * as output from '../ui/output.js';
 import * as prompts from '../ui/prompts.js';
 import { loadConfig } from '../core/config/loader.js';
 import { createProfileManager } from '../domain/profile/manager.js';
-import { listInstalledAddons } from '../domain/addon/manager.js';
 import { getClaudeDir, getGlobalConfigDir } from '../utils/paths.js';
 import { exists, ensureDir, writeFile } from '../utils/fs.js';
 import { join } from 'node:path';
@@ -206,38 +205,6 @@ const checks: Record<string, DiagnosticCheck> = {
     };
   },
 
-  // Addons checks
-  'addons:manifests-valid': async () => {
-    const start = Date.now();
-    const addons = await listInstalledAddons();
-    const invalidAddons: string[] = [];
-
-    for (const addon of addons) {
-      if (!addon.manifest.name || !addon.manifest.version) {
-        invalidAddons.push(addon.manifest.name ?? addon.path);
-      }
-    }
-
-    const passed = invalidAddons.length === 0;
-
-    return {
-      id: 'addons:manifests-valid',
-      name: 'Addon manifests',
-      category: 'addons',
-      severity: passed ? 'info' : 'warning',
-      passed,
-      description: 'Validate installed addon manifests',
-      message: passed
-        ? `${addons.length} addon(s) validated`
-        : `${invalidAddons.length} addon(s) have invalid manifests`,
-      suggestions: passed ? undefined : [
-        ...invalidAddons.map(a => `Check manifest for: ${a}`),
-      ],
-      fixAvailable: false,
-      duration: Date.now() - start,
-    };
-  },
-
   // MCP checks
   'mcp:settings-valid': async () => {
     const start = Date.now();
@@ -417,7 +384,7 @@ async function runDiagnostics(
     system: {
       platform: process.platform,
       nodeVersion: process.version,
-      claudeKitVersion: VERSION,
+      claudeopsVersion: VERSION,
     },
     duration: Date.now() - startTime,
   };
@@ -550,7 +517,7 @@ export default defineCommand({
     output.header('System Info');
     output.kv('Platform', report.system.platform);
     output.kv('Node.js', report.system.nodeVersion);
-    output.kv('claudeops', report.system.claudeKitVersion);
+    output.kv('claudeops', report.system.claudeopsVersion);
 
     // Exit with appropriate code
     if (report.status === 'unhealthy') {

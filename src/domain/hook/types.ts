@@ -38,6 +38,9 @@ export interface HookMetadata {
 
   /** Timeout in milliseconds */
   timeout?: number;
+
+  /** Run hook in background without blocking (for logging, notifications, side-effects) */
+  async?: boolean;
 }
 
 /**

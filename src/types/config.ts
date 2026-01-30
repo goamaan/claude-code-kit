@@ -65,6 +65,29 @@ export const SyncConfigSchema = z.object({
 export type SyncConfig = z.infer<typeof SyncConfigSchema>;
 
 // =============================================================================
+// Swarm Configuration (v5 - Native Teams)
+// =============================================================================
+
+export const SpawnBackendSchema = z.enum(['auto', 'in-process', 'tmux', 'iterm2']);
+export type SpawnBackend = z.infer<typeof SpawnBackendSchema>;
+
+export const SwarmConfigSchema = z.object({
+  defaultBackend: SpawnBackendSchema.optional().default('auto'),
+  defaultTeammateCount: z.number().int().min(1).max(10).optional().default(3),
+  planApprovalRequired: z.boolean().optional().default(false),
+});
+export type SwarmConfig = z.infer<typeof SwarmConfigSchema>;
+
+// =============================================================================
+// Review Configuration
+// =============================================================================
+
+export const ReviewConfigSchema = z.object({
+  specialists: z.array(z.string()).optional().default(['security', 'performance', 'architecture', 'simplicity']),
+});
+export type ReviewConfig = z.infer<typeof ReviewConfigSchema>;
+
+// =============================================================================
 // Team Configuration
 // =============================================================================
 
@@ -83,7 +106,9 @@ export const MainConfigSchema = z.object({
   model: ModelConfigSchema.optional(),
   cost: CostConfigSchema.optional(),
   sync: SyncConfigSchema.optional(),
+  swarm: SwarmConfigSchema.optional(),
   team: TeamConfigSchema.optional(),
+  review: ReviewConfigSchema.optional(),
   packageManager: PackageManagerSchema.optional(),
 });
 export type MainConfig = z.infer<typeof MainConfigSchema>;
@@ -95,9 +120,8 @@ export type MainConfig = z.infer<typeof MainConfigSchema>;
 /**
  * Profile skills configuration.
  * - `disabled`: Skills to exclude (recommended approach)
- * - `enabled`: Skills to include (used by setups, not recommended for profiles)
+ * - `enabled`: Skills to include
  *
- * For profiles, prefer using `disabled` to blacklist specific skills.
  * All skills are enabled by default unless explicitly disabled.
  */
 export const ProfileSkillsConfigSchema = z.object({
@@ -109,9 +133,8 @@ export type ProfileSkillsConfig = z.infer<typeof ProfileSkillsConfigSchema>;
 /**
  * Profile hooks configuration.
  * - `disabled`: Hooks to exclude (recommended approach)
- * - `enabled`: Hooks to include (used by setups, not recommended for profiles)
+ * - `enabled`: Hooks to include
  *
- * For profiles, prefer using `disabled` to blacklist specific hooks.
  * All hooks are enabled by default unless explicitly disabled.
  */
 export const ProfileHooksConfigSchema = z.object({
@@ -146,6 +169,7 @@ export const ProfileFileConfigSchema = z.object({
   model: ModelConfigSchema.optional(),
   cost: CostConfigSchema.optional(),
   packageManager: PackageManagerSchema.optional(),
+  content: z.string().optional(),
 });
 export type ProfileFileConfig = z.infer<typeof ProfileFileConfigSchema>;
 
@@ -199,6 +223,18 @@ export interface MergedConfig {
     watch: boolean;
   };
 
+  // Swarm configuration (v5 - Native Teams)
+  swarm: {
+    defaultBackend: 'auto' | 'in-process' | 'tmux' | 'iterm2';
+    defaultTeammateCount: number;
+    planApprovalRequired: boolean;
+  };
+
+  // Review configuration
+  review: {
+    specialists: string[];
+  };
+
   // Team configuration
   team?: {
     extends?: string;
@@ -231,6 +267,9 @@ export interface MergedConfig {
 
   // Package manager preference
   packageManager?: PackageManager;
+
+  // Custom CLAUDE.md content from profile
+  content?: string;
 }
 
 // =============================================================================
@@ -273,6 +312,14 @@ export const DEFAULT_MERGED_CONFIG: MergedConfig = {
   sync: {
     auto: false,
     watch: false,
+  },
+  swarm: {
+    defaultBackend: 'auto',
+    defaultTeammateCount: 3,
+    planApprovalRequired: false,
+  },
+  review: {
+    specialists: ['security', 'performance', 'architecture', 'simplicity'],
   },
   skills: {
     enabled: [],

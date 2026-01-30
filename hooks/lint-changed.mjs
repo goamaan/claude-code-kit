@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 /**
+ * Hook: lint-changed
+ * Event: PostToolUse
+ * Description: Runs ESLint after Write/Edit on JavaScript/TypeScript files
+ * Matcher: Write
+ * Enabled: true
+ *
  * lint-changed - PostToolUse Hook
  *
  * Runs ESLint after Write/Edit tools modify JavaScript/TypeScript files.

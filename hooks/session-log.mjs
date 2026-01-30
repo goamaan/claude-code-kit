@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 /**
+ * Hook: session-log
+ * Event: Stop
+ * Description: Logs session summary when Claude stops
+ * Matcher: *
+ * Enabled: false
+ *
  * session-log - Stop Hook
  *
  * Logs session summary when Claude stops.
@@ -7,6 +13,10 @@
  *
  * Hook type: Stop
  * Triggers: Before session/conversation ends
+ * Async: true
+ *
+ * This hook runs asynchronously (in background) since it only writes
+ * log files and doesn't need to block Claude Code's execution.
  */
 
 import { writeFileSync, readFileSync, existsSync, mkdirSync, appendFileSync } from 'fs';

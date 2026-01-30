@@ -29,68 +29,20 @@ describe('CLI command imports', () => {
     expect(mod.default.meta).toBeDefined();
   });
 
-  it('should import skill command', async () => {
-    const mod = await import('@/commands/skill.js');
-    expect(mod.default).toBeDefined();
-    expect(mod.default.meta).toBeDefined();
-  });
-
-  it('should import hook command', async () => {
-    const mod = await import('@/commands/hook.js');
-    expect(mod.default).toBeDefined();
-    expect(mod.default.meta).toBeDefined();
-  });
-
   it('should import doctor command', async () => {
     const mod = await import('@/commands/doctor.js');
     expect(mod.default).toBeDefined();
     expect(mod.default.meta).toBeDefined();
   });
 
-  it('should import addon command', async () => {
-    const mod = await import('@/commands/addon.js');
-    expect(mod.default).toBeDefined();
-    expect(mod.default.meta).toBeDefined();
-  });
-
-  it('should import config command', async () => {
-    const mod = await import('@/commands/config.js');
-    expect(mod.default).toBeDefined();
-    expect(mod.default.meta).toBeDefined();
-  });
-
-  it('should import setup command', async () => {
-    const mod = await import('@/commands/setup.js');
-    expect(mod.default).toBeDefined();
-    expect(mod.default.meta).toBeDefined();
-  });
-
-  it('should import mcp command', async () => {
-    const mod = await import('@/commands/mcp.js');
-    expect(mod.default).toBeDefined();
-    expect(mod.default.meta).toBeDefined();
-  });
-
-  it('should import install command', async () => {
-    const mod = await import('@/commands/install.js');
+  it('should import reset command', async () => {
+    const mod = await import('@/commands/reset.js');
     expect(mod.default).toBeDefined();
     expect(mod.default.meta).toBeDefined();
   });
 
   it('should import upgrade command', async () => {
     const mod = await import('@/commands/upgrade.js');
-    expect(mod.default).toBeDefined();
-    expect(mod.default.meta).toBeDefined();
-  });
-
-  it('should import classify command', async () => {
-    const mod = await import('@/commands/classify.js');
-    expect(mod.default).toBeDefined();
-    expect(mod.default.meta).toBeDefined();
-  });
-
-  it('should import cost command', async () => {
-    const mod = await import('@/commands/cost.js');
     expect(mod.default).toBeDefined();
     expect(mod.default.meta).toBeDefined();
   });
@@ -132,32 +84,6 @@ describe('command definitions', () => {
     expect(subCommands.export).toBeDefined();
     expect(subCommands.import).toBeDefined();
     expect(subCommands.show).toBeDefined();
-  });
-
-  it('skill command should have subcommands', async () => {
-    const { default: skillCmd } = await import('@/commands/skill.js');
-    expect(skillCmd.subCommands).toBeDefined();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const subCommands = skillCmd.subCommands as any;
-    expect(subCommands.list).toBeDefined();
-    expect(subCommands.info).toBeDefined();
-    expect(subCommands.install).toBeDefined();
-    expect(subCommands.add).toBeDefined();
-    expect(subCommands.enable).toBeDefined();
-    expect(subCommands.disable).toBeDefined();
-    expect(subCommands.sync).toBeDefined();
-  });
-
-  it('hook command should have subcommands', async () => {
-    const { default: hookCmd } = await import('@/commands/hook.js');
-    expect(hookCmd.subCommands).toBeDefined();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const subCommands = hookCmd.subCommands as any;
-    expect(subCommands.list).toBeDefined();
-    expect(subCommands.debug).toBeDefined();
-    expect(subCommands.test).toBeDefined();
-    expect(subCommands.add).toBeDefined();
-    expect(subCommands.sync).toBeDefined();
   });
 
   it('doctor command should have expected args', async () => {
@@ -403,78 +329,9 @@ describe('command integration', () => {
     expect(typeof doctorCmd.run).toBe('function');
   });
 
-  it('classify command should have run function', async () => {
-    const { default: classifyCmd } = await import('@/commands/classify.js');
-    expect(typeof classifyCmd.run).toBe('function');
-  });
-
-  it('cost command should have run function', async () => {
-    const { default: costCmd } = await import('@/commands/cost.js');
-    expect(typeof costCmd.run).toBe('function');
-  });
-
   it('upgrade command should have run function', async () => {
     const { default: upgradeCmd } = await import('@/commands/upgrade.js');
     expect(typeof upgradeCmd.run).toBe('function');
-  });
-});
-
-// =============================================================================
-// Generator Tests - Test skill/hook generation helpers
-// =============================================================================
-
-describe('generator functions', () => {
-  it('should export generator functions', async () => {
-    const mod = await import('@/domain/generator/index.js');
-    expect(mod.generateSkill).toBeDefined();
-    expect(mod.generateSkillTemplate).toBeDefined();
-    expect(mod.generateHook).toBeDefined();
-    expect(mod.generateHookTemplate).toBeDefined();
-    expect(mod.isClaudeCliAvailable).toBeDefined();
-    expect(mod.GeneratorError).toBeDefined();
-  });
-
-  it('generateSkillTemplate should create skill structure', async () => {
-    const { generateSkillTemplate } = await import('@/domain/generator/index.js');
-
-    const skill = generateSkillTemplate({
-      description: 'Test skill for unit testing',
-      name: 'test-skill',
-      domains: ['testing'],
-    });
-
-    expect(skill).toBeDefined();
-    expect(skill.name).toBe('test-skill');
-    expect(skill.description).toBe('Test skill for unit testing');
-    expect(skill.domains).toEqual(['testing']);
-    expect(skill.content).toBeDefined();
-    expect(skill.content).toContain('test-skill');
-  });
-
-  it('generateHookTemplate should create hook structure', async () => {
-    const { generateHookTemplate } = await import('@/domain/generator/index.js');
-
-    const hook = generateHookTemplate({
-      description: 'Test hook',
-      name: 'test-hook',
-      event: 'PreToolUse',
-      matcher: 'Bash',
-      priority: 50,
-    });
-
-    expect(hook).toBeDefined();
-    expect(hook.name).toBe('test-hook');
-    expect(hook.description).toBe('Test hook');
-    expect(hook.event).toBe('PreToolUse');
-    expect(hook.matcher).toBe('Bash');
-    expect(hook.priority).toBe(50);
-    expect(hook.handlerContent).toBeDefined();
-  });
-
-  it('isClaudeCliAvailable should return boolean', async () => {
-    const { isClaudeCliAvailable } = await import('@/domain/generator/index.js');
-    const result = await isClaudeCliAvailable();
-    expect(typeof result).toBe('boolean');
   });
 });
 

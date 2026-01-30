@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 /**
+ * Hook: typecheck-changed
+ * Event: PostToolUse
+ * Description: Runs TypeScript type checking after Write/Edit on .ts/.tsx files
+ * Matcher: Write
+ * Enabled: true
+ *
  * typecheck-changed - PostToolUse Hook
  *
  * Runs TypeScript type checking after Write/Edit tools modify .ts/.tsx files.

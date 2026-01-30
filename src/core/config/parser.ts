@@ -108,6 +108,7 @@ export function parse<T>(
   let parsed: unknown;
   try {
     parsed = TOML.parse(toml, {
+      joiner: '\n',
       x: {
         multi: options?.multilineBasicStrings ?? true,
       },
@@ -151,6 +152,7 @@ export function parseRaw(
 ): Record<string, unknown> {
   try {
     return TOML.parse(toml, {
+      joiner: '\n',
       x: {
         multi: options?.multilineBasicStrings ?? true,
       },

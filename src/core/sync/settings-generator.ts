@@ -5,7 +5,6 @@
 
 import type {
   MergedConfig,
-  MergedSetup,
   InstalledAddon,
   SettingsHooks,
   ComposedHooks,
@@ -166,7 +165,6 @@ export function getApiModelId(model: ModelName): string {
  */
 export function generateSettings(
   config: MergedConfig,
-  setup: MergedSetup,
   addons: InstalledAddon[],
   hooks: ComposedHooks,
   options: GenerateSettingsOptions = {},
@@ -195,7 +193,7 @@ export function generateSettings(
 
   // Add MCP servers if enabled
   if (includeMcp) {
-    const mcpServers = generateMcpServers(setup, addons, config);
+    const mcpServers = generateMcpServers(addons, config);
     if (Object.keys(mcpServers).length > 0) {
       settings.mcpServers = mcpServers;
     }
@@ -205,9 +203,8 @@ export function generateSettings(
   settings.metadata = {
     ...settings.metadata,
     'claudeops': {
-      version: '0.1.0',  // TODO: Get from package.json
+      version: '0.1.0',
       profile: config.profile.name,
-      setup: setup.name,
       generatedAt: new Date().toISOString(),
     },
   };
@@ -216,43 +213,17 @@ export function generateSettings(
 }
 
 /**
- * Generate MCP server configurations from setup and addons
+ * Generate MCP server configurations from addons and config
  */
 function generateMcpServers(
-  setup: MergedSetup,
   addons: InstalledAddon[],
   config: MergedConfig,
 ): Record<string, McpServerSettings> {
   const servers: Record<string, McpServerSettings> = {};
 
-  // Add servers from required MCP in setup
-  for (const serverName of setup.mcp.required) {
-    // Skip if disabled in config
-    if (config.mcp.disabled.includes(serverName)) {
-      continue;
-    }
-
-    // Add placeholder - actual config comes from MCP registry
-    servers[serverName] = {
-      command: serverName,
-      enabled: true,
-    };
-  }
-
-  // Add servers from recommended MCP in setup if enabled in config
-  for (const serverName of setup.mcp.recommended) {
-    // Only include if explicitly enabled
-    if (config.mcp.enabled.includes(serverName)) {
-      servers[serverName] = {
-        command: serverName,
-        enabled: true,
-      };
-    }
-  }
-
   // Add servers from enabled config
   for (const serverName of config.mcp.enabled) {
-    if (!servers[serverName]) {
+    if (!config.mcp.disabled.includes(serverName)) {
       servers[serverName] = {
         command: serverName,
         enabled: true,

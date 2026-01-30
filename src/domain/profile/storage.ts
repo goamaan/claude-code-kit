@@ -137,7 +137,7 @@ export function createProfileStorage(baseDir?: string): ProfileStorage {
 
     try {
       const content = await fs.readFile(profilePath, 'utf-8');
-      const parsed = parseToml(content, { bigint: false });
+      const parsed = parseToml(content, { joiner: '\n', bigint: false });
       const validated = ProfileFileConfigSchema.parse(parsed);
       return validated;
     } catch (err) {

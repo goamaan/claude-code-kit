@@ -24,3 +24,11 @@ complex = "opus"
 [model.overrides]
 types = "opus"
 generics = "opus"
+
+[swarm]
+defaultBackend = "auto"
+defaultTeammateCount = 3
+planApprovalRequired = false
+
+[review]
+specialists = ["security", "performance", "architecture", "simplicity"]

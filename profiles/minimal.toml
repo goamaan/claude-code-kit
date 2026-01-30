@@ -16,3 +16,11 @@ default = "haiku"
 simple = "haiku"
 standard = "haiku"
 complex = "sonnet"
+
+[swarm]
+defaultBackend = "auto"
+defaultTeammateCount = 2
+planApprovalRequired = false
+
+[review]
+specialists = ["security", "simplicity"]

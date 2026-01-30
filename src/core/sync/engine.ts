@@ -6,10 +6,8 @@
 import { join } from 'node:path';
 import type {
   MergedConfig,
-  MergedSetup,
   InstalledAddon,
   ComposedHooks,
-  AddonHooksInput,
 } from '@/types';
 import {
   readFileSafe,
@@ -173,9 +171,6 @@ export interface SyncState {
   /** Merged config */
   config: MergedConfig;
 
-  /** Merged setup */
-  setup: MergedSetup;
-
   /** Installed addons */
   addons: InstalledAddon[];
 
@@ -196,9 +191,6 @@ export interface SyncEngineOptions {
   /** Config loader function */
   loadConfig: () => Promise<MergedConfig>;
 
-  /** Setup loader function */
-  loadSetup: (name?: string) => Promise<MergedSetup>;
-
   /** Addon loader function */
   loadAddons: () => Promise<InstalledAddon[]>;
 
@@ -215,14 +207,12 @@ export interface SyncEngineOptions {
 
 class SyncEngineImpl implements SyncEngine {
   private readonly loadConfig: () => Promise<MergedConfig>;
-  private readonly loadSetup: (name?: string) => Promise<MergedSetup>;
   private readonly loadAddons: () => Promise<InstalledAddon[]>;
   private readonly claudeDir: string;
   private readonly globalConfigDir: string;
 
   constructor(options: SyncEngineOptions) {
     this.loadConfig = options.loadConfig;
-    this.loadSetup = options.loadSetup;
     this.loadAddons = options.loadAddons;
     this.claudeDir = options.claudeDir ?? getClaudeDir();
     this.globalConfigDir = options.globalConfigDir ?? getGlobalConfigDir();
@@ -232,30 +222,26 @@ class SyncEngineImpl implements SyncEngine {
     // 1. Load current profile config
     const config = await this.loadConfig();
 
-    // 2. Load and merge setup(s)
-    const setup = await this.loadSetup();
-
-    // 3. Load installed addons
+    // 2. Load installed addons
     const addons = await this.loadAddons();
 
-    // 4. Compose hooks from all sources
-    const hooks = this.composeAllHooks(setup, addons, config);
+    // 3. Compose hooks from all sources
+    const hooks = this.composeAllHooks(addons, config);
 
-    // 5. Generate settings
-    const settings = generateSettings(config, setup, addons, hooks);
+    // 4. Generate settings
+    const settings = generateSettings(config, addons, hooks);
 
-    // 6. Load existing CLAUDE.md for preservation
+    // 5. Load existing CLAUDE.md for preservation
     const existingClaudeMd = await this.loadExistingClaudeMd();
 
-    // 7. Generate CLAUDE.md
-    const claudeMd = await generateClaudeMd(setup, config, {
+    // 6. Generate CLAUDE.md
+    const claudeMd = await generateClaudeMd(config, {
       existingContent: existingClaudeMd ?? undefined,
       preserveUserContent: true,
     });
 
     return {
       config,
-      setup,
       addons,
       hooks,
       settings,
@@ -343,7 +329,7 @@ class SyncEngineImpl implements SyncEngine {
           if (preserveUserContent) {
             const existing = await this.loadExistingClaudeMd();
             if (existing) {
-              const regenerated = await generateClaudeMd(state.setup, state.config, {
+              const regenerated = await generateClaudeMd(state.config, {
                 existingContent: existing,
                 preserveUserContent: true,
               });
@@ -468,30 +454,6 @@ class SyncEngineImpl implements SyncEngine {
         });
       }
 
-      // Check setup
-      if (!state.setup.name) {
-        errors.push({
-          code: 'MISSING_SETUP',
-          message: 'No setup name found',
-        });
-      }
-
-      // Check for required addons
-      for (const required of state.setup.requires.addons) {
-        const found = state.addons.find(a => a.manifest.name === required);
-        if (!found) {
-          errors.push({
-            code: 'MISSING_ADDON',
-            message: `Required addon not installed: ${required}`,
-          });
-        } else if (!found.enabled) {
-          warnings.push({
-            code: 'DISABLED_ADDON',
-            message: `Required addon is disabled: ${required}`,
-          });
-        }
-      }
-
       // Check Claude directory exists
       const claudeDirExists = await exists(this.claudeDir);
       if (!claudeDirExists) {
@@ -502,14 +464,8 @@ class SyncEngineImpl implements SyncEngine {
       }
 
       // Check for conflicts in skills
-      const enabledSkills = new Set([
-        ...state.setup.skills.enabled,
-        ...state.config.skills.enabled,
-      ]);
-      const disabledSkills = new Set([
-        ...state.setup.skills.disabled,
-        ...state.config.skills.disabled,
-      ]);
+      const enabledSkills = new Set(state.config.skills.enabled);
+      const disabledSkills = new Set(state.config.skills.disabled);
 
       for (const skill of enabledSkills) {
         if (disabledSkills.has(skill)) {
@@ -539,56 +495,10 @@ class SyncEngineImpl implements SyncEngine {
   // ==========================================================================
 
   private composeAllHooks(
-    setup: MergedSetup,
     addons: InstalledAddon[],
     _config: MergedConfig,
   ): ComposedHooks {
     const sources: HookSource[] = [];
-
-    // Add setup hook templates
-    if (setup.hooks.templates.length > 0) {
-      const setupHooks: AddonHooksInput = {
-        PreToolUse: setup.hooks.templates
-          .filter(t => t.matcher.startsWith('PreToolUse:') || !t.matcher.includes(':'))
-          .map(t => ({
-            matcher: t.matcher.replace(/^PreToolUse:/, ''),
-            handler: t.handler,
-            priority: t.priority,
-            enabled: true,
-          })),
-        PostToolUse: setup.hooks.templates
-          .filter(t => t.matcher.startsWith('PostToolUse:'))
-          .map(t => ({
-            matcher: t.matcher.replace(/^PostToolUse:/, ''),
-            handler: t.handler,
-            priority: t.priority,
-            enabled: true,
-          })),
-        Stop: setup.hooks.templates
-          .filter(t => t.matcher.startsWith('Stop:'))
-          .map(t => ({
-            matcher: t.matcher.replace(/^Stop:/, ''),
-            handler: t.handler,
-            priority: t.priority,
-            enabled: true,
-          })),
-        SubagentStop: setup.hooks.templates
-          .filter(t => t.matcher.startsWith('SubagentStop:'))
-          .map(t => ({
-            matcher: t.matcher.replace(/^SubagentStop:/, ''),
-            handler: t.handler,
-            priority: t.priority,
-            enabled: true,
-          })),
-      };
-
-      sources.push({
-        type: 'setup',
-        name: setup.name,
-        hooks: setupHooks,
-        basePath: this.globalConfigDir,
-      });
-    }
 
     // Add addon hooks
     for (const addon of addons) {

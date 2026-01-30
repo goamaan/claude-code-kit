@@ -24,3 +24,11 @@ complex = "opus"
 [model.overrides]
 pytest = "sonnet"
 data-analysis = "opus"
+
+[swarm]
+defaultBackend = "auto"
+defaultTeammateCount = 3
+planApprovalRequired = false
+
+[review]
+specialists = ["security", "performance", "architecture", "simplicity"]

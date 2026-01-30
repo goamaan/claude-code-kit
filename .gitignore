@@ -37,3 +37,6 @@ yarn-error.log*
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
+
+# claudeops project-level config (use .claude/ instead)
+.claudeops/

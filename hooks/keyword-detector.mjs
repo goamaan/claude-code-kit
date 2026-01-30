@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 /**
+ * Hook: keyword-detector
+ * Event: UserPromptSubmit
+ * Description: Detects keywords in user prompts and injects mode-specific context
+ * Matcher: *
+ * Enabled: true
+ *
  * @deprecated This hook is deprecated in favor of the semantic intent-classifier hook.
  * The intent-classifier uses AI-powered classification instead of keyword patterns,
  * providing more accurate intent detection and skill matching.
@@ -63,8 +69,8 @@ ULTRAWORK RULES:
 5. SMART MODEL ROUTING: Use haiku for simple, sonnet for standard, opus for complex
 
 CRITICAL: Always pass model parameter explicitly:
-- Task(subagent_type="claudeops:executor", model="sonnet", prompt="...")
-- Task(subagent_type="claudeops:architect", model="opus", prompt="...")
+- Task(subagent_type="executor", model="sonnet", prompt="...")
+- Task(subagent_type="architect", model="opus", prompt="...")
 
 DO NOT stop until:
 - All tasks marked complete
@@ -120,13 +126,28 @@ Strategic planning with structured interview. Your workflow:
 Start by exploring the codebase, then interview the user.`
   },
   {
+    name: 'scan',
+    patterns: [/\bscan\s+(this|the|my)?\s*(repo|codebase|project)\b/i, /\bset\s*up.*repo.*for\s+(ai|claude)\b/i, /\bconfigure.*for\s+(ai|claude)\b/i, /\bmake.*ai.?ready\b/i, /\banalyze\s+(this|the|my)?\s*codebase\b/i],
+    context: `[SCAN MODE ACTIVATED]
+
+Codebase scan requested. Run the /scan skill to analyze this codebase and generate .claude/ artifacts:
+
+1. Run \`cops scan --json\` to get deterministic analysis
+2. Read key files identified by the scan
+3. Generate .claude/CLAUDE.md with project conventions
+4. Generate .claude/skills/ if warranted
+5. Update .claude/settings.json with appropriate hooks
+
+Use the /scan skill for full artifact generation.`
+  },
+  {
     name: 'analyze',
     patterns: [/\b(investigate|examine|debug|analyze|diagnose)\b/i],
     context: `[ANALYSIS MODE]
 
 Deep analysis requested. Delegate to architect agent:
 
-Task(subagent_type="claudeops:architect", model="opus",
+Task(subagent_type="architect", model="opus",
      prompt="Perform deep analysis: [topic]. Investigate root causes, trace execution paths, provide evidence-based conclusions.")
 
 Gather context with parallel explore agents first if needed.`
@@ -138,7 +159,7 @@ Gather context with parallel explore agents first if needed.`
 
 Codebase search requested. Use explore agent:
 
-Task(subagent_type="claudeops:explore", model="haiku",
+Task(subagent_type="explore", model="haiku",
      prompt="Search codebase for: [target]. Check multiple patterns and locations.")
 
 For comprehensive searches, spawn multiple explore agents in parallel with different search strategies.`

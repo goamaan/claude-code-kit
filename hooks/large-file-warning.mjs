@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 /**
+ * Hook: large-file-warning
+ * Event: PreToolUse
+ * Description: Warns before reading large files
+ * Matcher: Read
+ * Enabled: false
+ *
  * large-file-warning - PreToolUse Hook
  *
  * Warns before reading large files that could consume excessive tokens.

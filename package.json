@@ -1,6 +1,6 @@
 {
   "name": "claudeops",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "type": "module",
   "description": "Batteries-included Claude Code enhancement toolkit - orchestration, guardrails, profiles, and configuration management",
   "author": "Amaan",
@@ -26,7 +26,6 @@
   },
   "files": [
     "dist",
-    "setups",
     "addons",
     "agents",
     "skills",
@@ -37,6 +36,7 @@
   "scripts": {
     "dev": "tsdown --watch",
     "build": "tsdown",
+    "postbuild": "cops sync --force --backup || true",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/",
     "test": "vitest run",

@@ -8,9 +8,9 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Node.js >= 20.0.0](https://img.shields.io/badge/node-%3E%3D%2020.0.0-green.svg)](https://nodejs.org)
 
-Transform Claude Code into an intelligent development powerhouse. Just describe what you want—claudeops uses AI to understand your intent, automatically route to specialized agents, and orchestrate complex workflows with smart guardrails.
+Transform Claude Code with profiles, lifecycle hooks, and smart configuration sync.
 
-[Quick Start](#quick-start) • [Features](#features) • [Agents](#agents) • [Commands](#cli-commands) • [Configuration](#configuration)
+[Quick Start](#quick-start) | [Hooks](#hooks) | [Commands](#cli-commands) | [Configuration](#configuration)
 
 </div>
 
@@ -18,26 +18,23 @@ Transform Claude Code into an intelligent development powerhouse. Just describe 
 
 ## What is claudeops?
 
-claudeops v3.1 is a batteries-included enhancement toolkit for Claude Code that adds intelligent orchestration, semantic intent classification, and built-in safety guardrails. Instead of memorizing commands or keywords, simply describe what you need naturally and claudeops figures out the rest—selecting the right agents, choosing optimal models, managing costs, and keeping your work safe.
+claudeops is a lean enhancement toolkit for Claude Code that simplifies your workflow with profile-based configuration, lifecycle hooks, and automatic synchronization. Organize your projects, define custom instructions, and automate quality checks with a clean TOML-based system.
 
 **Why claudeops?**
-- **Reduce cognitive load** - Stop thinking about implementation details, focus on outcomes
-- **Intelligent defaults** - AI-powered intent classification routes tasks to best agents
-- **Safety first** - Built-in guardrails protect against accidental deletion, secret leaks, and risky operations
-- **Cost aware** - Track spending and set budgets automatically
-- **Highly extensible** - Install capabilities via packs, hooks, and skills from GitHub
+
+- **Profile-driven** -- Switch between TOML-based profiles for different projects and workflows
+- **Custom instructions** -- Define per-project CLAUDE.md content and agent configuration
+- **Lifecycle hooks** -- Automate quality checks and enforcement at every stage
+- **Auto-sync** -- Configuration is automatically synced to `~/.claude/` after builds and profile switches
+- **Skills and hooks** -- Extend functionality with built-in and custom capabilities
 
 ## Features
 
-- **12 Specialized Agents** - Execution, architecture, design, testing, security, research, and more
-- **Semantic Intent Detection** - Describe what you want naturally—no keywords required
-- **Intelligent Routing** - AI selects agents, models, and parallelism based on task complexity
-- **AI-Powered Pack System** - Extend claudeops by installing packs from GitHub repositories
-- **Built-in Guardrails** - Deletion protection, secret scanning, dangerous command warnings
-- **Setup Templates** - Pre-configured profiles for fullstack, frontend, backend, devops, and enterprise
-- **Profile Management** - Switch between project configurations instantly
-- **Hook System** - 13 battle-tested lifecycle hooks for automated checks and enforcement
-- **Cost Tracking** - Monitor spending, set budgets, and view spending history
+- **Profile System** -- TOML-based profiles with inheritance, custom content, and agent configuration
+- **18 Lifecycle Hooks** -- Automated checks and enforcement at every stage of the workflow
+- **Skills** -- Reusable capabilities that can be enabled and synced
+- **Auto-sync** -- Configuration is automatically synced to `~/.claude/` after builds and profile switches
+- **Specialized Skills** -- Built-in skills for documentation, testing, security, and more
 
 ---
 
@@ -49,238 +46,117 @@ claudeops v3.1 is a batteries-included enhancement toolkit for Claude Code that 
 npm install -g claudeops
 ```
 
-Verify the installation:
+### Initialize
 
 ```bash
-claudeops doctor
+cops init
 ```
 
-### Initialize Your Project
+Initialize claudeops and set up project artifacts, profiles, and configuration.
+
+### Verify
 
 ```bash
-# Choose a setup template (fullstack, backend, frontend, data, devops, enterprise, minimal)
-claudeops setup use fullstack
-
-# Sync configuration to Claude Code
-claudeops sync
+cops doctor
 ```
 
-That's it! Start using claudeops by describing what you want naturally in Claude Code.
+### Switch Profiles
+
+```bash
+cops profile list
+cops profile use fullstack
+```
+
+That's it. Start using Claude Code normally and claudeops handles configuration sync and lifecycle hooks.
+
+### Command Aliases
+
+| Alias | Use For |
+|-------|---------|
+| `claudeops` | Installation, formal contexts |
+| `cops` | Day-to-day usage (recommended) |
+| `co` | Quick commands |
+
+All examples below use `cops`, but any alias works.
 
 ---
 
-## Agents
+## Hooks
 
-claudeops includes 12 specialized agents. The system automatically analyzes your request and routes work to the best agent—no manual delegation required.
+claudeops includes 18 lifecycle hooks. Eight are enabled by default; the rest can be enabled per-profile.
 
-### Agent Overview
+### Enabled by Default
 
-| Agent | Model | Purpose |
-|-------|-------|---------|
-| `executor` | Sonnet | Feature implementation, bug fixes, and standard changes |
-| `executor-low` | Haiku | Simple boilerplate, quick changes, and refactoring |
-| `architect` | Opus | Deep debugging, architecture decisions, code review |
-| `planner` | Opus | Strategic planning, requirements breakdown |
-| `critic` | Opus | Plan review, gap analysis, risk assessment |
-| `designer` | Sonnet | UI/UX design, component creation, styling |
-| `qa-tester` | Sonnet | Test writing, TDD workflows, quality assurance |
-| `security` | Opus | Security audits, vulnerability analysis |
-| `explore` | Haiku | Fast codebase search and file discovery |
-| `writer` | Haiku | Documentation writing and maintenance |
-| `researcher` | Sonnet | External research, API analysis, documentation |
-| `vision` | Sonnet | Image and visual analysis |
+| Hook | Trigger | Purpose |
+|------|---------|---------|
+| `continuation-check` | Stop | Evaluates completion status, blocks premature stopping |
+| `checkpoint` | Stop | Creates incremental code checkpoints |
+| `version-bump-prompt` | Stop | Suggests version bump per semver |
+| `lint-changed` | PostToolUse:Write | Runs ESLint after Write/Edit operations |
+| `typecheck-changed` | PostToolUse:Write | Type-checks after Write/Edit operations |
+| `keyword-detector` | UserPromptSubmit | Detects keywords for mode activation |
+| `thinking-level` | UserPromptSubmit | Sets extended thinking budget by complexity |
+| `swarm-lifecycle` | SubagentStop | Manages swarm agent lifecycle |
 
-### How Intent Classification Works
+### Disabled by Default
 
-You don't need to tell claudeops which agent to use. Just describe what you need:
+Enable these in your profile's `[hooks]` section:
 
-```
-You: "Add email validation to the signup form"
-claudeops: [Analyzes: implementation + frontend + moderate complexity]
-           [Routes to: executor agent with designer for UI review]
+| Hook | Trigger | Purpose |
+|------|---------|---------|
+| `cost-warning` | UserPromptSubmit | Alerts when approaching daily budget |
+| `security-scan` | PreToolUse | Scans for secrets before git commits |
+| `test-reminder` | PostToolUse | Reminds to run tests after code changes |
+| `format-on-save` | PostToolUse | Auto-formats files after Write/Edit |
+| `git-branch-check` | PreToolUse | Warns on commits to main/master |
+| `todo-tracker` | UserPromptSubmit | Tracks TODO items mentioned in prompts |
+| `session-log` | Stop | Logs session summary when Claude stops |
+| `large-file-warning` | PreToolUse | Warns before reading large files |
+| `swarm-cost-tracker` | PostToolUse | Tracks per-agent costs during orchestration |
+| `team-lifecycle` | SubagentStop | Logs team creation and shutdown events |
 
-You: "Debug the race condition in the auth flow"
-claudeops: [Analyzes: debugging + backend + complex]
-           [Routes to: architect agent with verification required]
-
-You: "Build a REST API for products"
-claudeops: [Analyzes: feature + backend + complex]
-           [Routes to: planner → executor → qa-tester]
-```
-
-The classification considers:
-- **Intent type** - Implementation, debugging, research, review, planning, maintenance
-- **Complexity** - Trivial, simple, moderate, complex, or architectural
-- **Domain** - Frontend, backend, database, devops, security, testing, documentation
-- **User signals** - Wants speed? thoroughness? autonomy? planning?
-- **Task scope** - Single file change vs. multi-component system
-
----
-
-## Built-in Guardrails
-
-Safety protections are enabled by default to prevent common mistakes:
-
-### Deletion Protection
-- Blocks dangerous commands like `rm -rf`, `shred`, `unlink`
-- Suggests safe alternatives using `trash` for recoverable deletion
-- Prevents accidental destructive operations
-
-### Secret Scanning
-- Detects API keys, tokens, passwords, and secrets in code
-- Blocks commits containing sensitive data
-- Warns before writing secrets to files
-
-### Dangerous Command Warnings
-- Warns on risky Git operations (force push, hard reset)
-- Blocks SQL drops and truncates by default
-- Provides safe alternatives and requires confirmation
-
-All guardrails can be customized or disabled in `.claudeops.yaml`.
+Hooks are automatically synced to `~/.claude/settings.json` via `cops sync`.
 
 ---
 
 ## CLI Commands
 
+All commands work with `claudeops`, `cops`, or `co`.
+
+### Getting Started
+
+```bash
+cops init                                 # Initialize claudeops
+cops doctor                               # Run diagnostics
+cops sync                                 # Sync configuration to ~/.claude/
+```
+
 ### Profile Management
 
-Profiles let you switch between different project configurations instantly.
+Profiles are TOML files stored at `~/.claudeops/profiles/`. They support inheritance, custom CLAUDE.md content, agent configuration, and hook/skill toggling.
 
 ```bash
-claudeops profile list                    # List all profiles
-claudeops profile create <name>           # Create new profile
-claudeops profile use <name>              # Switch active profile
-claudeops profile delete <name>           # Delete profile
+cops profile list                         # List all profiles
+cops profile use <name>                   # Switch active profile (auto-syncs)
+cops profile create <name>                # Create a new profile
+cops profile delete <name>                # Delete a profile
 ```
 
-### Setup Templates
-
-Pre-configured templates for common development scenarios.
+### Utilities
 
 ```bash
-claudeops setup list                      # Show available templates
-claudeops setup use fullstack             # Use a template
-claudeops setup info <name>               # Get template details
+cops sync                                 # Sync to ~/.claude/
+cops doctor                               # Run diagnostics
+cops reset                                # Remove claudeops artifacts from ~/.claude/
+cops reset --global                       # Reset global config
+cops reset --all                          # Reset everything
+cops reset --dry-run                      # Preview what would be removed
+cops reset --force                        # Skip confirmation
+cops upgrade                              # Check and install updates
+cops --version                            # Show installed version
 ```
 
-**Available templates:** `minimal`, `fullstack`, `frontend`, `backend`, `data`, `devops`, `enterprise`
-
-### Pack Management
-
-Install capabilities from GitHub repositories. The AI analyzes the repo and auto-detects components.
-
-```bash
-claudeops pack add <github-url>           # Install pack from GitHub
-claudeops pack list                       # List installed packs
-claudeops pack info <name>                # Show pack details
-claudeops pack enable <name>              # Enable pack
-claudeops pack disable <name>             # Disable pack
-claudeops pack remove <name>              # Uninstall pack
-claudeops pack update --all               # Update all packs
-```
-
-### Skill Management
-
-Skills are reusable capabilities that can be installed and toggled.
-
-```bash
-claudeops skill list                      # List available skills
-claudeops skill info <name>               # Show skill details
-claudeops skill install <name>            # Install skill
-claudeops skill enable <name>             # Enable skill
-claudeops skill disable <name>            # Disable skill
-claudeops skill sync                      # Sync skills to Claude Code
-```
-
-### Hook Management
-
-Hooks are lifecycle triggers for automated checks and enforcement.
-
-```bash
-claudeops hook list                       # List installed hooks
-claudeops hook debug                      # Debug hook execution
-claudeops hook test <name>                # Test a specific hook
-```
-
-### Intent Classification
-
-Test the semantic classifier to see how claudeops analyzes your requests.
-
-```bash
-claudeops classify "add email validation"
-```
-
-Output shows:
-- Intent type (implementation, debugging, research, etc.)
-- Complexity level
-- Domain detection
-- Recommended agents
-- Suggested model tier and parallelism
-
-### Cost Tracking
-
-Monitor your API spending.
-
-```bash
-claudeops cost today                      # View today's costs
-claudeops cost week                       # View this week's costs
-claudeops cost budget --set 20            # Set daily budget to $20
-claudeops cost export --format json       # Export spending history
-```
-
-### Configuration
-
-Manage global and project-specific settings.
-
-```bash
-claudeops config init                     # Initialize config
-claudeops config show                     # Display current config
-claudeops config edit                     # Edit with $EDITOR
-claudeops config validate                 # Validate syntax
-```
-
-### Synchronization & Diagnostics
-
-```bash
-claudeops sync                            # Sync to Claude Code
-claudeops sync --dry-run                  # Preview changes
-claudeops doctor                          # Run diagnostics
-claudeops doctor --fix                    # Auto-fix issues
-claudeops upgrade                         # Check and install updates
-```
-
-## Hooks
-
-claudeops includes 13 battle-tested hooks that run automatically to enforce best practices and catch issues early.
-
-### Built-in Hooks
-
-| Hook | Trigger | Purpose |
-|------|---------|---------|
-| `classify-intent` | Before prompt submission | Semantic intent classification and agent routing |
-| `keyword-detector` | Before prompt submission | Deprecated: use classify-intent instead |
-| `cost-warning` | Before prompt submission | Alerts when approaching daily budget |
-| `checkpoint` | After file save | Creates incremental code checkpoints |
-| `thinking-level` | Before model call | Sets extended thinking budget by complexity |
-| `lint-changed` | Before commit | Runs linting on changed files |
-| `typecheck-changed` | Before commit | Type-checks changed files |
-| `continuation-check` | Before prompt | Warns if continuing unfinished task |
-| `version-bump-prompt` | Before commit | Suggests version bump per semver |
-| `security-scan` | Before commit | Scans for secrets and vulnerabilities |
-| `test-reminder` | At intervals | Reminds to run tests |
-| `format-on-save` | After file save | Auto-formats code with Prettier |
-| `git-branch-check` | Before commit | Warns on commits to main/master |
-| `session-log` | Session start | Logs session metadata for analysis |
-| `todo-tracker` | Per prompt | Tracks and reminds about open TODOs |
-| `large-file-warning` | Before upload | Warns when editing large files |
-
-Manage hooks:
-
-```bash
-claudeops hook list                    # List all hooks
-claudeops hook debug                   # Debug execution
-claudeops hook test checkpoint         # Test specific hook
-```
+---
 
 ## Configuration
 
@@ -298,73 +174,76 @@ standard = "sonnet"
 complex = "opus"
 
 [cost]
-enabled = true
-dailyBudget = 20.0
+tracking = true
+budget_daily = 20.0
 
-[guardrails]
-deleteProtection = true
-secretScanning = true
-dangerousCommands = true
+[sync]
+auto = true
+watch = false
+
+packageManager = "bun"
+```
+
+### Profile Configuration
+
+Location: `~/.claudeops/profiles/<name>.toml`
+
+Profiles define agent configuration, model routing, skills, hooks, and custom CLAUDE.md content. They support single inheritance via the `extends` field.
+
+```toml
+name = "my-profile"
+description = "Custom development profile"
+extends = "fullstack"
+content = """
+Custom instructions that get written to CLAUDE.md.
+These are injected when the profile is active.
+"""
+
+[model]
+default = "opus"
+
+[model.routing]
+simple = "haiku"
+standard = "sonnet"
+complex = "opus"
+
+[agents.executor]
+model = "opus"
+priority = 80
+
+[agents.architect]
+model = "opus"
+priority = 80
+
+[skills]
+enabled = ["typescript-expert", "tdd"]
+disabled = ["deepsearch"]
 
 [hooks]
-enabled = true
-autoClassify = true
+enabled = ["security-scan", "test-reminder"]
+disabled = ["format-on-save"]
+
+[cost]
+tracking = true
+budget_daily = 10.0
 ```
 
-### Project Configuration
+### Auto-sync
 
-Location: `.claudeops.yaml` in your project root
+Configuration is automatically synced to `~/.claude/` in two ways:
 
-```yaml
-# Active profile
-activeProfile: development
+1. **postbuild** -- The `postbuild` script runs `cops sync` after every build
+2. **Profile switch** -- `cops profile use <name>` syncs immediately
 
-# Profiles for different contexts
-profiles:
-  - name: development
-    setup: fullstack
-    hooks:
-      enabled: true
+You can also sync manually at any time with `cops sync`.
 
-  - name: production
-    setup: enterprise
-    guardrails:
-      deleteProtection: true
-      dangerousCommands: true
-
-# Customizations
-guardrails:
-  deleteProtection: true
-  secretScanning: true
-  dangerousCommands: true
-
-hooks:
-  enabled: true
-  customHooks:
-    - path: ./scripts/my-custom-hook.js
-```
-
-### Environment Variables
-
-```bash
-# Set default model
-export CLAUDEOPS_MODEL=opus
-
-# Set daily budget
-export CLAUDEOPS_DAILY_BUDGET=20.0
-
-# Disable guardrails
-export CLAUDEOPS_GUARDRAILS_ENABLED=false
-
-# Set custom config location
-export CLAUDEOPS_CONFIG_PATH=~/.claudeops/config.toml
-```
+---
 
 ## Troubleshooting
 
 ### Command Not Found
 
-If `claudeops` command isn't found after installation:
+If `cops` is not found after installation:
 
 ```bash
 # Check installation
@@ -373,144 +252,43 @@ npm list -g claudeops
 # Add npm bin to PATH
 export PATH="$(npm config get prefix)/bin:$PATH"
 
-# Add to ~/.zshrc or ~/.bash_profile for persistence
+# Add to shell profile for persistence
 echo 'export PATH="$(npm config get prefix)/bin:$PATH"' >> ~/.zshrc
 ```
 
 ### Configuration Issues
 
 ```bash
-# Diagnose all issues
-claudeops doctor
-
-# Auto-fix common issues
-claudeops doctor --fix
-
-# Preview sync without applying
-claudeops sync --dry-run
-
-# Validate configuration syntax
-claudeops config validate
+cops doctor                               # Diagnose all issues
+cops sync --dry-run                       # Preview sync without applying
 ```
 
-### Hooks Not Executing
+### Reset to Clean State
 
 ```bash
-# List active hooks
-claudeops hook list
-
-# Debug specific hook
-claudeops hook debug
-
-# Test hook execution
-claudeops hook test lint-changed
-
-# Check hook logs
-tail -f ~/.claudeops/logs/hooks.log
+cops reset --dry-run                      # Preview what gets removed
+cops reset                                # Remove claudeops artifacts from ~/.claude/
+cops reset --all --force                  # Full reset, skip confirmation
 ```
 
-### Cost Tracking Issues
+---
 
-```bash
-# View all costs
-claudeops cost export --format json
+## Contributing
 
-# Reset daily counter
-rm ~/.claudeops/state/daily-costs.json
+Contributions are welcome. This project uses [Bun](https://bun.sh/) as its package manager and runtime.
 
-# Set new budget
-claudeops cost budget --set 30.0
-```
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/my-feature`
+3. Make your changes and verify: `bun run verify`
+4. Commit with conventional messages: `git commit -m "feat: add feature"`
+5. Submit a Pull Request
 
-## Examples
+When contributing:
 
-### Example 1: Build a Feature with Verification
-
-```bash
-# Describe what you need in Claude Code
-You: "Add two-factor authentication to user signup"
-
-# claudeops automatically:
-claudeops: [Analyzes: implementation + security + complex]
-claudeops: [Classifies intent, routes to planner]
-claudeops: [Planner interviews you on approach]
-claudeops: [Routes to executor + security agent]
-claudeops: [Runs tests and verifies completion]
-```
-
-### Example 2: Debug a Race Condition
-
-```bash
-You: "There's a race condition when users log in simultaneously"
-
-# claudeops automatically:
-claudeops: [Analyzes: debugging + backend + complex]
-claudeops: [Routes to architect agent]
-claudeops: [Gathers context with parallel explore agents]
-claudeops: [Provides root cause analysis with file:line references]
-```
-
-### Example 3: Install Custom Capabilities
-
-```bash
-# Add React development helpers from a pack
-claudeops pack add https://github.com/vercel-labs/react-pack
-
-# Enable specific skills
-claudeops skill enable react-best-practices
-claudeops skill enable tailwind-expert
-
-# Sync to Claude Code
-claudeops sync
-```
-
-## Advanced Usage
-
-### Custom Setup
-
-Create a custom setup for your organization:
-
-```bash
-# Start from fullstack template
-claudeops setup use fullstack
-
-# Customize the CLAUDE.md
-$EDITOR setups/my-company/CLAUDE.md
-
-# Use your setup
-claudeops setup use my-company
-```
-
-### Model Routing Strategy
-
-Configure which model to use for different complexity levels:
-
-```toml
-# In ~/.claudeops/config.toml
-[model.routing]
-trivial = "haiku"      # Quick lookups
-simple = "haiku"       # Simple changes
-moderate = "sonnet"    # Standard features
-complex = "opus"       # Deep analysis
-architectural = "opus" # System design
-```
-
-### Guardrail Customization
-
-```yaml
-# In .claudeops.yaml
-guardrails:
-  deleteProtection: true
-  secretScanning: true
-  dangerousCommands: true
-  customRules:
-    - pattern: "DELETE FROM.*WHERE"
-      action: block
-      message: "Raw SQL deletes require approval"
-    - pattern: "rm -rf"
-      action: block
-      message: "Use 'trash' for recoverable deletion"
-```
+- Follow the existing code style
+- Add tests for new functionality
+- Update documentation as needed
+- Ensure `bun run verify` passes (typecheck, lint, test)
 
 ## Resources
 
@@ -518,22 +296,6 @@ guardrails:
 - **Issues:** https://github.com/goamaan/claudeops/issues
 - **Discussions:** https://github.com/goamaan/claudeops/discussions
 
-## Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/my-feature`
-3. Make your changes and test: `npm run verify`
-4. Commit with conventional messages: `git commit -m "feat: add feature"`
-5. Submit a Pull Request
-
-When contributing:
-- Follow the existing code style
-- Add tests for new functionality
-- Update documentation as needed
-- Ensure `npm run verify` passes (typecheck, lint, test)
-
 ## License
 
-MIT License - see [LICENSE](LICENSE) for details
+MIT License - see [LICENSE](LICENSE) for details.

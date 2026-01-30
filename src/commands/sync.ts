@@ -155,6 +155,12 @@ function generateClaudeMdContent(config: Awaited<ReturnType<typeof loadConfig>>)
   }
   lines.push('');
 
+  // Custom content from profile
+  if (config.content) {
+    lines.push(config.content);
+    lines.push('');
+  }
+
   // Model configuration
   lines.push('## Model Configuration');
   lines.push('');

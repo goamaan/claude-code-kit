@@ -14,9 +14,8 @@ import {
   restoreBackup,
   listBackups,
   pruneBackups,
-  type SyncEngine,
 } from '@/core/sync/index.js';
-import type { MergedConfig, MergedSetup, InstalledAddon } from '@/types';
+import type { MergedConfig, InstalledAddon } from '@/types';
 import { DEFAULT_MERGED_CONFIG } from '@/types';
 
 // =============================================================================
@@ -36,44 +35,6 @@ function createTestConfig(overrides: Partial<MergedConfig> = {}): MergedConfig {
       routing: { simple: 'haiku', standard: 'sonnet', complex: 'opus' },
       overrides: {},
     },
-    ...overrides,
-  };
-}
-
-function createTestSetup(overrides: Partial<MergedSetup> = {}): MergedSetup {
-  return {
-    name: 'integration-setup',
-    version: '1.0.0',
-    description: 'Integration test setup',
-    requires: {
-      addons: [],
-    },
-    skills: {
-      enabled: ['autopilot', 'ralph'],
-      disabled: [],
-    },
-    agents: {
-      executor: { model: 'sonnet', priority: 50, enabled: true },
-      architect: { model: 'opus', priority: 100, enabled: true },
-    },
-    mcp: {
-      recommended: ['filesystem'],
-      required: ['memory'],
-    },
-    hooks: {
-      templates: [
-        {
-          name: 'bash-logging',
-          description: 'Log bash commands',
-          matcher: 'Bash',
-          handler: 'hooks/bash-log.ts',
-          priority: 0,
-        },
-      ],
-    },
-    commands: {},
-    content: '# Integration Test Setup\n\nThis is the setup content.',
-    sources: [],
     ...overrides,
   };
 }
@@ -132,8 +93,7 @@ describe('Sync Integration', () => {
   describe('Full Sync', () => {
     it('should create expected files on initial sync', async () => {
       const engine = createSyncEngine({
-        loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup(),
+        loadConfig: async () => createTestConfig({ content: '# Integration Test Setup\n\nThis is test content.' }),
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -162,7 +122,6 @@ describe('Sync Integration', () => {
 
       const engine = createSyncEngine({
         loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup(),
         loadAddons: async () => [addon],
         claudeDir,
         globalConfigDir: configDir,
@@ -173,7 +132,7 @@ describe('Sync Integration', () => {
       const settingsContent = await readFile(join(claudeDir, 'settings.json'), 'utf-8');
       const settings = JSON.parse(settingsContent);
 
-      // Hooks should be composed from setup and addons
+      // Hooks should be composed from addons
       expect(settings.hooks).toBeDefined();
     });
 
@@ -182,7 +141,6 @@ describe('Sync Integration', () => {
         loadConfig: async () => createTestConfig({
           mcp: { enabled: ['filesystem'], disabled: [] },
         }),
-        loadSetup: async () => createTestSetup(),
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -194,8 +152,7 @@ describe('Sync Integration', () => {
       const settings = JSON.parse(settingsContent);
 
       expect(settings.mcpServers).toBeDefined();
-      expect(settings.mcpServers['memory']).toBeDefined(); // Required by setup
-      expect(settings.mcpServers['filesystem']).toBeDefined(); // Enabled in config
+      expect(settings.mcpServers['filesystem']).toBeDefined();
     });
   });
 
@@ -207,7 +164,6 @@ describe('Sync Integration', () => {
     it('should be idempotent - multiple syncs produce same result', async () => {
       const engine = createSyncEngine({
         loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup(),
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -234,7 +190,6 @@ describe('Sync Integration', () => {
     it('should detect no changes needed after initial sync', async () => {
       const engine = createSyncEngine({
         loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup(),
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -271,7 +226,6 @@ Additional notes that should be preserved.`;
 
       const engine = createSyncEngine({
         loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup(),
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -300,7 +254,6 @@ Additional notes that should be preserved.`;
     it('should correctly identify creates', async () => {
       const engine = createSyncEngine({
         loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup(),
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -320,7 +273,6 @@ Additional notes that should be preserved.`;
 
       const engine = createSyncEngine({
         loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup(),
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -336,7 +288,6 @@ Additional notes that should be preserved.`;
     it('should correctly identify unchanged files', async () => {
       const engine = createSyncEngine({
         loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup(),
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -364,7 +315,6 @@ Additional notes that should be preserved.`;
 
       const engine = createSyncEngine({
         loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup(),
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -430,7 +380,6 @@ Additional notes that should be preserved.`;
     it('should validate successfully for complete config', async () => {
       const engine = createSyncEngine({
         loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup(),
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -440,22 +389,6 @@ Additional notes that should be preserved.`;
 
       expect(result.valid).toBe(true);
       expect(result.errors).toHaveLength(0);
-    });
-
-    it('should report missing required addons', async () => {
-      const engine = createSyncEngine({
-        loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup({
-          requires: { addons: ['missing-addon', 'another-missing'] },
-        }),
-        loadAddons: async () => [],
-        claudeDir,
-        globalConfigDir: configDir,
-      });
-
-      const result = await engine.validate();
-
-      expect(result.errors.filter(e => e.code === 'MISSING_ADDON')).toHaveLength(2);
     });
   });
 
@@ -468,7 +401,6 @@ Additional notes that should be preserved.`;
       // Initial sync with opus
       const engine1 = createSyncEngine({
         loadConfig: async () => createTestConfig({ model: { default: 'opus', routing: { simple: 'haiku', standard: 'sonnet', complex: 'opus' }, overrides: {} } }),
-        loadSetup: async () => createTestSetup(),
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -482,7 +414,6 @@ Additional notes that should be preserved.`;
       // New sync with haiku
       const engine2 = createSyncEngine({
         loadConfig: async () => createTestConfig({ model: { default: 'haiku', routing: { simple: 'haiku', standard: 'sonnet', complex: 'opus' }, overrides: {} } }),
-        loadSetup: async () => createTestSetup(),
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -497,11 +428,10 @@ Additional notes that should be preserved.`;
       expect(settings.model).toContain('haiku');
     });
 
-    it('should update CLAUDE.md when setup content changes', async () => {
+    it('should update CLAUDE.md when profile content changes', async () => {
       // Initial sync
       const engine1 = createSyncEngine({
-        loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup({ content: '# Version 1' }),
+        loadConfig: async () => createTestConfig({ content: '# Version 1' }),
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -513,10 +443,9 @@ Additional notes that should be preserved.`;
       expect(claudeMd).toContain('Version 1');
 
       // New sync with different content and preserveUserContent=false
-      // to ensure old setup content is removed
+      // to ensure old content is removed
       const engine2 = createSyncEngine({
-        loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup({ content: '# Version 2' }),
+        loadConfig: async () => createTestConfig({ content: '# Version 2' }),
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,

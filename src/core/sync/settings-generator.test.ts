@@ -13,7 +13,7 @@ import {
   getApiModelId,
   type GeneratedSettings,
 } from './settings-generator.js';
-import type { MergedConfig, MergedSetup, InstalledAddon, ComposedHooks } from '@/types';
+import type { MergedConfig, InstalledAddon, ComposedHooks } from '@/types';
 import { createEmptyHooks } from '@/domain/hook/composer.js';
 import { DEFAULT_MERGED_CONFIG } from '@/types';
 
@@ -24,33 +24,6 @@ import { DEFAULT_MERGED_CONFIG } from '@/types';
 function createTestConfig(overrides: Partial<MergedConfig> = {}): MergedConfig {
   return {
     ...DEFAULT_MERGED_CONFIG,
-    ...overrides,
-  };
-}
-
-function createTestSetup(overrides: Partial<MergedSetup> = {}): MergedSetup {
-  return {
-    name: 'test-setup',
-    version: '1.0.0',
-    description: 'Test setup',
-    requires: {
-      addons: [],
-    },
-    skills: {
-      enabled: [],
-      disabled: [],
-    },
-    agents: {},
-    mcp: {
-      recommended: [],
-      required: [],
-    },
-    hooks: {
-      templates: [],
-    },
-    commands: {},
-    content: '',
-    sources: [],
     ...overrides,
   };
 }
@@ -85,47 +58,42 @@ describe('settings-generator', () => {
   describe('generateSettings', () => {
     it('should generate settings with model', () => {
       const config = createTestConfig();
-      const setup = createTestSetup();
       const addons: InstalledAddon[] = [];
       const hooks = createEmptyHooks();
 
-      const result = generateSettings(config, setup, addons, hooks);
+      const result = generateSettings(config, addons, hooks);
 
       expect(result.model).toBe('claude-3-5-sonnet-20241022');
     });
 
     it('should use model override when provided', () => {
       const config = createTestConfig();
-      const setup = createTestSetup();
       const addons: InstalledAddon[] = [];
       const hooks = createEmptyHooks();
 
-      const result = generateSettings(config, setup, addons, hooks, {
+      const result = generateSettings(config, addons, hooks, {
         modelOverride: 'opus',
       });
 
       expect(result.model).toBe('claude-3-opus-20240229');
     });
 
-    it('should include metadata with profile and setup info', () => {
+    it('should include metadata with profile info', () => {
       const config = createTestConfig({
         profile: { name: 'my-profile', source: 'global' },
       });
-      const setup = createTestSetup({ name: 'my-setup' });
       const addons: InstalledAddon[] = [];
       const hooks = createEmptyHooks();
 
-      const result = generateSettings(config, setup, addons, hooks);
+      const result = generateSettings(config, addons, hooks);
 
       expect(result.metadata).toBeDefined();
       const claudeKitMeta = result.metadata!['claudeops'] as Record<string, unknown>;
       expect(claudeKitMeta['profile']).toBe('my-profile');
-      expect(claudeKitMeta['setup']).toBe('my-setup');
     });
 
     it('should skip hooks when includeHooks is false', () => {
       const config = createTestConfig();
-      const setup = createTestSetup();
       const addons: InstalledAddon[] = [];
       const hooks: ComposedHooks = {
         PreToolUse: [{
@@ -142,25 +110,24 @@ describe('settings-generator', () => {
         SubagentStop: [],
       };
 
-      const result = generateSettings(config, setup, addons, hooks, {
+      const result = generateSettings(config, addons, hooks, {
         includeHooks: false,
       });
 
       expect(result.hooks).toBeUndefined();
     });
 
-    it('should include MCP servers from required in setup', () => {
-      const config = createTestConfig();
-      const setup = createTestSetup({
+    it('should include MCP servers from enabled config', () => {
+      const config = createTestConfig({
         mcp: {
-          recommended: [],
-          required: ['filesystem', 'memory'],
+          enabled: ['filesystem', 'memory'],
+          disabled: [],
         },
       });
       const addons: InstalledAddon[] = [];
       const hooks = createEmptyHooks();
 
-      const result = generateSettings(config, setup, addons, hooks);
+      const result = generateSettings(config, addons, hooks);
 
       expect(result.mcpServers).toBeDefined();
       expect(result.mcpServers!['filesystem']).toBeDefined();
@@ -170,20 +137,14 @@ describe('settings-generator', () => {
     it('should skip disabled MCP servers', () => {
       const config = createTestConfig({
         mcp: {
-          enabled: [],
+          enabled: ['filesystem', 'memory'],
           disabled: ['filesystem'],
-        },
-      });
-      const setup = createTestSetup({
-        mcp: {
-          recommended: [],
-          required: ['filesystem', 'memory'],
         },
       });
       const addons: InstalledAddon[] = [];
       const hooks = createEmptyHooks();
 
-      const result = generateSettings(config, setup, addons, hooks);
+      const result = generateSettings(config, addons, hooks);
 
       expect(result.mcpServers!['filesystem']).toBeUndefined();
       expect(result.mcpServers!['memory']).toBeDefined();
@@ -191,7 +152,6 @@ describe('settings-generator', () => {
 
     it('should merge with existing settings', () => {
       const config = createTestConfig();
-      const setup = createTestSetup();
       const addons: InstalledAddon[] = [];
       const hooks = createEmptyHooks();
       const existing: GeneratedSettings = {
@@ -199,7 +159,7 @@ describe('settings-generator', () => {
         maxTokens: 4096,
       };
 
-      const result = generateSettings(config, setup, addons, hooks, {
+      const result = generateSettings(config, addons, hooks, {
         mergeWith: existing,
       });
 

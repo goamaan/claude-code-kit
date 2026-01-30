@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 /**
+ * Hook: security-scan
+ * Event: PreToolUse
+ * Description: Scans for secrets before git commits
+ * Matcher: Bash
+ * Enabled: false
+ *
  * security-scan - PreToolUse Hook
  *
  * Scans for secrets and sensitive data before git commits.

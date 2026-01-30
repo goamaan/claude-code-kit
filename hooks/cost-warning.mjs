@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 /**
+ * Hook: cost-warning
+ * Event: UserPromptSubmit
+ * Description: Warns when approaching daily cost budget based on token usage
+ * Matcher: *
+ * Enabled: false
+ *
  * cost-warning - UserPromptSubmit Hook
  *
  * Warns when approaching daily cost budget based on token usage.

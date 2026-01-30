@@ -50,41 +50,6 @@ export {
 } from './config.js';
 
 // =============================================================================
-// Setup Types
-// =============================================================================
-
-export {
-  // Schemas
-  SetupMetadataSchema,
-  VersionConstraintSchema,
-  SetupRequiresSchema,
-  SetupSkillsSchema,
-  AgentConfigSchema,
-  SetupAgentsSchema,
-  SetupMcpSchema,
-  HookTemplateSchema,
-  SetupHooksSchema,
-  CommandConfigSchema,
-  SetupCommandsSchema,
-  SetupManifestSchema,
-  // Types
-  type SetupMetadata,
-  type SetupRequires,
-  type SetupSkills,
-  type AgentConfig,
-  type SetupAgents,
-  type SetupMcp,
-  type HookTemplate,
-  type SetupHooks,
-  type CommandConfig,
-  type SetupCommands,
-  type SetupManifest,
-  type LoadedSetup,
-  type MergedSetup,
-  type SetupValidationResult,
-} from './setup.js';
-
-// =============================================================================
 // Add-on Types
 // =============================================================================
 
@@ -222,3 +187,24 @@ export {
   type DiagnosticCheckId,
   DIAGNOSTIC_CHECKS,
 } from './diagnostic.js';
+
+// =============================================================================
+// Team Types (Native Claude Code Teams)
+// =============================================================================
+
+export {
+  // Schemas
+  TeamMemberStatusSchema,
+  TeamMemberSchema,
+  TeamStatusSchema,
+  TeamSchema,
+  TeamTaskStatusSchema,
+  TeamTaskSchema,
+  // Types
+  type TeamMemberStatus,
+  type TeamMember,
+  type TeamStatus,
+  type Team,
+  type TeamTaskStatus,
+  type TeamTask,
+} from './team.js';

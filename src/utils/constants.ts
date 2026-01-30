@@ -8,14 +8,8 @@ export const GLOBAL_CONFIG_DIR = '.claudeops';
 /** Claude configuration directory (~/.claude) */
 export const CLAUDE_DIR = '.claude';
 
-/** Project-level configuration directory */
-export const PROJECT_CONFIG_DIR = '.claudeops';
-
 /** Main configuration file name */
 export const CONFIG_FILE = 'config.toml';
-
-/** Local configuration file name (gitignored) */
-export const LOCAL_CONFIG_FILE = 'local.toml';
 
 /** Active profile indicator file */
 export const PROFILE_FILE = 'active-profile';
@@ -25,9 +19,6 @@ export const PROFILES_DIR = 'profiles';
 
 /** Addons subdirectory */
 export const ADDONS_DIR = 'addons';
-
-/** Setups subdirectory */
-export const SETUPS_DIR = 'setups';
 
 /** Claude settings file */
 export const CLAUDE_SETTINGS_FILE = 'claude_desktop_config.json';

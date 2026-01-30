@@ -12,7 +12,7 @@ import {
   createMinimalClaudeMd,
   parseClaudeMdInfo,
 } from './claudemd-generator.js';
-import type { MergedSetup, MergedConfig } from '@/types';
+import type { MergedConfig } from '@/types';
 import { DEFAULT_MERGED_CONFIG } from '@/types';
 
 // =============================================================================
@@ -27,33 +27,6 @@ function createTestConfig(overrides: Partial<MergedConfig> = {}): MergedConfig {
       description: 'Test profile description',
       source: 'global',
     },
-    ...overrides,
-  };
-}
-
-function createTestSetup(overrides: Partial<MergedSetup> = {}): MergedSetup {
-  return {
-    name: 'test-setup',
-    version: '1.0.0',
-    description: 'Test setup',
-    requires: {
-      addons: [],
-    },
-    skills: {
-      enabled: [],
-      disabled: [],
-    },
-    agents: {},
-    mcp: {
-      recommended: [],
-      required: [],
-    },
-    hooks: {
-      templates: [],
-    },
-    commands: {},
-    content: '',
-    sources: [],
     ...overrides,
   };
 }
@@ -139,38 +112,34 @@ No managed section here.`;
 
   describe('generateClaudeMd', () => {
     it('should generate CLAUDE.md with managed section markers', async () => {
-      const setup = createTestSetup();
       const config = createTestConfig();
 
-      const result = await generateClaudeMd(setup, config);
+      const result = await generateClaudeMd(config);
 
       expect(result.content).toContain('<!-- claudeops:managed:start -->');
       expect(result.content).toContain('<!-- claudeops:managed:end -->');
     });
 
     it('should include profile information when enabled', async () => {
-      const setup = createTestSetup();
       const config = createTestConfig({
         profile: { name: 'my-profile', description: 'My description', source: 'global' },
       });
 
-      const result = await generateClaudeMd(setup, config, { includeProfile: true });
+      const result = await generateClaudeMd(config, { includeProfile: true });
 
       expect(result.content).toContain('my-profile');
       expect(result.sections).toContain('profile');
     });
 
     it('should skip profile information when disabled', async () => {
-      const setup = createTestSetup();
       const config = createTestConfig();
 
-      const result = await generateClaudeMd(setup, config, { includeProfile: false });
+      const result = await generateClaudeMd(config, { includeProfile: false });
 
       expect(result.sections).not.toContain('profile');
     });
 
     it('should include model configuration', async () => {
-      const setup = createTestSetup();
       const config = createTestConfig({
         model: {
           default: 'opus',
@@ -179,7 +148,7 @@ No managed section here.`;
         },
       });
 
-      const result = await generateClaudeMd(setup, config);
+      const result = await generateClaudeMd(config);
 
       expect(result.content).toContain('opus');
       expect(result.content).toContain('Model Configuration');
@@ -187,12 +156,11 @@ No managed section here.`;
     });
 
     it('should include skills when enabled', async () => {
-      const setup = createTestSetup({
+      const config = createTestConfig({
         skills: { enabled: ['skill-a', 'skill-b'], disabled: [] },
       });
-      const config = createTestConfig();
 
-      const result = await generateClaudeMd(setup, config, { includeSkills: true });
+      const result = await generateClaudeMd(config, { includeSkills: true });
 
       expect(result.content).toContain('skill-a');
       expect(result.content).toContain('skill-b');
@@ -200,51 +168,32 @@ No managed section here.`;
     });
 
     it('should include agents when enabled', async () => {
-      const setup = createTestSetup({
+      const config = createTestConfig({
         agents: {
-          'executor': { model: 'sonnet', priority: 50, enabled: true },
-          'architect': { model: 'opus', priority: 100, enabled: true },
+          'executor': { model: 'sonnet', priority: 50 },
+          'architect': { model: 'opus', priority: 100 },
         },
       });
-      const config = createTestConfig();
 
-      const result = await generateClaudeMd(setup, config, { includeAgents: true });
+      const result = await generateClaudeMd(config, { includeAgents: true });
 
       expect(result.content).toContain('executor');
       expect(result.content).toContain('architect');
       expect(result.sections).toContain('agents');
     });
 
-    it('should include hooks when enabled', async () => {
-      const setup = createTestSetup({
-        hooks: {
-          templates: [
-            { name: 'bash-hook', description: 'Bash handler', matcher: 'Bash', handler: 'bash.ts', priority: 0 },
-          ],
-        },
+    it('should include profile content', async () => {
+      const config = createTestConfig({
+        content: '# Custom Profile Content\n\nThis is from the profile.',
       });
-      const config = createTestConfig();
 
-      const result = await generateClaudeMd(setup, config, { includeHooks: true });
+      const result = await generateClaudeMd(config);
 
-      expect(result.content).toContain('bash-hook');
-      expect(result.sections).toContain('hooks');
-    });
-
-    it('should include setup content', async () => {
-      const setup = createTestSetup({
-        content: '# Custom Setup Content\n\nThis is from the setup.',
-      });
-      const config = createTestConfig();
-
-      const result = await generateClaudeMd(setup, config);
-
-      expect(result.content).toContain('Custom Setup Content');
-      expect(result.sections).toContain('setup-content');
+      expect(result.content).toContain('Custom Profile Content');
+      expect(result.sections).toContain('profile-content');
     });
 
     it('should preserve user content from existing CLAUDE.md', async () => {
-      const setup = createTestSetup();
       const config = createTestConfig();
       const existing = `# User Content
 
@@ -254,7 +203,7 @@ My important notes.
 Old managed content
 <!-- claudeops:managed:end -->`;
 
-      const result = await generateClaudeMd(setup, config, {
+      const result = await generateClaudeMd(config, {
         existingContent: existing,
         preserveUserContent: true,
       });
@@ -264,10 +213,9 @@ Old managed content
     });
 
     it('should use custom header when provided', async () => {
-      const setup = createTestSetup();
       const config = createTestConfig();
 
-      const result = await generateClaudeMd(setup, config, {
+      const result = await generateClaudeMd(config, {
         customHeader: '# My Custom Header',
       });
 
@@ -378,24 +326,21 @@ After`;
 
   describe('createMinimalClaudeMd', () => {
     it('should create minimal CLAUDE.md with model info', async () => {
-      const setup = createTestSetup();
       const config = createTestConfig();
 
-      const result = await createMinimalClaudeMd(setup, config);
+      const result = await createMinimalClaudeMd(config);
 
       expect(result).toContain('Model Configuration');
       expect(result).toContain('<!-- claudeops:managed:start -->');
     });
 
     it('should not include profile, agents, skills, or hooks', async () => {
-      const setup = createTestSetup({
+      const config = createTestConfig({
         skills: { enabled: ['skill-a'], disabled: [] },
-        agents: { executor: { model: 'sonnet', priority: 50, enabled: true } },
-        hooks: { templates: [{ name: 'hook', matcher: 'test', handler: 'test.ts', priority: 0 }] },
+        agents: { executor: { model: 'sonnet', priority: 50 } },
       });
-      const config = createTestConfig();
 
-      const result = await createMinimalClaudeMd(setup, config);
+      const result = await createMinimalClaudeMd(config);
 
       expect(result).not.toContain('## Skills');
       expect(result).not.toContain('## Agents');

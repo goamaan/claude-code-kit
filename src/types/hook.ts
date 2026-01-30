@@ -219,6 +219,9 @@ export interface SettingsHookCommand {
 
   /** Timeout in seconds */
   timeout?: number;
+
+  /** Run hook in background without blocking Claude Code execution */
+  async?: boolean;
 }
 
 /**
