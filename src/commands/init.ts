@@ -202,7 +202,7 @@ async function createDefaultConfig(): Promise<{ created: boolean; existed: boole
 export default defineCommand({
   meta: {
     name: 'init',
-    description: 'Initialize claudeops with zero-config swarm setup',
+    description: 'Initialize claudeops global setup',
   },
   args: {
     minimal: {
@@ -415,6 +415,7 @@ export default defineCommand({
     output.header('Next Steps');
 
     output.list([
+      'Run `cops scan` in any repo to set it up for AI development',
       'Run `cops doctor` to verify installation',
       'Run `cops skill list` to see available skills',
       'Run `cops sync` to manually sync configuration',

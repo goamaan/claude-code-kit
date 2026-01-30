@@ -36,9 +36,6 @@ export interface ProfileManager {
   /** Get full details for a profile with project-level overrides */
   getWithOverrides(name: string, projectOverrides?: ProfileFileConfig): Promise<ProfileDetails>;
 
-  /** Load project-level profile overrides from a directory */
-  loadProjectOverrides(projectDir: string): Promise<ProfileFileConfig | null>;
-
   /** Create a new profile */
   create(name: string, options?: Omit<CreateProfileOptions, 'name'>): Promise<void>;
 
@@ -529,50 +526,11 @@ export function createProfileManager(storage?: ProfileStorage): ProfileManager {
     }
   }
 
-  /**
-   * Load project-level profile overrides from a directory
-   */
-  async function loadProjectOverrides(projectDir: string): Promise<ProfileFileConfig | null> {
-    // Try multiple possible locations
-    const possiblePaths = [
-      path.join(projectDir, '.claudeops', 'profile.toml'),
-      path.join(projectDir, '.claudeops', 'profile.yaml'),
-      path.join(projectDir, '.claudeops.toml'),
-      path.join(projectDir, '.claudeops.yaml'),
-    ];
-
-    for (const profilePath of possiblePaths) {
-      try {
-        const content = await fs.readFile(profilePath, 'utf-8');
-
-        // Parse based on extension
-        let config: ProfileFileConfig;
-        if (profilePath.endsWith('.json')) {
-          config = JSON.parse(content) as ProfileFileConfig;
-        } else {
-          config = parseToml(content, { bigint: false }) as ProfileFileConfig;
-        }
-
-        // Validate the config
-        ProfileFileConfigSchema.parse(config);
-
-        return config;
-      } catch {
-        // File doesn't exist or is invalid, try next path
-        continue;
-      }
-    }
-
-    // No project override found
-    return null;
-  }
-
   return {
     list,
     active,
     get,
     getWithOverrides,
-    loadProjectOverrides,
     create,
     use,
     delete: deleteProfile,

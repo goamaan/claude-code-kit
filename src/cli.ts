@@ -53,6 +53,9 @@ const main = defineCommand({
     // Zero-config swarm setup
     init: () => import("./commands/init.js").then((m) => m.default),
 
+    // Codebase scanner
+    scan: () => import("./commands/scan.js").then((m) => m.default),
+
     // Upgrade claudeops
     upgrade: () => import("./commands/upgrade.js").then((m) => m.default),
   },
@@ -81,6 +84,7 @@ const main = defineCommand({
     // Getting Started
     console.log(pc.bold("\nGetting Started:"));
     console.log(`  ${pc.cyan("init")}           ${pc.dim("Zero-config swarm setup (recommended)")}`);
+    console.log(`  ${pc.cyan("scan")}           ${pc.dim("Analyze codebase and generate .claude/ artifacts")}`);
     console.log(`  ${pc.cyan("install")}        ${pc.dim("Interactive installation wizard")}`);
     console.log(`  ${pc.cyan("config init")}    ${pc.dim("Initialize configuration")}`);
     console.log(`  ${pc.cyan("doctor")}         ${pc.dim("Diagnose and fix issues")}`);

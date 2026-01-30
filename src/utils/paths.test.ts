@@ -9,7 +9,6 @@ import {
   getHomeDir,
   getGlobalConfigDir,
   getClaudeDir,
-  getProjectConfigDir,
   getProfilesDir,
   getProfileDir,
   getAddonsDir,
@@ -41,18 +40,6 @@ describe('paths', () => {
   describe('getClaudeDir', () => {
     it('should return ~/.claude', () => {
       expect(getClaudeDir()).toBe(join(home, '.claude'));
-    });
-  });
-
-  describe('getProjectConfigDir', () => {
-    it('should return .claudeops in cwd by default', () => {
-      expect(getProjectConfigDir()).toBe(join(process.cwd(), '.claudeops'));
-    });
-
-    it('should return .claudeops in specified root', () => {
-      expect(getProjectConfigDir('/custom/root')).toBe(
-        '/custom/root/.claudeops'
-      );
     });
   });
 

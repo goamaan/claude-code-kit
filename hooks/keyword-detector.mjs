@@ -120,6 +120,21 @@ Strategic planning with structured interview. Your workflow:
 Start by exploring the codebase, then interview the user.`
   },
   {
+    name: 'scan',
+    patterns: [/\bscan\s+(this|the|my)?\s*(repo|codebase|project)\b/i, /\bset\s*up.*repo.*for\s+(ai|claude)\b/i, /\bconfigure.*for\s+(ai|claude)\b/i, /\bmake.*ai.?ready\b/i, /\banalyze\s+(this|the|my)?\s*codebase\b/i],
+    context: `[SCAN MODE ACTIVATED]
+
+Codebase scan requested. Run the /scan skill to analyze this codebase and generate .claude/ artifacts:
+
+1. Run \`cops scan --json\` to get deterministic analysis
+2. Read key files identified by the scan
+3. Generate .claude/CLAUDE.md with project conventions
+4. Generate .claude/skills/ if warranted
+5. Update .claude/settings.json with appropriate hooks
+
+Use the /scan skill for full artifact generation.`
+  },
+  {
     name: 'analyze',
     patterns: [/\b(investigate|examine|debug|analyze|diagnose)\b/i],
     context: `[ANALYSIS MODE]

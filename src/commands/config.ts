@@ -14,8 +14,6 @@ import {
   getActiveProfileName,
   loadGlobalConfig,
   saveGlobalConfig,
-  loadProjectConfig,
-  saveProjectConfig,
 } from '../core/config/loader.js';
 import {
   resolvePackageManager,
@@ -24,7 +22,7 @@ import {
   isValidPackageManager,
 } from '../utils/package-manager.js';
 import { stringify } from '../core/config/parser.js';
-import { getGlobalConfigDir, getProjectConfigDir } from '../utils/paths.js';
+import { getGlobalConfigDir } from '../utils/paths.js';
 import { exists, writeFile, ensureDir } from '../utils/fs.js';
 import { join } from 'node:path';
 
@@ -35,15 +33,9 @@ import { join } from 'node:path';
 const initCommand = defineCommand({
   meta: {
     name: 'init',
-    description: 'Initialize configuration (interactive wizard)',
+    description: 'Initialize global configuration (interactive wizard)',
   },
   args: {
-    global: {
-      type: 'boolean',
-      alias: 'g',
-      description: 'Initialize global config',
-      default: false,
-    },
     force: {
       type: 'boolean',
       alias: 'f',
@@ -54,8 +46,7 @@ const initCommand = defineCommand({
   async run({ args }) {
     prompts.intro('claudeops configuration wizard');
 
-    const isGlobal = args.global;
-    const configDir = isGlobal ? getGlobalConfigDir() : getProjectConfigDir();
+    const configDir = getGlobalConfigDir();
     const configPath = join(configDir, 'config.toml');
 
     // Check if config exists
@@ -140,22 +131,10 @@ const editCommand = defineCommand({
     description: 'Open configuration in $EDITOR',
   },
   args: {
-    global: {
-      type: 'boolean',
-      alias: 'g',
-      description: 'Edit global config',
-      default: false,
-    },
     profile: {
       type: 'string',
       alias: 'p',
       description: 'Edit specific profile config',
-    },
-    local: {
-      type: 'boolean',
-      alias: 'l',
-      description: 'Edit local (gitignored) config',
-      default: false,
     },
   },
   async run({ args }) {
@@ -166,15 +145,9 @@ const editCommand = defineCommand({
     if (args.profile) {
       const paths = getConfigPaths(args.profile);
       configPath = paths.profile;
-    } else if (args.global) {
-      const paths = getConfigPaths();
-      configPath = paths.global;
-    } else if (args.local) {
-      const paths = getConfigPaths();
-      configPath = paths.local;
     } else {
       const paths = getConfigPaths();
-      configPath = paths.project;
+      configPath = paths.global;
     }
 
     // Ensure directory exists
@@ -555,14 +528,6 @@ const pmCommand = defineCommand({
         name: 'set',
         description: 'Set package manager preference (e.g., cops config pm set pnpm)',
       },
-      args: {
-        global: {
-          type: 'boolean',
-          alias: 'g',
-          description: 'Set in global config',
-          default: false,
-        },
-      },
       async run({ args }) {
         const pm = args._[0];
 
@@ -578,17 +543,9 @@ const pmCommand = defineCommand({
           process.exit(1);
         }
 
-        if (args['global']) {
-          const globalConfig = await loadGlobalConfig();
-          // Type assertion needed: loadGlobalConfig returns input type, saveGlobalConfig expects output type
-          // The spread preserves all existing fields while updating packageManager
-          await saveGlobalConfig({ ...globalConfig, packageManager: pm } as Parameters<typeof saveGlobalConfig>[0]);
-          output.success(`Global package manager set to: ${pm}`);
-        } else {
-          const projectConfig = await loadProjectConfig();
-          await saveProjectConfig({ ...projectConfig, packageManager: pm } as Parameters<typeof saveProjectConfig>[0]);
-          output.success(`Project package manager set to: ${pm}`);
-        }
+        const globalConfig = await loadGlobalConfig();
+        await saveGlobalConfig({ ...globalConfig, packageManager: pm } as Parameters<typeof saveGlobalConfig>[0]);
+        output.success(`Package manager set to: ${pm}`);
 
         output.dim('Run `cops sync` to update CLAUDE.md');
       },
@@ -638,7 +595,6 @@ const pmCommand = defineCommand({
     console.log();
     output.info('Commands:');
     output.dim('  cops config pm set <npm|yarn|pnpm|bun>  Set preference');
-    output.dim('  cops config pm set <pm> -g              Set global preference');
     output.dim('  cops config pm detect                   Auto-detect from lockfile');
   },
 });

@@ -6,14 +6,12 @@
 import { join } from 'node:path';
 import {
   CONFIG_FILE,
-  LOCAL_CONFIG_FILE,
   PROFILE_FILE,
   PROFILES_DIR,
   DEFAULT_PROFILE_NAME,
 } from '../../utils/constants.js';
 import {
   getGlobalConfigDir,
-  getProjectConfigDir,
   getProfilesDir,
 } from '../../utils/paths.js';
 import {
@@ -36,11 +34,9 @@ import type { z } from 'zod';
 import {
   MainConfigSchema,
   ProfileFileConfigSchema,
-  ProjectConfigSchema,
   DEFAULT_MERGED_CONFIG,
   type MainConfig,
   type ProfileFileConfig,
-  type ProjectConfig,
   type MergedConfig,
   type ModelName,
   type ConfigLayerInfo,
@@ -54,32 +50,23 @@ export interface ConfigPaths {
   global: string;
   /** Profile-specific configuration file (~/.claudeops/profiles/{name}/config.toml) */
   profile: string;
-  /** Project-level configuration file (.claudeops/config.toml) */
-  project: string;
-  /** Local configuration file (.claudeops/local.toml) - gitignored */
-  local: string;
 }
 
 /**
  * Get all configuration file paths
  *
  * @param profileName - Optional profile name (defaults to active profile)
- * @param projectRoot - Optional project root (defaults to cwd)
  * @returns Configuration file paths
  */
 export function getConfigPaths(
   profileName?: string,
-  projectRoot?: string
 ): ConfigPaths {
   const globalDir = getGlobalConfigDir();
-  const projectDir = getProjectConfigDir(projectRoot);
   const profile = profileName ?? DEFAULT_PROFILE_NAME;
 
   return {
     global: join(globalDir, CONFIG_FILE),
     profile: join(globalDir, PROFILES_DIR, profile, CONFIG_FILE),
-    project: join(projectDir, CONFIG_FILE),
-    local: join(projectDir, LOCAL_CONFIG_FILE),
   };
 }
 
@@ -168,57 +155,6 @@ export async function loadProfileConfig(
   return config;
 }
 
-/** Input type for project config (before defaults are applied) */
-type ProjectConfigInput = z.input<typeof ProjectConfigSchema>;
-
-/**
- * Load the project configuration file
- *
- * @param projectRoot - Optional project root (defaults to cwd)
- * @returns Project configuration or empty object if not found
- */
-export async function loadProjectConfig(
-  projectRoot?: string
-): Promise<ProjectConfigInput> {
-  const paths = getConfigPaths(undefined, projectRoot);
-
-  if (!(await exists(paths.project))) {
-    return {};
-  }
-
-  const config = await parseFile(paths.project, ProjectConfigSchema) as ProjectConfigInput;
-
-  // If the project extends a URL, resolve inheritance
-  if (config.extends) {
-    const resolver = createHybridResolver(async (path: string) => {
-      return parseFile(path, ProjectConfigSchema) as Promise<ProjectConfigInput>;
-    });
-
-    return resolveInheritance(config, resolver) as Promise<ProjectConfigInput>;
-  }
-
-  return config;
-}
-
-/**
- * Load the local configuration file (gitignored)
- *
- * @param projectRoot - Optional project root (defaults to cwd)
- * @returns Local configuration or empty object if not found
- */
-export async function loadLocalConfig(
-  projectRoot?: string
-): Promise<Partial<ProjectConfigInput>> {
-  const paths = getConfigPaths(undefined, projectRoot);
-
-  if (!(await exists(paths.local))) {
-    return {};
-  }
-
-  // Local config uses the same schema as project config
-  return parseFile(paths.local, ProjectConfigSchema.partial()) as Promise<Partial<ProjectConfigInput>>;
-}
-
 /**
  * Build the merged configuration from all layers
  *
@@ -226,67 +162,40 @@ export async function loadLocalConfig(
  * @returns Fully merged configuration
  */
 export async function loadConfig(options?: {
-  projectRoot?: string;
   profileName?: string;
 }): Promise<MergedConfig> {
-  // Determine active profile
   const profileName =
     options?.profileName ?? (await getActiveProfileName());
 
-  // Load all configuration layers
-  const [globalConfig, profileConfig, projectConfig, localConfig] =
+  const [globalConfig, profileConfig] =
     await Promise.all([
       loadGlobalConfig(),
       loadProfileConfigSafe(profileName),
-      loadProjectConfig(options?.projectRoot),
-      loadLocalConfig(options?.projectRoot),
     ]);
 
-  // Determine the effective profile (project can override)
-  const effectiveProfile = projectConfig.profile ?? profileName;
-  let effectiveProfileConfig = profileConfig;
-
-  // If project specifies a different profile, load it
-  if (projectConfig.profile && projectConfig.profile !== profileName) {
-    effectiveProfileConfig = await loadProfileConfigSafe(projectConfig.profile);
-  }
-
-  // Start with defaults
   let result: MergedConfig = { ...DEFAULT_MERGED_CONFIG };
 
-  // Set profile info
   result.profile = {
-    name: effectiveProfile,
-    description: effectiveProfileConfig?.description,
-    source: projectConfig.profile
-      ? 'project'
-      : profileName !== DEFAULT_PROFILE_NAME
-        ? 'global'
-        : 'default',
+    name: profileName,
+    description: profileConfig?.description,
+    source: profileName !== DEFAULT_PROFILE_NAME ? 'global' : 'default',
   };
 
-  // Merge model configuration
   const modelDefault =
-    localConfig.model?.default ??
-    projectConfig.model?.default ??
-    effectiveProfileConfig?.model?.default ??
+    profileConfig?.model?.default ??
     globalConfig.model?.default ??
     result.model.default;
 
   const modelRouting = merge([
     result.model.routing,
     globalConfig.model?.routing ?? {},
-    effectiveProfileConfig?.model?.routing ?? {},
-    projectConfig.model?.routing ?? {},
-    localConfig.model?.routing ?? {},
+    profileConfig?.model?.routing ?? {},
   ]);
 
   const modelOverrides = merge([
     result.model.overrides,
     globalConfig.model?.overrides ?? {},
-    effectiveProfileConfig?.model?.overrides ?? {},
-    projectConfig.model?.overrides ?? {},
-    localConfig.model?.overrides ?? {},
+    profileConfig?.model?.overrides ?? {},
   ]);
 
   result.model = {
@@ -295,38 +204,27 @@ export async function loadConfig(options?: {
     overrides: modelOverrides,
   };
 
-  // Merge cost configuration
   result.cost = {
     tracking:
-      localConfig.cost?.tracking ??
-      projectConfig.cost?.tracking ??
-      effectiveProfileConfig?.cost?.tracking ??
+      profileConfig?.cost?.tracking ??
       globalConfig.cost?.tracking ??
       result.cost.tracking,
     budget_daily:
-      localConfig.cost?.budget_daily ??
-      projectConfig.cost?.budget_daily ??
-      effectiveProfileConfig?.cost?.budget_daily ??
+      profileConfig?.cost?.budget_daily ??
       globalConfig.cost?.budget_daily,
     budget_weekly:
-      localConfig.cost?.budget_weekly ??
-      projectConfig.cost?.budget_weekly ??
-      effectiveProfileConfig?.cost?.budget_weekly ??
+      profileConfig?.cost?.budget_weekly ??
       globalConfig.cost?.budget_weekly,
     budget_monthly:
-      localConfig.cost?.budget_monthly ??
-      projectConfig.cost?.budget_monthly ??
-      effectiveProfileConfig?.cost?.budget_monthly ??
+      profileConfig?.cost?.budget_monthly ??
       globalConfig.cost?.budget_monthly,
   };
 
-  // Merge sync configuration (from global only)
   result.sync = {
     auto: globalConfig.sync?.auto ?? result.sync.auto,
     watch: globalConfig.sync?.watch ?? result.sync.watch,
   };
 
-  // Merge team configuration (from global only)
   if (globalConfig.team) {
     result.team = {
       extends: globalConfig.team.extends,
@@ -334,60 +232,32 @@ export async function loadConfig(options?: {
     };
   }
 
-  // Merge skills configuration
   result.skills = mergeEnabledDisabled(
-    mergeEnabledDisabled(
-      result.skills,
-      effectiveProfileConfig?.skills ?? {}
-    ),
-    mergeEnabledDisabled(
-      projectConfig.skills ?? {},
-      localConfig.skills ?? {}
-    )
+    result.skills,
+    profileConfig?.skills ?? {}
   );
 
-  // Merge agents configuration
   const mergedAgents: MergedConfig['agents'] = {};
   const allAgentNames = new Set([
-    ...Object.keys(effectiveProfileConfig?.agents ?? {}),
-    ...Object.keys(projectConfig.agents ?? {}),
-    ...Object.keys(localConfig.agents ?? {}),
+    ...Object.keys(profileConfig?.agents ?? {}),
   ]);
 
   for (const agentName of allAgentNames) {
-    const profileAgent = effectiveProfileConfig?.agents?.[agentName];
-    const projectAgent = projectConfig.agents?.[agentName];
-    const localAgent = localConfig.agents?.[agentName];
+    const profileAgent = profileConfig?.agents?.[agentName];
 
     mergedAgents[agentName] = {
-      model:
-        (localAgent?.model ??
-        projectAgent?.model ??
-        profileAgent?.model ??
-        result.model.default) as ModelName,
-      priority:
-        localAgent?.priority ?? projectAgent?.priority ?? profileAgent?.priority ?? 50,
+      model: (profileAgent?.model ?? result.model.default) as ModelName,
+      priority: profileAgent?.priority ?? 50,
     };
   }
   result.agents = mergedAgents;
 
-  // Merge MCP configuration
   result.mcp = mergeEnabledDisabled(
-    mergeEnabledDisabled(
-      result.mcp,
-      effectiveProfileConfig?.mcp ?? {}
-    ),
-    mergeEnabledDisabled(
-      projectConfig.mcp ?? {},
-      localConfig.mcp ?? {}
-    )
+    result.mcp,
+    profileConfig?.mcp ?? {}
   );
 
-  // Merge package manager preference (project/local/global only, not from profiles)
-  result.packageManager =
-    localConfig.packageManager ??
-    projectConfig.packageManager ??
-    globalConfig.packageManager;
+  result.packageManager = globalConfig.packageManager;
 
   return result;
 }
@@ -413,22 +283,19 @@ async function loadProfileConfigSafe(
  * Useful for debugging and displaying config sources
  */
 export async function getConfigLayers(options?: {
-  projectRoot?: string;
   profileName?: string;
 }): Promise<ConfigLayerInfo[]> {
   const profileName =
     options?.profileName ?? (await getActiveProfileName());
-  const paths = getConfigPaths(profileName, options?.projectRoot);
+  const paths = getConfigPaths(profileName);
 
   const layers: ConfigLayerInfo[] = [];
 
-  // Default layer (always exists)
   layers.push({
     layer: 'default',
     config: DEFAULT_MERGED_CONFIG,
   });
 
-  // Global layer
   if (await exists(paths.global)) {
     const config = await loadGlobalConfig();
     layers.push({
@@ -438,7 +305,6 @@ export async function getConfigLayers(options?: {
     });
   }
 
-  // Profile layer
   try {
     const config = await loadProfileConfig(profileName);
     layers.push({
@@ -448,16 +314,6 @@ export async function getConfigLayers(options?: {
     });
   } catch {
     // Profile doesn't exist
-  }
-
-  // Project layer
-  if (await exists(paths.project)) {
-    const config = await loadProjectConfig(options?.projectRoot);
-    layers.push({
-      layer: 'project',
-      path: paths.project,
-      config: config as unknown as Partial<MergedConfig>,
-    });
   }
 
   return layers;
@@ -528,32 +384,3 @@ export async function saveProfileConfig(
   await writeFile(configPath, content);
 }
 
-/**
- * Save project configuration
- *
- * @param config - Configuration to save
- * @param projectRoot - Optional project root (defaults to cwd)
- */
-export async function saveProjectConfig(
-  config: ProjectConfig,
-  projectRoot?: string
-): Promise<void> {
-  const paths = getConfigPaths(undefined, projectRoot);
-  const content = stringify(config);
-  await writeFile(paths.project, content);
-}
-
-/**
- * Save local configuration
- *
- * @param config - Configuration to save
- * @param projectRoot - Optional project root (defaults to cwd)
- */
-export async function saveLocalConfig(
-  config: Partial<ProjectConfig>,
-  projectRoot?: string
-): Promise<void> {
-  const paths = getConfigPaths(undefined, projectRoot);
-  const content = stringify(config);
-  await writeFile(paths.local, content);
-}

@@ -7,7 +7,6 @@ import { join, resolve, isAbsolute, normalize, relative } from 'node:path';
 import {
   GLOBAL_CONFIG_DIR,
   CLAUDE_DIR,
-  PROJECT_CONFIG_DIR,
   PROFILES_DIR,
   ADDONS_DIR,
   SETUPS_DIR,
@@ -34,16 +33,6 @@ export function getGlobalConfigDir(): string {
  */
 export function getClaudeDir(): string {
   return join(getHomeDir(), CLAUDE_DIR);
-}
-
-/**
- * Get the project-level configuration directory
- * @param projectRoot - Optional project root path (defaults to cwd)
- * @returns <projectRoot>/.claudeops
- */
-export function getProjectConfigDir(projectRoot?: string): string {
-  const root = projectRoot ?? process.cwd();
-  return join(root, PROJECT_CONFIG_DIR);
 }
 
 /**
