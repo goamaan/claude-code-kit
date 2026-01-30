@@ -435,6 +435,12 @@ Profiles are plain TOML files that you can edit directly:
 $EDITOR ~/.claudeops/profiles/frontend.toml
 ```
 
+You can also edit the global configuration:
+
+```bash
+$EDITOR ~/.claudeops/config.toml
+```
+
 The file will be validated when next read, and invalid configurations will be rejected.
 
 ## Exporting and Importing Profiles

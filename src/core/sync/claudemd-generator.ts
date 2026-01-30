@@ -4,7 +4,6 @@
  */
 
 import type { MergedConfig } from '@/types';
-import { AGENT_CATALOG } from '@/core/router/agent-catalog.js';
 
 // =============================================================================
 // Constants
@@ -308,17 +307,7 @@ async function generateDynamicContext(): Promise<string> {
     '',
   ];
 
-  // Agent Catalog
-  lines.push('## Available Agents');
-  lines.push('');
-  lines.push('| Agent | Model | Description |');
-  lines.push('|-------|-------|-------------|');
-
-  const agents = Object.values(AGENT_CATALOG).sort((a, b) => a.name.localeCompare(b.name));
-  for (const agent of agents) {
-    lines.push(`| ${agent.name} | ${agent.model} | ${agent.description} |`);
-  }
-  lines.push('');
+  // Model Routing (agent catalog removed)
 
   // Model Routing
   lines.push('### Smart Model Routing');

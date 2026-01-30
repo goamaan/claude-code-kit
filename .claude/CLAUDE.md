@@ -1,12 +1,12 @@
 # claudeops
 
-CLI toolkit that enhances Claude Code with profiles, skills, hooks, agents, and sync.
+CLI toolkit that enhances Claude Code with profiles, skills, hooks, and sync.
 
 ## Build & Test
 
 ```bash
 bun run build          # Build with tsdown (outputs to dist/)
-bun run test           # Run vitest (694 tests)
+bun run test           # Run vitest (400 tests)
 bun run typecheck      # TypeScript type checking
 bun run lint           # ESLint
 bun run verify         # All three: typecheck + lint + test
@@ -19,21 +19,15 @@ Use `bun run test` (vitest), NOT `bun test` (bun's native runner has compatibili
 ```
 src/
   cli.ts                    # Entry point (citty CLI framework)
-  commands/                 # CLI command handlers
+  commands/                 # CLI command handlers (6 commands)
   core/
     config/                 # TOML config loader + parser + merger
     sync/                   # Sync engine (generates CLAUDE.md + settings.json)
-    scanner/                # Codebase scanner + detectors
-    classifier/             # Intent classification + routing
-    router/                 # Agent catalog + model selection
-    doctor/                 # Diagnostics
+    scanner/                # Codebase scanner + detectors + generator
   domain/
     profile/                # Profile manager + storage (flat .toml files)
     skill/                  # Skill manager (markdown + YAML frontmatter)
     hook/                   # Hook manager (JSDoc metadata + sync to settings.json)
-    addon/                  # Addon manager + manifest parser
-    generator/              # CLAUDE.md content generator
-    state/                  # Session state persistence
   types/                    # Zod schemas + TypeScript types
   utils/                    # Paths, constants, fs helpers
   ui/                       # Terminal output formatting

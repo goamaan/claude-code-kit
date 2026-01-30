@@ -28,92 +28,12 @@
 
 ## Overview
 
-claudeops is a configuration and orchestration layer for Claude Code that provides:
+claudeops is a configuration and sync layer for Claude Code that provides:
 
-- **Swarm Orchestration** - Multi-agent task coordination built on Claude Code's native task system
-- **Semantic Intent Classification** - AI-powered analysis of user prompts to determine intent, complexity, and domain
-- **Intelligent Routing** - Automatic agent and model selection based on task characteristics
-- **Safety Guardrails** - Protection against destructive deletions, secret exposure, and dangerous commands
 - **Profile Management** - Named configurations with inheritance for different projects/contexts
 - **Skills Library** - 25 specialized skills for different development tasks
 - **Hooks System** - 18 hooks for workflow automation and safety checks
 - **Configuration Sync** - Seamless integration with Claude Code via CLAUDE.md and settings.json
-
----
-
-## Swarm Orchestration
-
-claudeops v3.2.0 introduces swarm orchestration that builds on top of Claude Code's **native task system** rather than replacing it.
-
-### Claude Code Task System
-
-Claude Code (2.1.16+) provides native task tools:
-
-| Tool | Purpose |
-|------|---------|
-| `TaskCreate` | Create a new task |
-| `TaskGet` | Retrieve task details |
-| `TaskList` | List all tasks |
-| `TaskUpdate` | Update task status/dependencies |
-
-**Native Task Schema:**
-```typescript
-interface Task {
-  id: string;              // Numeric string ("1", "2", "3")
-  subject: string;         // Short description
-  description: string;     // Detailed description
-  status: 'open' | 'resolved';  // Native status values
-  owner?: string;          // Assignee
-  blocks: string[];        // Tasks this blocks
-  blockedBy: string[];     // Dependencies
-  comments: TaskComment[]; // Discussion
-  references: string[];    // Related files/URLs
-}
-```
-
-**Storage:** `~/.claude/tasks/<team_name>/`
-
-### How claudeops Integrates
-
-claudeops **enhances** the native task system without replacing it:
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                     Claude Code Native                          │
-├─────────────────────────────────────────────────────────────────┤
-│  TaskCreate ──▶ ~/.claude/tasks/<team>/<id>.json                │
-│  TaskUpdate ──▶ status: 'open' | 'resolved'                     │
-│  TaskList   ──▶ blocks/blockedBy for dependencies               │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                     claudeops Layer                             │
-├─────────────────────────────────────────────────────────────────┤
-│  Swarm Planner  ──▶ Task breakdown + dependency graph           │
-│  Worker Spawner ──▶ Model selection + prompt generation         │
-│  Swarm Metadata ──▶ ~/.claudeops/swarms/<name>/                 │
-│  Cost Tracking  ──▶ Per-task cost aggregation                   │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Key Design Principles
-
-1. **Use native tools**: Let Claude Code's TaskCreate/TaskUpdate handle task CRUD
-2. **Store metadata separately**: Swarm costs, history, and config go to `~/.claudeops/swarms/`
-3. **Respect native schema**: Use `open/resolved` status, not custom values
-4. **Leverage blockedBy**: Dependencies are enforced by Claude Code's task system
-5. **CLAUDE_CODE_TASK_LIST_ID**: Use this to persist tasks across sessions
-
-### Swarm Module (`src/core/swarm/`)
-
-| File | Purpose |
-|------|---------|
-| `planner.ts` | Classification → task breakdown with dependencies |
-| `dependency-graph.ts` | Topological sort, parallel groups, cycle detection |
-| `spawner.ts` | Worker prompt generation, model routing |
-| `persistence.ts` | Swarm metadata (not task storage) |
-| `index.ts` | Public exports |
 
 ---
 
@@ -124,24 +44,15 @@ claudeops/
 ├── src/                          # TypeScript source
 │   ├── cli.ts                    # CLI entry point (citty-based)
 │   ├── index.ts                  # Library entry point
-│   ├── commands/                 # CLI subcommands (16 commands)
+│   ├── commands/                 # CLI subcommands (6 commands)
 │   ├── core/                     # Core business logic
-│   │   ├── classifier/           # Intent classification
 │   │   ├── config/               # Config loading/merging
 │   │   ├── doctor/               # Diagnostics
-│   │   ├── guardrails/           # Safety checks
-│   │   ├── router/               # Agent/model routing
-│   │   ├── swarm/                # Swarm orchestration (v3.2.0)
 │   │   └── sync/                 # Claude Code sync
 │   ├── domain/                   # Domain modules
-│   │   ├── addon/                # Addon management
-│   │   ├── cost/                 # Cost tracking
-│   │   ├── generator/            # AI-powered generation
 │   │   ├── hook/                 # Hook management
-│   │   ├── mcp/                  # MCP server management
 │   │   ├── profile/              # Profile management
-│   │   ├── skill/                # Skill management
-│   │   └── state/                # Session state
+│   │   └── skill/                # Skill management
 │   ├── types/                    # Zod schemas & TypeScript types
 │   ├── ui/                       # Terminal UI (output, prompts)
 │   └── utils/                    # Shared utilities
@@ -166,9 +77,7 @@ The CLI uses the `citty` framework and exposes three binary names: `claudeops`, 
 const main = defineCommand({
   meta: { name: "claudeops", version: VERSION },
   subCommands: {
-    profile, addon, skill, classify, config, mcp, cost,
-    swarm, hook, sync, reset, doctor, install, init,
-    scan, upgrade
+    init, sync, doctor, reset, upgrade, profile
   },
 });
 ```
@@ -181,11 +90,6 @@ Exports public APIs for programmatic use:
 export const VERSION = "3.2.0";
 export const NAME = "claudeops";
 
-// Core APIs
-export { createClassifier, type IntentClassifier } from './core/classifier';
-export { routeIntent, type RoutingDecision } from './core/router';
-export { checkDeletionCommand, scanForSecrets } from './core/guardrails';
-
 // Domain APIs
 export { createSkillManager } from './domain/skill';
 export { createHookManager } from './domain/hook';
@@ -195,87 +99,6 @@ export { createProfileManager } from './domain/profile';
 ---
 
 ## Core Modules
-
-### Classifier (`src/core/classifier/`)
-
-Semantic analysis of user requests to determine intent, complexity, and domain.
-
-**Files:**
-- `types.ts` - Classification types (IntentType, Complexity, Domain, UserSignals)
-- `classifier.ts` - AIClassifier + FallbackClassifier implementations
-- `prompts.ts` - AI classification prompts
-
-**Classification Categories:**
-
-| Category | Values |
-|----------|--------|
-| Intent | research, implementation, debugging, review, planning, refactoring, maintenance, conversation |
-| Complexity | trivial, simple, moderate, complex, architectural |
-| Domain | frontend, backend, database, devops, security, testing, documentation, general |
-| Signals | wantsPersistence, wantsSpeed, wantsAutonomy, wantsPlanning, wantsVerification, wantsThorough |
-
-**Usage:**
-```typescript
-const classifier = createClassifier();
-const result = await classifier.classify("implement user authentication");
-// { type: 'implementation', complexity: 'moderate', domains: ['backend', 'security'], ... }
-```
-
-### Router (`src/core/router/`)
-
-Maps classifications to agent selections, model tiers, and execution strategies.
-
-**Files:**
-- `agent-catalog.ts` - Registry of all agents with capabilities
-- `agent-router.ts` - Intent-to-agent mapping
-- `model-router.ts` - Complexity-to-model mapping
-- `parallelism.ts` - Execution strategy selection
-- `router.ts` - Main routing orchestration
-
-**Agent Catalog:**
-
-| Agent | Model | Purpose |
-|-------|-------|---------|
-| explore | haiku | Fast codebase search |
-| executor | opus | Standard implementations |
-| executor-low | haiku | Simple boilerplate |
-| architect | opus | Deep analysis, debugging |
-| designer | opus | UI/UX, components |
-| qa-tester | opus | Testing, TDD |
-| security | opus | Security audits |
-| researcher | opus | External research |
-| writer | haiku | Documentation |
-| planner | opus | Strategic planning |
-| critic | opus | Plan review |
-
-**Model Selection:**
-- `trivial` → haiku
-- `simple` → sonnet
-- `moderate/complex/architectural` → opus
-- Signals can upgrade/downgrade (wantsSpeed → downgrade, wantsThorough → upgrade)
-
-### Guardrails (`src/core/guardrails/`)
-
-Safety layer preventing destructive operations.
-
-**Files:**
-- `deletion.ts` - Destructive deletion protection
-- `secrets.ts` - Secret/credential detection
-- `dangerous.ts` - Dangerous command detection
-
-**Deletion Protection:**
-- Blocks `rm -rf *`, `rm -rf /`, recursive deletions on critical paths
-- Detects bypass attempts (`sudo rm`, `\rm`, `/bin/rm`)
-- Allows safe alternatives (`trash`, `gio trash`)
-
-**Secret Detection:**
-- AWS keys, GitHub tokens, Stripe keys, private keys, JWTs
-- Filters false positives (env vars, placeholders, templates)
-
-**Dangerous Commands:**
-- Git: `push --force`, `reset --hard`, force push to main
-- Database: `DROP TABLE`, `TRUNCATE`, `DELETE` without WHERE
-- System: `mkfs`, `fdisk`, `killall -9`
 
 ### Config (`src/core/config/`)
 
@@ -308,22 +131,9 @@ Synchronizes configuration to Claude Code. The sync engine reads the merged prof
 **TOML Parsing:** When parsing TOML files with multiline strings (triple-quoted `"""`), the `@ltd/j-toml` parser requires the `joiner` option set to `'\n'` to preserve line breaks correctly.
 
 **What Gets Synced:**
-- `~/.claude/settings.json` - Hooks, MCP servers, permissions
+- `~/.claude/settings.json` - Hooks and permissions
 - `~/.claude/CLAUDE.md` - Instructions with managed sections
 - `~/.claude/skills/` - Skill definitions
-
-### Doctor (`src/core/doctor/`)
-
-System diagnostics and auto-repair.
-
-**Diagnostic Checks:**
-| Check | Category | Auto-Fix |
-|-------|----------|----------|
-| claudeops-dir | installation | Yes |
-| config-valid | configuration | No |
-| active-profile | profiles | Yes |
-| bun-version | dependencies | No |
-| claude-dir-sync | sync | Yes |
 
 ---
 
@@ -346,28 +156,6 @@ interface ProfileManager {
 ```
 
 **Inheritance:** Profiles can extend other profiles via `extends` field. Resolution is recursive with circular detection.
-
-### Addon (`src/domain/addon/`)
-
-Addon installation and management.
-
-**Install Sources:**
-- Local path: `./my-addon`
-- GitHub: `owner/repo@ref`
-- Registry: `addon-name`
-
-**Manifest Format (`addon.toml`):**
-```toml
-[addon]
-name = "my-addon"
-version = "1.0.0"
-
-[requires]
-claudeops = "^3.0.0"
-
-[hooks]
-PreToolUse = [{ matcher = "Bash", handler = "./guard.ts" }]
-```
 
 ### Hook (`src/domain/hook/`)
 
@@ -409,42 +197,18 @@ model: opus
 Instructions for Claude...
 ```
 
-### MCP (`src/domain/mcp/`)
-
-MCP server management and context budget estimation.
-
-### Cost (`src/domain/cost/`)
-
-Cost tracking with budget management.
-
-**Storage:** `~/.claudeops/cache/costs/YYYY-MM.jsonl`
-
-### State (`src/domain/state/`)
-
-Session state for classification tracking.
-
 ---
 
 ## CLI Commands
 
 | Command | Purpose |
 |---------|---------|
-| `cops init` | Zero-config project setup (v3.2.0) |
-| `cops install` | Interactive installation wizard |
-| `cops swarm` | Swarm orchestration (status, tasks, init, stop, history) |
+| `cops init` | Zero-config project setup |
 | `cops sync` | Sync config to Claude Code |
-| `cops config` | Configuration management (init, edit, show, validate, pm) |
 | `cops profile` | Profile operations (list, use, create, delete) |
-| `cops skill` | Skill management (list, install, add, enable, disable) |
-| `cops hook` | Hook management (list, debug, test, add, sync) |
-| `cops addon` | Addon operations (install, update, remove) |
-| `cops scan` | Codebase scanning and detection |
-| `cops mcp` | MCP server management |
-| `cops cost` | Cost tracking and budgets |
 | `cops doctor` | Diagnostic checks |
 | `cops reset` | Remove claudeops-generated artifacts |
 | `cops upgrade` | Self-update |
-| `cops classify` | Test intent classification |
 
 ---
 
@@ -551,9 +315,8 @@ The generated CLAUDE.md includes:
 2. **Profile Information** - Active profile and configuration
 3. **Model Configuration** - Default model and routing
 4. **Package Manager** - Configured package manager commands
-5. **Agent Catalog** - Available agents with descriptions
-6. **Skills** - Enabled/disabled skills
-7. **Hooks** - Active hooks
+5. **Skills** - Enabled/disabled skills
+6. **Hooks** - Active hooks
 
 ---
 
@@ -626,16 +389,8 @@ The generated CLAUDE.md includes:
 ├── profiles/             # Profile configurations
 │   └── <name>/
 │       └── config.toml
-├── addons/               # Installed addons
 ├── skills/               # User skills
 ├── hooks/                # User hooks
-├── cache/
-│   ├── costs/            # Cost tracking data
-│   └── mcp-servers.json  # MCP state
-├── swarms/               # Swarm metadata (v3.2.0)
-│   ├── history.json      # Past executions
-│   └── <name>/           # Active swarm state
-│       └── state.json    # Current swarm state
 └── backups/              # Sync backups
 ```
 
@@ -644,8 +399,7 @@ The generated CLAUDE.md includes:
 ```
 .claudeops/
 ├── config.toml           # Project configuration
-├── local.toml            # Personal overrides (gitignored)
-└── state/                # Runtime state
+└── local.toml            # Personal overrides (gitignored)
 ```
 
 ### Claude Code (`~/.claude/`)
@@ -794,12 +548,6 @@ const skillManager = createSkillManager({ skillsDir });
 
 // Hooks
 const hookManager = createHookManager({ hooksDir });
-
-// Classifier
-const classifier = createClassifier({ model: 'haiku' });
-
-// Cost
-const costTracker = createCostTracker();
 ```
 
 This pattern enables:

@@ -11,50 +11,20 @@ const main = defineCommand({
     description: "Batteries-included Claude Code enhancement toolkit",
   },
   subCommands: {
+    // Initialization
+    init: () => import("./commands/init.js").then((m) => m.default),
+
     // Profile management
     profile: () => import("./commands/profile.js").then((m) => m.default),
-
-    // Add-on management
-    addon: () => import("./commands/addon.js").then((m) => m.default),
-
-    // Skill management
-    skill: () => import("./commands/skill.js").then((m) => m.default),
-
-    // Intent classification
-    classify: () => import("./commands/classify.js").then((m) => m.default),
-
-    // Configuration management
-    config: () => import("./commands/config.js").then((m) => m.default),
-
-    // MCP server management
-    mcp: () => import("./commands/mcp.js").then((m) => m.default),
-
-    // Cost tracking
-    cost: () => import("./commands/cost.js").then((m) => m.default),
-
-    // Swarm orchestration
-    swarm: () => import("./commands/swarm.js").then((m) => m.default),
-
-    // Hook management
-    hook: () => import("./commands/hook.js").then((m) => m.default),
 
     // Sync configuration to Claude Code
     sync: () => import("./commands/sync.js").then((m) => m.default),
 
-    // Reset claudeops artifacts
-    reset: () => import("./commands/reset.js").then((m) => m.default),
-
     // Diagnostic tool
     doctor: () => import("./commands/doctor.js").then((m) => m.default),
 
-    // Installation wizard
-    install: () => import("./commands/install.js").then((m) => m.default),
-
-    // Zero-config swarm setup
-    init: () => import("./commands/init.js").then((m) => m.default),
-
-    // Codebase scanner
-    scan: () => import("./commands/scan.js").then((m) => m.default),
+    // Reset claudeops artifacts
+    reset: () => import("./commands/reset.js").then((m) => m.default),
 
     // Upgrade claudeops
     upgrade: () => import("./commands/upgrade.js").then((m) => m.default),
@@ -83,48 +53,28 @@ const main = defineCommand({
 
     // Getting Started
     console.log(pc.bold("\nGetting Started:"));
-    console.log(`  ${pc.cyan("init")}           ${pc.dim("Zero-config swarm setup (recommended)")}`);
-    console.log(`  ${pc.cyan("scan")}           ${pc.dim("Analyze codebase and generate .claude/ artifacts")}`);
-    console.log(`  ${pc.cyan("install")}        ${pc.dim("Interactive installation wizard")}`);
-    console.log(`  ${pc.cyan("config init")}    ${pc.dim("Initialize configuration")}`);
+    console.log(`  ${pc.cyan("init")}           ${pc.dim("Initialize claudeops + project .claude/ artifacts")}`);
     console.log(`  ${pc.cyan("doctor")}         ${pc.dim("Diagnose and fix issues")}`);
-    console.log(`  ${pc.cyan("sync")}           ${pc.dim("Sync to Claude Code")}`);
+    console.log(`  ${pc.cyan("sync")}           ${pc.dim("Sync configuration to Claude Code")}`);
 
     // Core Commands
     console.log(pc.bold("\nCore Commands:"));
     console.log(`  ${pc.cyan("profile")}        ${pc.dim("Manage profiles (list, use, create, delete)")}`);
-    console.log(`  ${pc.cyan("config")}         ${pc.dim("Manage configuration (init, edit, show, validate)")}`);
     console.log(`  ${pc.cyan("sync")}           ${pc.dim("Sync configuration to Claude Code")}`);
-
-    // Extensions
-    console.log(pc.bold("\nExtensions:"));
-    console.log(`  ${pc.cyan("addon")}          ${pc.dim("Manage addons (search, install, update, remove)")}`);
-    console.log(`  ${pc.cyan("skill")}          ${pc.dim("Manage skills (list, info, install, sync)")}`);
-    console.log(`  ${pc.cyan("mcp")}            ${pc.dim("Manage MCP servers (list, add, enable, disable)")}`);
-    console.log(`  ${pc.cyan("hook")}           ${pc.dim("Manage hooks (list, debug, test)")}`);
-
-    // AI Features
-    console.log(pc.bold("\nAI Features:"));
-    console.log(`  ${pc.cyan("classify")}       ${pc.dim("Test intent classification and routing")}`);
 
     // Utilities
     console.log(pc.bold("\nUtilities:"));
-    console.log(`  ${pc.cyan("cost")}           ${pc.dim("Cost tracking (today, week, budget, pricing)")}`);
-    console.log(`  ${pc.cyan("swarm")}          ${pc.dim("Swarm orchestration (status, tasks, init, stop)")}`);
     console.log(`  ${pc.cyan("doctor")}         ${pc.dim("Diagnose configuration issues")}`);
     console.log(`  ${pc.cyan("reset")}          ${pc.dim("Remove claudeops-generated artifacts")}`);
     console.log(`  ${pc.cyan("upgrade")}        ${pc.dim("Check for and install updates")}`);
 
     // Examples
     console.log(pc.bold("\nExamples:"));
-    console.log(pc.dim("  # Create initial configuration"));
-    console.log(`  ${pc.cyan("cops config init")}`);
+    console.log(pc.dim("  # Initialize claudeops"));
+    console.log(`  ${pc.cyan("cops init")}`);
     console.log("");
     console.log(pc.dim("  # Create a work profile"));
     console.log(`  ${pc.cyan("cops profile create work")}`);
-    console.log("");
-    console.log(pc.dim("  # Search for React addons"));
-    console.log(`  ${pc.cyan("cops addon search react")}`);
     console.log("");
     console.log(pc.dim("  # Check for updates"));
     console.log(`  ${pc.cyan("cops upgrade --check")}`);

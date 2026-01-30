@@ -3,7 +3,15 @@
  * Type definitions for the claudeops skill system
  */
 
-import type { Domain } from '../../core/classifier/types.js';
+export type Domain =
+  | 'frontend'
+  | 'backend'
+  | 'database'
+  | 'devops'
+  | 'security'
+  | 'testing'
+  | 'documentation'
+  | 'general';
 
 // =============================================================================
 // Skill Definition

@@ -9,7 +9,6 @@ import * as output from '../ui/output.js';
 import * as prompts from '../ui/prompts.js';
 import { loadConfig } from '../core/config/loader.js';
 import { createProfileManager } from '../domain/profile/manager.js';
-import { listInstalledAddons } from '../domain/addon/manager.js';
 import { getClaudeDir, getGlobalConfigDir } from '../utils/paths.js';
 import { exists, ensureDir, writeFile } from '../utils/fs.js';
 import { join } from 'node:path';
@@ -200,38 +199,6 @@ const checks: Record<string, DiagnosticCheck> = {
       suggestions: passed ? undefined : [
         `Check permissions: ls -la ${configDir}`,
         `Fix permissions: chmod 755 ${configDir}`,
-      ],
-      fixAvailable: false,
-      duration: Date.now() - start,
-    };
-  },
-
-  // Addons checks
-  'addons:manifests-valid': async () => {
-    const start = Date.now();
-    const addons = await listInstalledAddons();
-    const invalidAddons: string[] = [];
-
-    for (const addon of addons) {
-      if (!addon.manifest.name || !addon.manifest.version) {
-        invalidAddons.push(addon.manifest.name ?? addon.path);
-      }
-    }
-
-    const passed = invalidAddons.length === 0;
-
-    return {
-      id: 'addons:manifests-valid',
-      name: 'Addon manifests',
-      category: 'addons',
-      severity: passed ? 'info' : 'warning',
-      passed,
-      description: 'Validate installed addon manifests',
-      message: passed
-        ? `${addons.length} addon(s) validated`
-        : `${invalidAddons.length} addon(s) have invalid manifests`,
-      suggestions: passed ? undefined : [
-        ...invalidAddons.map(a => `Check manifest for: ${a}`),
       ],
       fixAvailable: false,
       duration: Date.now() - start,

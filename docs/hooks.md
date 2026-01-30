@@ -592,112 +592,30 @@ Optional timeout in milliseconds (if hook takes longer, treated as error):
 
 ## Managing Hooks
 
-### List Active Hooks
+Hooks are managed through your profile TOML configuration and are synced to Claude Code via the `cops sync` command.
 
-Show all hooks from addons and settings, grouped by event type:
+### Configuration
 
-```bash
-claudeops hooklist
-```
+Add hooks to your profile TOML or to `~/.claude/settings.json`. Hooks can come from:
 
-Output:
-```
-Active Hooks
+1. **Built-in hooks** in Claude Code core
+2. **Addon manifests** (addon.toml files)
+3. **User settings** (~/.claude/settings.json)
+4. **Profile configuration** (profile TOML files)
 
-PreToolUse
+### Syncing Hooks
 
-  Source              Matcher   Handler                  Priority
-  addon:rm-rf-guard   Bash      ./hook.ts                10
-  addon:safety-net    Bash      ./hook.ts                10
-  addon:claude-ignore Read      ./hook.ts                5
-
-PostToolUse
-
-  Source              Matcher   Handler                  Priority
-  settings.json       *         ~/.claude/hooks/log.ts   0
-
-Stop
-
-  Source              Matcher   Handler                  Priority
-  settings.json       *         ~/.claude/hooks/clean.ts 0
-```
-
-Filter by event:
+After modifying hook configuration, sync them to Claude Code:
 
 ```bash
-claudeops hooklist --event PreToolUse
+cops sync
 ```
 
-JSON output:
-
-```bash
-claudeops hooklist --json
-```
-
-### Debug Hook Execution
-
-See which hooks will run for a specific tool:
-
-```bash
-claudeops hookdebug Bash
-```
-
-Output:
-```
-Hook Debug: Bash (PreToolUse)
-
-Total hooks for event: 3
-Matching hooks: 3
-
-Execution Order
-
-  1. rm-rf-guard
-    Handler: ./hook.ts
-    Match: Exact match
-    Priority: 10
-
-  2. safety-net
-    Handler: ./hook.ts
-    Match: Exact match
-    Priority: 10
-
-  3. claude-ignore
-    Handler: ./hook.ts
-    Match: Glob pattern: Read*
-    Priority: 5
-```
-
-Debug specific event:
-
-```bash
-claudeops hookdebug Read --event PostToolUse
-```
-
-### Test Hook Handlers
-
-Run a hook handler manually with sample input:
-
-```bash
-claudeops hooktest ./hooks/my-guard.ts
-```
-
-With custom tool name:
-
-```bash
-claudeops hooktest ./hooks/my-guard.ts --tool Write
-```
-
-With custom input JSON:
-
-```bash
-claudeops hooktest ./hooks/my-guard.ts --tool Bash \
-  --input '{"command":"echo test"}'
-```
-
-Output shows:
-- Exit code and interpretation
-- stdout and stderr
-- Execution duration
+This command:
+- Reads hook definitions from all sources
+- Merges and validates them
+- Writes hooks to ~/.claude/settings.json
+- Generates/updates ~/.claude/CLAUDE.md
 
 ## Built-in Hooks (18)
 
@@ -759,25 +677,6 @@ Hooks use JSDoc tags at the top of each `.mjs` file to declare their metadata:
 | `@Timeout` | Maximum execution time in milliseconds (default 10000) |
 | `@Async` | Whether the hook runs asynchronously without blocking (`true` or `false`) |
 
-### AI-Generated Hooks
-
-Use the `cops hook add` command to generate a new hook with AI assistance:
-
-```bash
-cops hook add "block npm publish commands"
-```
-
-This will:
-1. Analyze your description to determine the appropriate event type and matcher
-2. Generate the hook implementation
-3. Add the proper JSDoc metadata tags
-4. Save the hook to your hooks directory
-
-You can also specify the event type explicitly:
-
-```bash
-cops hook add "log all file writes" --event PostToolUse
-```
 
 ## Hook Chain Execution
 
@@ -885,14 +784,7 @@ User settings.json       (overrides everything)
 
 ### Custom Hook Addon
 
-Create an addon with hooks:
-
-```bash
-claudeops addoncreate my-hooks
-cd my-hooks
-```
-
-Structure:
+Create a custom addon directory with hooks. Structure:
 ```
 my-hooks/
 ├── addon.toml
@@ -1133,42 +1025,28 @@ echo $?  # Should be 0
 }
 ```
 
-### Commands
+### Syncing Hooks
+
+To apply hook configuration changes:
 
 ```bash
-# List all active hooks
-claudeops hooklist
-
-# Filter by event type
-claudeops hooklist --event PreToolUse
-
-# Debug which hooks run for a tool
-claudeops hookdebug Bash
-claudeops hookdebug Read --event PostToolUse
-
-# Test a hook handler
-claudeops hooktest ./hooks/my-hook.ts
-claudeops hooktest ./hooks/my-hook.ts --tool Write
-claudeops hooktest ./hooks/my-hook.ts --tool Bash --input '{"command":"ls"}'
-
-# JSON output for parsing
-claudeops hooklist --json
-claudeops hookdebug Bash --json
+# Sync hooks from all sources to Claude Code
+cops sync
 ```
 
 ### Built-in Addons with Hooks
 
-Claude Code includes several security-focused addons:
+Claude Code includes several security-focused addons with hooks:
 
 - **rm-rf-guard**: Blocks dangerous `rm` commands
 - **safety-net**: Blocks dangerous `git` operations
 - **claude-ignore**: Respects `.claudeignore` files
 
-Enable them with:
+These are enabled by default in most profiles. To verify which addon hooks are active:
+
 ```bash
-claudeops addonenable rm-rf-guard
-claudeops addonenable safety-net
-claudeops addonenable claude-ignore
+# Sync to apply all configured hooks
+cops sync
 ```
 
 ## Summary

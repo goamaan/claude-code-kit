@@ -1,18 +1,24 @@
 /**
- * Init command - Zero-config swarm setup
- * cops init [--minimal] [--swarm-name <name>] [--force]
+ * Init command - Global + project initialization
+ * cops init [--global] [--project] [--minimal] [--force] [--swarm-name <name>] [--path <dir>]
  */
 
 import { defineCommand } from 'citty';
 import { execSync } from 'node:child_process';
-import { join } from 'node:path';
-import pc from 'picocolors';
+import { join, resolve } from 'node:path';
 import * as output from '../ui/output.js';
 import * as prompts from '../ui/prompts.js';
 import { getGlobalConfigDir, getClaudeDir } from '../utils/paths.js';
-import { exists, ensureDir, writeFile, readJsonSafe, writeJson } from '../utils/fs.js';
+import { exists, ensureDir, writeFile, readFile, readJsonSafe, writeJson } from '../utils/fs.js';
 import { stringify } from '../core/config/parser.js';
 import { createSkillManager } from '../domain/skill/index.js';
+import { scan } from '../core/scanner/index.js';
+import {
+  generateProjectClaudeMd,
+  generateProjectSettings,
+  spliceManagedSection,
+  MANAGED_START,
+} from '../core/scanner/generator.js';
 
 // =============================================================================
 // Constants
@@ -116,6 +122,10 @@ async function syncOrchestrateSkill(): Promise<{ synced: boolean; error?: string
 
 interface ClaudeSettings {
   env?: Record<string, string>;
+  permissions?: {
+    allow?: string[];
+    [key: string]: unknown;
+  };
   [key: string]: unknown;
 }
 
@@ -195,6 +205,103 @@ async function createDefaultConfig(): Promise<{ created: boolean; existed: boole
   }
 }
 
+/**
+ * Run project initialization: scan + generate .claude/ artifacts
+ */
+async function initProject(
+  targetPath: string,
+  opts: { force: boolean; spinner: ReturnType<typeof prompts.spinner> },
+): Promise<{ claudeMd: boolean; settings: boolean }> {
+  const { force, spinner: s } = opts;
+  const projectClaudeDir = join(targetPath, '.claude');
+  const claudeMdPath = join(projectClaudeDir, 'CLAUDE.md');
+  const settingsPath = join(projectClaudeDir, 'settings.json');
+  const result = { claudeMd: false, settings: false };
+
+  // Scan the project
+  s.start('Scanning codebase...');
+  const scanResult = await scan({ path: targetPath });
+  s.stop('Scan complete');
+
+  // Generate CLAUDE.md
+  s.start('Generating .claude/CLAUDE.md...');
+  const generatedMd = generateProjectClaudeMd(scanResult);
+
+  await ensureDir(projectClaudeDir);
+
+  if (await exists(claudeMdPath)) {
+    const existing = await readFile(claudeMdPath);
+    if (existing.includes(MANAGED_START)) {
+      // Has managed markers — splice in the new content
+      const spliced = spliceManagedSection(existing, generatedMd);
+      if (spliced) {
+        await writeFile(claudeMdPath, spliced);
+        s.stop('.claude/CLAUDE.md updated (managed section replaced)');
+        result.claudeMd = true;
+      } else {
+        s.stop('.claude/CLAUDE.md unchanged (splice failed)');
+      }
+    } else if (force) {
+      // No markers but --force: prepend generated content, keep existing
+      await writeFile(claudeMdPath, generatedMd + '\n' + existing);
+      s.stop('.claude/CLAUDE.md updated (prepended managed section)');
+      result.claudeMd = true;
+    } else {
+      s.stop('.claude/CLAUDE.md exists (no managed markers, use --force to prepend)');
+    }
+  } else {
+    await writeFile(claudeMdPath, generatedMd);
+    s.stop('.claude/CLAUDE.md created');
+    result.claudeMd = true;
+  }
+
+  // Generate settings.json
+  s.start('Generating .claude/settings.json...');
+  const generatedSettings = generateProjectSettings(scanResult);
+
+  if (generatedSettings) {
+    if (await exists(settingsPath)) {
+      // Merge into existing settings
+      const existing = await readJsonSafe<ClaudeSettings>(settingsPath);
+      if (existing) {
+        const merged = mergeSettings(existing, generatedSettings as ClaudeSettings);
+        await writeJson(settingsPath, merged);
+        s.stop('.claude/settings.json updated (permissions merged)');
+      } else {
+        await writeJson(settingsPath, generatedSettings);
+        s.stop('.claude/settings.json created');
+      }
+    } else {
+      await writeJson(settingsPath, generatedSettings);
+      s.stop('.claude/settings.json created');
+    }
+    result.settings = true;
+  } else {
+    s.stop('.claude/settings.json skipped (no permissions to add)');
+  }
+
+  return result;
+}
+
+/**
+ * Merge generated settings into existing settings without clobbering
+ */
+function mergeSettings(existing: ClaudeSettings, generated: ClaudeSettings): ClaudeSettings {
+  const merged = { ...existing };
+
+  // Merge permission allowlists
+  if (generated.permissions?.allow) {
+    merged.permissions = merged.permissions || {};
+    const existingAllow = merged.permissions.allow || [];
+    const newAllow = generated.permissions.allow.filter(
+      (p: string) => !existingAllow.includes(p),
+    );
+    merged.permissions.allow = [...existingAllow, ...newAllow];
+  }
+
+  return merged;
+}
+
 // =============================================================================
 // Main Command
 // =============================================================================
@@ -202,9 +309,21 @@ async function createDefaultConfig(): Promise<{ created: boolean; existed: boole
 export default defineCommand({
   meta: {
     name: 'init',
-    description: 'Initialize claudeops global setup',
+    description: 'Initialize claudeops + project .claude/ artifacts',
   },
   args: {
+    global: {
+      type: 'boolean',
+      alias: 'g',
+      description: 'Global setup only (skip project initialization)',
+      default: false,
+    },
+    project: {
+      type: 'boolean',
+      alias: 'p',
+      description: 'Project setup only (skip global initialization)',
+      default: false,
+    },
     minimal: {
       type: 'boolean',
       alias: 'm',
@@ -222,205 +341,222 @@ export default defineCommand({
       description: 'Overwrite existing configuration',
       default: false,
     },
+    path: {
+      type: 'string',
+      description: 'Target project directory (defaults to current directory)',
+    },
   },
   async run({ args }) {
+    const doGlobal = args.global || !args.project;
+    const doProject = args.project || !args.global;
+    const targetPath = resolve(args.path ?? process.cwd());
+
     prompts.intro('claudeops Init');
 
     const configDir = getGlobalConfigDir();
     const claudeDir = getClaudeDir();
-
-    // Check for existing installation
-    if (await exists(join(configDir, 'config.toml'))) {
-      if (!args.force) {
-        if (args.minimal) {
-          output.warn('Configuration already exists. Use --force to overwrite.');
-          prompts.outro('Init cancelled');
-          return;
-        }
-
-        const proceed = await prompts.confirm({
-          message: 'Configuration already exists. Overwrite?',
-          initialValue: false,
-        });
-        prompts.handleCancel(proceed);
-        if (!proceed) {
-          prompts.outro('Init cancelled');
-          return;
-        }
-      }
-    }
-
     const s = prompts.spinner();
 
-    // ==========================================================================
-    // Step 1: Detect Claude Code
-    // ==========================================================================
-    s.start('Detecting Claude Code installation...');
-
-    const claudeInfo = await detectClaudeCode();
-
-    if (!claudeInfo.installed) {
-      s.stop('Claude Code not detected');
-      output.warn('~/.claude directory not found');
-      output.info('Claude Code should be run at least once before using claudeops');
-
-      if (!args.minimal) {
-        const proceed = await prompts.confirm({
-          message: 'Continue anyway?',
-          initialValue: false,
-        });
-        prompts.handleCancel(proceed);
-        if (!proceed) {
-          prompts.outro('Init cancelled');
-          return;
-        }
-      } else {
-        output.info('Continuing with setup (Claude Code can be installed later)');
-      }
-    } else {
-      if (claudeInfo.version) {
-        if (claudeInfo.versionWarning) {
-          s.stop(`Claude Code ${claudeInfo.version} detected`);
-          output.warn(`Version ${claudeInfo.version} is below recommended ${MIN_CLAUDE_VERSION}`);
-          output.info('Some features may not work correctly. Consider upgrading Claude Code.');
-        } else {
-          s.stop(`Claude Code ${claudeInfo.version} detected`);
-        }
-      } else {
-        s.stop('Claude Code detected (version unknown)');
-      }
-    }
-
-    // ==========================================================================
-    // Step 2: Interactive swarm name (if not provided and not minimal)
-    // ==========================================================================
-    let swarmName = args.swarmName;
-
-    if (!args.minimal && !swarmName) {
-      const enablePersistence = await prompts.confirm({
-        message: 'Enable task persistence for swarm coordination?',
-        initialValue: true,
-      });
-      prompts.handleCancel(enablePersistence);
-
-      if (enablePersistence) {
-        const name = await prompts.text({
-          message: 'Swarm name (used for task persistence):',
-          placeholder: 'my-project',
-          validate: (val) => {
-            if (!val) return 'Swarm name is required';
-            if (!/^[a-z][a-z0-9-]*$/.test(val)) {
-              return 'Swarm name must be lowercase, start with a letter, and contain only letters, numbers, and hyphens';
+    // ========================================================================
+    // Global Setup
+    // ========================================================================
+    if (doGlobal) {
+      // Check for existing installation
+      if (await exists(join(configDir, 'config.toml'))) {
+        if (!args.force) {
+          if (args.minimal) {
+            output.info('Global configuration already exists (kept)');
+          } else if (!args.project) {
+            // Only prompt if not --project-only mode
+            const proceed = await prompts.confirm({
+              message: 'Global configuration already exists. Overwrite?',
+              initialValue: false,
+            });
+            prompts.handleCancel(proceed);
+            if (!proceed && !doProject) {
+              prompts.outro('Init cancelled');
+              return;
             }
-            return undefined;
-          },
-        });
-        prompts.handleCancel(name);
-        swarmName = name as string;
+          }
+        }
       }
-    }
 
-    // ==========================================================================
-    // Step 3: Create default config
-    // ==========================================================================
-    s.start('Creating configuration...');
+      // Step 1: Detect Claude Code
+      s.start('Detecting Claude Code installation...');
 
-    const configResult = await createDefaultConfig();
+      const claudeInfo = await detectClaudeCode();
 
-    if (configResult.error) {
-      s.stop('Failed to create configuration');
-      output.error(configResult.error);
-      process.exit(1);
-    }
+      if (!claudeInfo.installed) {
+        s.stop('Claude Code not detected');
+        output.warn('~/.claude directory not found');
+        output.info('Claude Code should be run at least once before using claudeops');
 
-    if (configResult.existed && !args.force) {
-      s.stop('Configuration exists (kept)');
-    } else if (configResult.created) {
-      s.stop('Configuration created');
-    } else {
-      s.stop('Configuration ready');
-    }
-
-    // ==========================================================================
-    // Step 4: Sync orchestrate skill
-    // ==========================================================================
-    s.start('Syncing orchestrate skill...');
-
-    const skillResult = await syncOrchestrateSkill();
-
-    if (skillResult.error) {
-      s.stop('Failed to sync skill');
-      output.warn(skillResult.error);
-      output.info('You can manually sync skills later with: cops sync');
-    } else {
-      s.stop('Orchestrate skill synced');
-    }
-
-    // ==========================================================================
-    // Step 5: Configure persistence (if swarm name provided)
-    // ==========================================================================
-    if (swarmName) {
-      s.start('Configuring task persistence...');
-
-      const persistResult = await configurePersistence(swarmName);
-
-      if (persistResult.error) {
-        s.stop('Failed to configure persistence');
-        output.warn(persistResult.error);
+        if (!args.minimal) {
+          const proceed = await prompts.confirm({
+            message: 'Continue anyway?',
+            initialValue: false,
+          });
+          prompts.handleCancel(proceed);
+          if (!proceed) {
+            prompts.outro('Init cancelled');
+            return;
+          }
+        } else {
+          output.info('Continuing with setup (Claude Code can be installed later)');
+        }
       } else {
-        s.stop(`Persistence configured for swarm: ${swarmName}`);
+        if (claudeInfo.version) {
+          if (claudeInfo.versionWarning) {
+            s.stop(`Claude Code ${claudeInfo.version} detected`);
+            output.warn(`Version ${claudeInfo.version} is below recommended ${MIN_CLAUDE_VERSION}`);
+            output.info('Some features may not work correctly. Consider upgrading Claude Code.');
+          } else {
+            s.stop(`Claude Code ${claudeInfo.version} detected`);
+          }
+        } else {
+          s.stop('Claude Code detected (version unknown)');
+        }
       }
+
+      // Step 2: Interactive swarm name (if not provided and not minimal)
+      let swarmName = args.swarmName;
+
+      if (!args.minimal && !swarmName) {
+        const enablePersistence = await prompts.confirm({
+          message: 'Enable task persistence for swarm coordination?',
+          initialValue: true,
+        });
+        prompts.handleCancel(enablePersistence);
+
+        if (enablePersistence) {
+          const name = await prompts.text({
+            message: 'Swarm name (used for task persistence):',
+            placeholder: 'my-project',
+            validate: (val) => {
+              if (!val) return 'Swarm name is required';
+              if (!/^[a-z][a-z0-9-]*$/.test(val)) {
+                return 'Swarm name must be lowercase, start with a letter, and contain only letters, numbers, and hyphens';
+              }
+              return undefined;
+            },
+          });
+          prompts.handleCancel(name);
+          swarmName = name as string;
+        }
+      }
+
+      // Step 3: Create default config
+      s.start('Creating configuration...');
+
+      const configResult = await createDefaultConfig();
+
+      if (configResult.error) {
+        s.stop('Failed to create configuration');
+        output.error(configResult.error);
+        process.exit(1);
+      }
+
+      if (configResult.existed && !args.force) {
+        s.stop('Configuration exists (kept)');
+      } else if (configResult.created) {
+        s.stop('Configuration created');
+      } else {
+        s.stop('Configuration ready');
+      }
+
+      // Step 4: Sync orchestrate skill
+      s.start('Syncing orchestrate skill...');
+
+      const skillResult = await syncOrchestrateSkill();
+
+      if (skillResult.error) {
+        s.stop('Failed to sync skill');
+        output.warn(skillResult.error);
+        output.info('You can manually sync skills later with: cops sync');
+      } else {
+        s.stop('Orchestrate skill synced');
+      }
+
+      // Step 5: Configure persistence (if swarm name provided)
+      if (swarmName) {
+        s.start('Configuring task persistence...');
+
+        const persistResult = await configurePersistence(swarmName);
+
+        if (persistResult.error) {
+          s.stop('Failed to configure persistence');
+          output.warn(persistResult.error);
+        } else {
+          s.stop(`Persistence configured for swarm: ${swarmName}`);
+        }
+      }
+
+      // Step 6: Create additional directories
+      s.start('Setting up directories...');
+
+      await ensureDir(join(configDir, 'profiles'));
+      await ensureDir(join(configDir, 'skills'));
+      await ensureDir(join(configDir, 'hooks'));
+      await ensureDir(join(configDir, 'backups'));
+
+      s.stop('Directories ready');
     }
 
-    // ==========================================================================
-    // Step 6: Create additional directories
-    // ==========================================================================
-    s.start('Setting up directories...');
+    // ========================================================================
+    // Project Setup
+    // ========================================================================
+    let projectResult: { claudeMd: boolean; settings: boolean } | null = null;
 
-    await ensureDir(join(configDir, 'profiles'));
-    await ensureDir(join(configDir, 'skills'));
-    await ensureDir(join(configDir, 'hooks'));
-    await ensureDir(join(configDir, 'backups'));
+    if (doProject) {
+      console.log();
+      output.header('Project Setup');
+      output.kv('Path', targetPath);
+      console.log();
 
-    s.stop('Directories ready');
+      projectResult = await initProject(targetPath, { force: args.force, spinner: s });
+    }
 
-    // ==========================================================================
-    // Output Summary and Quickstart
-    // ==========================================================================
+    // ========================================================================
+    // Output Summary
+    // ========================================================================
     console.log();
     output.header('Setup Complete');
 
-    output.kv('Config', join(configDir, 'config.toml'));
-    output.kv('Claude dir', claudeDir);
-    if (swarmName) {
-      output.kv('Swarm', swarmName);
-      output.kv('Task persistence', 'enabled');
+    if (doGlobal) {
+      console.log();
+      output.dim('  Global:');
+      output.kv('Config', join(configDir, 'config.toml'), 2);
+      output.kv('Claude dir', claudeDir, 2);
     }
 
-    console.log();
-    output.header('Quickstart');
-
-    output.box([
-      `${pc.bold('1.')} Start Claude Code:`,
-      '   $ claude',
-      '',
-      `${pc.bold('2.')} Try a swarm command:`,
-      '   "ultrawork: build me a REST API with auth"',
-      '',
-      `${pc.bold('3.')} Or use specific agents:`,
-      '   "use architect to analyze my codebase"',
-    ], 'Getting Started');
+    if (projectResult) {
+      console.log();
+      output.dim('  Project:');
+      output.kv('Path', targetPath, 2);
+      output.kv(
+        '.claude/CLAUDE.md',
+        projectResult.claudeMd ? 'generated' : 'skipped',
+        2,
+      );
+      output.kv(
+        '.claude/settings.json',
+        projectResult.settings ? 'generated' : 'skipped',
+        2,
+      );
+    }
 
     console.log();
     output.header('Next Steps');
 
-    output.list([
-      'Run `cops scan` in any repo to set it up for AI development',
-      'Run `cops doctor` to verify installation',
-      'Run `cops skill list` to see available skills',
-      'Run `cops sync` to manually sync configuration',
-      swarmName ? `Tasks will persist in ~/.claudeops/swarms/${swarmName}/` : '',
-    ].filter(Boolean));
+    const steps: string[] = [];
+    steps.push('Start Claude Code: `claude`');
+    if (projectResult?.claudeMd) {
+      steps.push('Review `.claude/CLAUDE.md` and customize it');
+    }
+    steps.push('Use `/scan` in Claude Code for AI-enhanced analysis');
+    steps.push('Run `cops doctor` to verify installation');
+
+    output.list(steps);
 
     prompts.outro('Welcome to claudeops!');
   },

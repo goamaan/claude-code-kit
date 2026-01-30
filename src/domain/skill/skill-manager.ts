@@ -7,7 +7,25 @@ import { readdir, readFile, mkdir, writeFile as fsWriteFile, stat, copyFile } fr
 import { join, basename, dirname } from 'path';
 import { existsSync } from 'fs';
 import { homedir } from 'os';
-import type { IntentClassification, Domain } from '../../core/classifier/types.js';
+import type { Domain } from './types.js';
+
+interface IntentClassification {
+  type: string;
+  complexity?: string;
+  domains: Domain[];
+  signals: {
+    wantsAutonomy?: boolean;
+    [key: string]: unknown;
+  };
+  recommendation?: {
+    agents: string[];
+    parallelism: string;
+    modelTier: string;
+    verification: boolean;
+  };
+  confidence?: number;
+  reasoning?: string;
+}
 import type {
   Skill,
   SkillMetadata,
@@ -289,7 +307,7 @@ export class SkillManager {
       const skillDomains = skill.metadata.domains || [];
 
       // Match by domain overlap
-      const domainOverlap = classification.domains.filter(d =>
+      const domainOverlap = classification.domains.filter((d: Domain) =>
         skillDomains.includes(d)
       );
 

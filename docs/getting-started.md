@@ -40,45 +40,18 @@ For the rest of this guide, we'll use `claudeops` for clarity, but feel free to 
 
 ## Initial Setup
 
-### Option 1: Zero-Config (Recommended)
-
-The fastest way to get started is with the zero-config init command:
+Initialize claudeops in your project:
 
 ```bash
 cops init
 ```
 
-This scans your codebase, detects your tech stack, and configures claudeops automatically. No prompts needed.
+This scans your codebase, detects your tech stack, and configures claudeops automatically. It creates:
 
-### Option 2: Interactive Wizard
-
-For full control, use the interactive installation wizard:
-
-```bash
-cops install
-```
-
-This wizard will guide you through:
-
-1. **Checking prerequisites** - Verifies Node.js version and Claude directory
-2. **Configuring models** - Picks your default Claude model (Haiku, Sonnet, or Opus)
-3. **Setting up cost tracking** - Optionally enables spending limits
-4. **Creating your first profile** - Names your default configuration
-
-Here's what happens under the hood:
-
-- **Creates `~/.claudeops/`** - Your configuration directory
-- **Creates `~/.claudeops/profiles/`** - Stores your profiles
-- **Creates `~/.claudeops/config.toml`** - Main configuration file (TOML format)
-- **Creates your first profile** - Usually named "default"
-
-### Installation Options
-
-If you prefer a minimal installation without prompts:
-
-```bash
-cops install --minimal
-```
+- **`~/.claudeops/`** - Your configuration directory
+- **`~/.claudeops/profiles/`** - Stores your profiles
+- **`~/.claudeops/config.toml`** - Main configuration file (TOML format)
+- **Your first profile** - Usually named "default"
 
 ## Understanding Profiles
 
@@ -86,7 +59,6 @@ Profiles are configurations tailored to different projects or use cases. Each pr
 
 - **Skills** - Custom AI skills and behaviors
 - **Agents** - Multi-agent orchestration settings
-- **MCP Servers** - Model Context Protocol integrations
 - **Model configuration** - Which Claude model to use
 
 ### View Your Profiles
@@ -181,11 +153,8 @@ Here's a typical workflow for managing your Claude Code configuration:
 ### 1. Initial Setup (One Time)
 
 ```bash
-# Zero-config: auto-detect your project and configure
+# Auto-detect your project and configure
 cops init
-
-# Or use the interactive wizard for full control
-cops install
 ```
 
 ### 2. Create Project-Specific Profiles
@@ -200,14 +169,11 @@ cops profile list
 
 ### 3. Configure Profiles
 
-Edit your profile to add skills, agents, and settings:
+Edit your profile TOML file to add skills, agents, and settings. Open it in your preferred editor:
 
 ```bash
-# Edit profile configuration
-cops config edit
-
-# View current settings
-cops config show
+# Edit profile configuration (replace 'default' with your profile name)
+$EDITOR ~/.claudeops/profiles/default.toml
 ```
 
 ### 4. Sync to Claude Code
@@ -230,15 +196,14 @@ Now Claude Code will use your synced configuration:
 - Your CLAUDE.md instructions will be available
 - Your skills and agents will be configured
 - Your model preferences will be applied
-- Cost tracking will be active (if enabled)
 
 ### 6. Update Configuration as Needed
 
 Make changes to your profile:
 
 ```bash
-# Edit configuration
-cops config edit
+# Edit profile TOML file
+$EDITOR ~/.claudeops/profiles/default.toml
 
 # Sync again
 cops sync
@@ -258,7 +223,6 @@ This checks:
 - Claude Code directory exists
 - Configuration is valid
 - Profiles are configured correctly
-- Addons are properly installed
 
 Example output:
 
@@ -291,32 +255,14 @@ claudeops doctor --fix
 ### Learn More About Features
 
 - **[Profiles Guide](./profiles.md)** - Deep dive into profile management
-- **[Addons Guide](./addons.md)** - Install and manage addons to extend functionality
 - **[Hooks Guide](./hooks.md)** - Workflow automation and safety checks
 
 ### Common Tasks
-
-**Add a new MCP server:**
-```bash
-cops mcp add my-server "command to run"
-```
-
-**Track API costs:**
-```bash
-cops cost today    # Today's spending
-cops cost week     # This week's spending
-cops cost budget   # Your budget status
-```
 
 **Reset claudeops artifacts:**
 ```bash
 cops reset           # Remove project-level artifacts
 cops reset --global  # Remove global artifacts
-```
-
-**Export your configuration:**
-```bash
-cops profile export default > backup.json
 ```
 
 ## Troubleshooting
@@ -341,7 +287,7 @@ npm install -g claudeops
 Run Claude Code at least once to create its configuration directory. Then run:
 
 ```bash
-cops install
+cops init
 ```
 
 ### Configuration issues
@@ -367,17 +313,14 @@ Examples:
 ```bash
 cops profile --help
 cops sync --help
-cops hook --help
 ```
 
 ## What's Next?
 
 Now that you're set up, you can:
 
-1. **Customize your profile** - Add skills, agents, and MCP servers
-2. **Enable cost tracking** - Monitor your API spending
-3. **Create addons** - Build reusable configuration packages
-4. **Automate workflows** - Set up hooks for common tasks
-5. **Reset when needed** - Use `cops reset` to clean up artifacts
+1. **Customize your profile** - Add skills and agents
+2. **Automate workflows** - Set up hooks for common tasks
+3. **Reset when needed** - Use `cops reset` to clean up artifacts
 
 Happy coding with claudeops!

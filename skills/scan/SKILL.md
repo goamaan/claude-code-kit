@@ -1,58 +1,45 @@
 ---
 name: scan
-description: Deep-scan a codebase and generate .claude/ artifacts (CLAUDE.md, skills, hooks) for AI development
+description: AI-enhance .claude/ artifacts with deep codebase analysis
 user-invocable: true
 disable-model-invocation: true
 allowed-tools: Bash, Read, Write, Glob, Grep, Edit
 ---
 
-# Codebase Scanner — Generate .claude/ Artifacts
+# AI-Enhanced Codebase Analysis
 
-You are a codebase analysis expert. Your job is to deep-scan a codebase and generate native Claude Code artifacts that give Claude deep project context.
+You are a codebase analysis expert. Your job is to enhance the .claude/ artifacts beyond what deterministic scanning provides.
 
 ## Workflow
 
-### Step 1: Run deterministic scan
+### Step 1: Check existing artifacts
+
+Check if `.claude/CLAUDE.md` already exists (from `cops init`). If not, generate the baseline first:
 
 ```bash
-cops scan --json
+cops init --project --minimal
 ```
 
-This gives you structured data about the codebase: languages, frameworks, build tools, test frameworks, linters, CI/CD, databases, APIs, monorepo config, directory structure, existing .claude/ config, and key files.
+Then read the generated `.claude/CLAUDE.md` to understand what the deterministic scan already captured.
 
-### Step 2: Read key files
+### Step 2: Read key files for deeper context
 
-Based on the scan results, read the most important files to understand the project:
+Based on the project, read the most important files to understand it:
 - README.md (project overview)
 - Main config files (package.json, pyproject.toml, Cargo.toml, etc.)
 - Entry points (src/index.ts, main.go, etc.)
 - Contributing guidelines if present
 - Schema files (prisma/schema.prisma, etc.)
 
-### Step 3: Generate .claude/CLAUDE.md
+### Step 3: Enhance CLAUDE.md
 
-Create a concise project conventions file. This is NOT a README — it's instructions for Claude. Include ONLY things Claude can't guess or figure out on its own:
-
-**Always include:**
-- Build command (e.g., `npm run build`)
-- Test command (e.g., `npm test`)
-- Lint/format command (e.g., `npm run lint`)
-- Package manager preference
-
-**Include if relevant:**
-- Framework-specific conventions that differ from defaults
-- Architecture overview (what's in each directory, but keep it brief)
-- Common gotchas or non-obvious patterns
+Review the existing CLAUDE.md and enhance it with insights that deterministic scanning can't provide:
+- Non-obvious conventions discovered from reading code
+- Architecture insights from entry point analysis
+- Common gotchas or patterns
 - Environment setup notes
-- Database migration commands
 
-**Never include:**
-- Generic programming advice
-- Things obvious from the code
-- Long explanations of standard frameworks
-- License info, contribution guidelines (that's for README)
-
-Keep it under 100 lines. Shorter is better.
+**Important:** Preserve the `<!-- cops:project:start -->` / `<!-- cops:project:end -->` managed section. Add your enhancements OUTSIDE this section (before or after it), so that `cops init --project` can update the managed section without clobbering your additions.
 
 ### Step 4: Generate .claude/skills/ (only if warranted)
 
@@ -81,33 +68,41 @@ If settings.json already exists, MERGE — don't overwrite.
 ## Important Rules
 
 1. **Preserve existing .claude/ content** — if CLAUDE.md already exists, ask the user before overwriting
-2. **Be concise** — Claude reads this every session, brevity matters
-3. **Be specific** — use actual commands from the project, not generic ones
-4. **Don't over-generate** — fewer, better files beat many mediocre ones
-5. **Git-friendly** — everything goes in `.claude/` which teams can commit
+2. **Preserve managed markers** — never remove `<!-- cops:project:start/end -->` markers
+3. **Be concise** — Claude reads this every session, brevity matters
+4. **Be specific** — use actual commands from the project, not generic ones
+5. **Don't over-generate** — fewer, better files beat many mediocre ones
+6. **Git-friendly** — everything goes in `.claude/` which teams can commit
 
-## Example CLAUDE.md Output
+## Example Enhanced CLAUDE.md Output
 
 ```markdown
 # Project Conventions
 
+<!-- cops:project:start -->
 ## Commands
 - Build: `npm run build`
 - Test: `npm test`
 - Lint: `npm run lint`
-- Typecheck: `npm run typecheck`
-- Format: `npx prettier --write .`
+
+## Tech Stack
+- TypeScript
+- React
+- Vitest for testing
+- ESLint
 
 ## Architecture
 - `src/core/` — Core business logic
-- `src/commands/` — CLI commands (citty framework)
-- `src/domain/` — Domain services
-- `src/utils/` — Shared utilities
-- `skills/` — Claude Code skills
+- `src/commands/` — CLI commands
+<!-- cops:project:end -->
 
 ## Conventions
 - ESM-only (type: "module" in package.json)
 - Zod schemas for all config types
 - Tests colocated with source files (*.test.ts)
-- Use `@/` path alias for src/ imports
+- Use bracket notation for index signature access (`obj['key']` not `obj.key`)
+
+## Gotchas
+- Always pass `joiner: '\n'` when using the TOML parser
+- Use `findPackageRoot()` instead of `__dirname` for repo root
 ```
