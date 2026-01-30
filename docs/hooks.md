@@ -699,6 +699,86 @@ Output shows:
 - stdout and stderr
 - Execution duration
 
+## Built-in Hooks (18)
+
+claudeops ships with 18 built-in hooks, split between enabled-by-default and disabled-by-default.
+
+### Enabled by Default (8)
+
+| Hook | Event | Description |
+|------|-------|-------------|
+| `continuation-check` | Stop | Evaluates completion status and blocks premature stopping |
+| `lint-changed` | PostToolUse | Runs ESLint after Write/Edit on JS/TS files |
+| `typecheck-changed` | PostToolUse | Runs TypeScript type checking after Write/Edit |
+| `checkpoint` | Stop | Creates git stash checkpoint before session ends |
+| `thinking-level` | UserPromptSubmit | Detects complex tasks and adds reasoning instructions |
+| `keyword-detector` | UserPromptSubmit | Mode keyword detection from user prompts |
+| `swarm-lifecycle` | SubagentStop | Tracks swarm task completion and cost |
+| `version-bump-prompt` | UserPromptSubmit | Prompts for version bump considerations |
+
+### Disabled by Default (10)
+
+| Hook | Event | Description |
+|------|-------|-------------|
+| `cost-warning` | UserPromptSubmit | Warns when approaching daily cost budget |
+| `security-scan` | PreToolUse | Scans for secrets before git commits |
+| `test-reminder` | PostToolUse | Reminds to run tests after code changes |
+| `format-on-save` | PostToolUse | Auto-formats files after Write/Edit operations |
+| `git-branch-check` | PreToolUse | Warns when committing to main/master branches |
+| `todo-tracker` | UserPromptSubmit | Tracks TODO items mentioned in prompts |
+| `session-log` | Stop | Logs session summary when Claude stops |
+| `large-file-warning` | PreToolUse | Warns before reading large files |
+| `team-lifecycle` | SubagentStop | Logs team creation and shutdown events |
+| `swarm-cost-tracker` | PostToolUse | Tracks per-agent costs for orchestration |
+
+### Hook Metadata Format
+
+Hooks use JSDoc tags at the top of each `.mjs` file to declare their metadata:
+
+```javascript
+/**
+ * @Hook continuation-check
+ * @Event Stop
+ * @Matcher *
+ * @Enabled true
+ * @Description Evaluates completion status and blocks premature stopping
+ * @Priority 100
+ * @Timeout 5000
+ * @Async false
+ */
+```
+
+| Tag | Description |
+|-----|-------------|
+| `@Hook` | Hook name (must match filename without extension) |
+| `@Event` | Event type: PreToolUse, PostToolUse, Stop, SubagentStop, UserPromptSubmit |
+| `@Matcher` | Tool matcher pattern (e.g., `Bash`, `*`, `(Read\|Write)`) |
+| `@Enabled` | Whether the hook is enabled by default (`true` or `false`) |
+| `@Description` | Human-readable description of the hook's purpose |
+| `@Priority` | Execution priority (higher runs first, default 0) |
+| `@Timeout` | Maximum execution time in milliseconds (default 10000) |
+| `@Async` | Whether the hook runs asynchronously without blocking (`true` or `false`) |
+
+### AI-Generated Hooks
+
+Use the `cops hook add` command to generate a new hook with AI assistance:
+
+```bash
+cops hook add "block npm publish commands"
+```
+
+This will:
+1. Analyze your description to determine the appropriate event type and matcher
+2. Generate the hook implementation
+3. Add the proper JSDoc metadata tags
+4. Save the hook to your hooks directory
+
+You can also specify the event type explicitly:
+
+```bash
+cops hook add "log all file writes" --event PostToolUse
+```
+
 ## Hook Chain Execution
 
 When a tool is called, hooks execute in a chain:

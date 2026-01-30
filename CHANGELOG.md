@@ -1,36 +1,65 @@
-## [3.2.0] - 2026-01-25
+## [3.2.0] - 2026-01-29
 
 ### Added
 
-#### Swarm Orchestration
-- **Multi-agent task orchestration with automatic parallelization**
-  - New `cops init` command for zero-config swarm setup
+#### Setup Consolidation into Profiles
+- **Setups have been consolidated into the profile system**
+  - All configuration previously split across setups and profiles now lives in profiles
+  - Profile `content` field replaces setup CLAUDE.md content
+  - Profile `extends` provides inheritance (previously done via setup extends)
+  - Removed `src/domain/setup/`, `src/commands/setup.ts`, and `setups/` directory
+  - Deleted `docs/setups.md` documentation
+
+#### Reset Command
+- **New `cops reset` command to remove claudeops-generated artifacts**
+  - Removes managed sections from CLAUDE.md while preserving user content
+  - Cleans claudeops hooks and metadata from settings.json
+  - Removes claudeops-generated skill files
+  - Supports `--global`, `--all`, `--force`, and `--dry-run` flags
+
+#### Native Swarm Integration
+- **Multi-agent task orchestration built on Claude Code Teams**
+  - Custom swarm engine replaced with Claude Code's native task system
+  - New `cops init` command for zero-config project setup
   - New `cops swarm` command with subcommands: status, tasks, init, stop, history
   - Task dependency graph with topological sorting and parallel execution groups
   - Worker spawner with model selection based on task complexity
-  - State persistence for swarm executions
-  - Per-task cost tracking
+  - Per-task cost tracking and state persistence
 
-#### Enhanced Router
-- **Integrated swarm recommendation into routing decisions**
-  - Automatic task decomposition suggestions
-  - Parallelism mode recommendations (sequential, parallel, hybrid)
+#### New Skills
+- `review` - Pull request and code review workflows
+- `debug` - Systematic debugging methodology
+- `testing` - Test strategy and execution
+- `security-audit` - Comprehensive security auditing
+- `scan` - Codebase scanning and detection
 
-#### New Swarm Module (`src/core/swarm/`)
-- `dependency-graph.ts` - Task dependency analysis
-- `spawner.ts` - Worker agent prompt generation
-- `persistence.ts` - Swarm state management
-- `planner.ts` - Task planning and decomposition
+#### Hook Metadata Tags
+- Hooks now use JSDoc metadata tags (`@Hook`, `@Event`, `@Matcher`, `@Enabled`, `@Description`, `@Priority`, `@Timeout`, `@Async`)
+- New `cops hook add` command for AI-generated hooks
+- Hook count increased to 18 (8 enabled-by-default, 10 disabled-by-default)
+- New hooks: `version-bump-prompt`, `team-lifecycle`, `swarm-cost-tracker`
 
-#### Swarm Lifecycle Hook
-- **`hooks/swarm-lifecycle.mjs`**
-  - Tracks task completion and cost
-  - Monitors parallel group progress
+### Fixed
+
+#### Bundled Path Resolution
+- Use `findPackageRoot()` for resolving bundled asset paths (skills, hooks)
+- Fixes path resolution when running from `node_modules` or bundled distribution
+
+#### TOML Multiline Parsing
+- Added `joiner` option to `@ltd/j-toml` parser for correct multiline string handling
+- Triple-quoted strings (`"""`) in TOML profiles now preserve line breaks
+
+#### CI Fixes
+- Use `bun run test` instead of `bun test` for vitest runner compatibility
+- Use bracket notation for index signature access in detectors (TypeScript strict mode)
+- Postbuild sync script made resilient for CI environments
 
 ### Changed
+- README rewrite with updated documentation
+- Auto-sync postbuild script for distribution
 - Enhanced orchestrate skill with conductor/worker patterns
-- Updated cost tracker for per-task cost tracking
 - Router types extended with swarm recommendation
+- Updated cost tracker for per-task cost tracking
 
 ---
 

@@ -35,8 +35,8 @@ claudeops is a configuration and orchestration layer for Claude Code that provid
 - **Intelligent Routing** - Automatic agent and model selection based on task characteristics
 - **Safety Guardrails** - Protection against destructive deletions, secret exposure, and dangerous commands
 - **Profile Management** - Named configurations with inheritance for different projects/contexts
-- **Skills Library** - 21 specialized skills for different development tasks
-- **Hooks System** - 14 hooks for workflow automation and safety checks
+- **Skills Library** - 25 specialized skills for different development tasks
+- **Hooks System** - 18 hooks for workflow automation and safety checks
 - **Configuration Sync** - Seamless integration with Claude Code via CLAUDE.md and settings.json
 
 ---
@@ -124,7 +124,7 @@ claudeops/
 ├── src/                          # TypeScript source
 │   ├── cli.ts                    # CLI entry point (citty-based)
 │   ├── index.ts                  # Library entry point
-│   ├── commands/                 # CLI subcommands (13 commands)
+│   ├── commands/                 # CLI subcommands (16 commands)
 │   ├── core/                     # Core business logic
 │   │   ├── classifier/           # Intent classification
 │   │   ├── config/               # Config loading/merging
@@ -140,15 +140,13 @@ claudeops/
 │   │   ├── hook/                 # Hook management
 │   │   ├── mcp/                  # MCP server management
 │   │   ├── profile/              # Profile management
-│   │   ├── setup/                # Setup templates
 │   │   ├── skill/                # Skill management
 │   │   └── state/                # Session state
 │   ├── types/                    # Zod schemas & TypeScript types
 │   ├── ui/                       # Terminal UI (output, prompts)
 │   └── utils/                    # Shared utilities
-├── skills/                       # Built-in skills (21 .md files)
-├── hooks/                        # Built-in hooks (13 .mjs files)
-├── setups/                       # Setup templates
+├── skills/                       # Built-in skills (25 directories)
+├── hooks/                        # Built-in hooks (18 .mjs files)
 ├── tests/                        # Test files
 │   ├── helpers/                  # Test utilities
 │   ├── integration/              # Integration tests
@@ -168,8 +166,9 @@ The CLI uses the `citty` framework and exposes three binary names: `claudeops`, 
 const main = defineCommand({
   meta: { name: "claudeops", version: VERSION },
   subCommands: {
-    profile, setup, addon, skill, hook, config,
-    mcp, cost, sync, doctor, install, upgrade, classify
+    profile, addon, skill, classify, config, mcp, cost,
+    swarm, hook, sync, reset, doctor, install, init,
+    scan, upgrade
   },
 });
 ```
@@ -179,7 +178,7 @@ const main = defineCommand({
 Exports public APIs for programmatic use:
 
 ```typescript
-export const VERSION = "3.1.0";
+export const VERSION = "3.2.0";
 export const NAME = "claudeops";
 
 // Core APIs
@@ -296,13 +295,17 @@ Multi-layer configuration with TOML parsing and Zod validation.
 
 ### Sync (`src/core/sync/`)
 
-Synchronizes configuration to Claude Code.
+Synchronizes configuration to Claude Code. The sync engine reads the merged profile configuration directly (no MergedSetup dependency) and generates output files.
 
 **Files:**
 - `engine.ts` - Main sync orchestration
 - `claudemd-generator.ts` - CLAUDE.md generation
 - `settings-generator.ts` - settings.json generation
 - `backup.ts` - Backup/restore functionality
+
+**Path Resolution:** The sync engine uses `findPackageRoot()` to locate bundled assets (skills, hooks) relative to the package root rather than relying on `__dirname`. This ensures correct path resolution whether running from source, bundled distribution, or within a `node_modules` tree.
+
+**TOML Parsing:** When parsing TOML files with multiline strings (triple-quoted `"""`), the `@ltd/j-toml` parser requires the `joiner` option set to `'\n'` to preserve line breaks correctly.
 
 **What Gets Synced:**
 - `~/.claude/settings.json` - Hooks, MCP servers, permissions
@@ -343,24 +346,6 @@ interface ProfileManager {
 ```
 
 **Inheritance:** Profiles can extend other profiles via `extends` field. Resolution is recursive with circular detection.
-
-### Setup (`src/domain/setup/`)
-
-Setup templates for consistent environments.
-
-**Manifest Format (`manifest.toml`):**
-```toml
-[setup]
-name = "my-setup"
-version = "1.0.0"
-extends = "base-setup"
-
-[skills]
-enabled = ["executor", "architect"]
-
-[agents.executor]
-model = "opus"
-```
 
 ### Addon (`src/domain/addon/`)
 
@@ -444,7 +429,8 @@ Session state for classification tracking.
 
 | Command | Purpose |
 |---------|---------|
-| `cops init` | Zero-config swarm setup (v3.2.0) |
+| `cops init` | Zero-config project setup (v3.2.0) |
+| `cops install` | Interactive installation wizard |
 | `cops swarm` | Swarm orchestration (status, tasks, init, stop, history) |
 | `cops sync` | Sync config to Claude Code |
 | `cops config` | Configuration management (init, edit, show, validate, pm) |
@@ -452,10 +438,11 @@ Session state for classification tracking.
 | `cops skill` | Skill management (list, install, add, enable, disable) |
 | `cops hook` | Hook management (list, debug, test, add, sync) |
 | `cops addon` | Addon operations (install, update, remove) |
-| `cops setup` | Setup templates (list, use, create) |
+| `cops scan` | Codebase scanning and detection |
 | `cops mcp` | MCP server management |
 | `cops cost` | Cost tracking and budgets |
 | `cops doctor` | Diagnostic checks |
+| `cops reset` | Remove claudeops-generated artifacts |
 | `cops upgrade` | Self-update |
 | `cops classify` | Test intent classification |
 
@@ -547,7 +534,7 @@ packageManager = "bun"
 ```
 loadConfig() → MergedConfig
       ↓
-loadSetup() → MergedSetup
+resolveProfile() → ResolvedProfile (with content, skills, agents)
       ↓
 composeHooks() → ComposedHooks
       ↓
@@ -561,7 +548,7 @@ Write to ~/.claude/
 The generated CLAUDE.md includes:
 
 1. **Managed Section Markers** - Preserve user content outside markers
-2. **Profile Information** - Active profile and setup
+2. **Profile Information** - Active profile and configuration
 3. **Model Configuration** - Default model and routing
 4. **Package Manager** - Configured package manager commands
 5. **Agent Catalog** - Available agents with descriptions
@@ -572,7 +559,7 @@ The generated CLAUDE.md includes:
 
 ## Skills & Hooks
 
-### Built-in Skills (21)
+### Built-in Skills (25)
 
 | Skill | Model | Purpose |
 |-------|-------|---------|
@@ -584,6 +571,7 @@ The generated CLAUDE.md includes:
 | designer | sonnet | UI/UX design |
 | qa-tester | sonnet | Testing, TDD |
 | security | opus | Security audits |
+| security-audit | opus | Comprehensive security auditing |
 | explore | haiku | Codebase search |
 | writer | haiku | Documentation |
 | researcher | sonnet | External research |
@@ -591,14 +579,18 @@ The generated CLAUDE.md includes:
 | autopilot | opus | Autonomous execution |
 | orchestrate | opus | Multi-agent orchestration |
 | code-review | opus | Code review |
+| review | opus | Pull request and code review |
+| debug | opus | Systematic debugging |
+| testing | sonnet | Test strategy and execution |
 | deepsearch | sonnet | Deep exploration |
 | doctor | sonnet | Project diagnostics |
 | frontend-ui-ux | sonnet | Frontend guidance |
 | git-master | sonnet | Git expertise |
 | tdd | sonnet | Test-driven development |
 | typescript-expert | sonnet | TypeScript guidance |
+| scan | sonnet | Codebase scanning |
 
-### Built-in Hooks (14)
+### Built-in Hooks (18)
 
 | Hook | Event | Default | Purpose |
 |------|-------|---------|---------|
@@ -608,6 +600,8 @@ The generated CLAUDE.md includes:
 | checkpoint | Stop | Enabled | Git stash checkpoint |
 | thinking-level | UserPromptSubmit | Enabled | Add reasoning instructions |
 | keyword-detector | UserPromptSubmit | Enabled | Mode keyword detection |
+| swarm-lifecycle | SubagentStop | Enabled | Swarm task completion tracking |
+| version-bump-prompt | UserPromptSubmit | Enabled | Version bump considerations |
 | cost-warning | UserPromptSubmit | Disabled | Budget warnings |
 | security-scan | PreToolUse | Disabled | Secret scanning |
 | test-reminder | PostToolUse | Disabled | Test reminders |
@@ -615,7 +609,9 @@ The generated CLAUDE.md includes:
 | git-branch-check | PreToolUse | Disabled | Protected branch warnings |
 | todo-tracker | UserPromptSubmit | Disabled | TODO tracking |
 | session-log | Stop | Disabled | Session logging |
-| swarm-lifecycle | SubagentStop | Enabled | Swarm task completion tracking |
+| large-file-warning | PreToolUse | Disabled | Warn before reading large files |
+| team-lifecycle | SubagentStop | Disabled | Team creation/shutdown logging |
+| swarm-cost-tracker | PostToolUse | Disabled | Per-agent cost tracking |
 
 ---
 
@@ -633,7 +629,6 @@ The generated CLAUDE.md includes:
 ├── addons/               # Installed addons
 ├── skills/               # User skills
 ├── hooks/                # User hooks
-├── setups/               # User setups
 ├── cache/
 │   ├── costs/            # Cost tracking data
 │   └── mcp-servers.json  # MCP state

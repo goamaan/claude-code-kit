@@ -428,54 +428,18 @@ enabled = true
 
 **Total Cost**: ~6100 tokens (3% of 200k context)
 
-## Setup Integration
+## Profile Integration
 
-claudeops includes setup templates that recommend relevant MCP servers:
-
-### FullstacoSetup
+claudeops profiles can configure which MCP servers are enabled per profile:
 
 ```toml
+# ~/.claudeops/profiles/frontend.toml
 [mcp]
-recommended = ["filesystem", "git", "fetch"]
+enabled = ["filesystem", "git", "fetch"]
+disabled = ["postgres"]
 ```
 
-Recommended for React + Node.js development.
-
-### Data Science Setup
-
-```toml
-[mcp]
-recommended = ["filesystem", "git", "postgres", "fetch"]
-```
-
-Recommended for data analysis and ML projects.
-
-### Backend Setup
-
-```toml
-[mcp]
-recommended = ["filesystem", "git", "fetch"]
-```
-
-Recommended for API and backend development.
-
-### DevOps Setup
-
-```toml
-[mcp]
-recommended = ["filesystem", "git", "fetch"]
-```
-
-Recommended for infrastructure and deployment work.
-
-### Enterprise Setup
-
-```toml
-[mcp]
-recommended = ["filesystem", "git", "fetch", "postgres"]
-```
-
-Recommended for large-scale projects with databases.
+Different profiles can enable different servers, allowing you to switch server configurations as you switch between projects.
 
 ## Troubleshooting
 
@@ -769,5 +733,5 @@ A: Minimal at runtime. The main impact is context window usage (affects token co
 
 - [Configuration Guide](./configuration.md) - Full configuration system documentation
 - [Profile Management](./profiles.md) - Using and creating profiles
-- [Setup Templates](./setups.md) - Built-in project setups
+- [Hooks Guide](./hooks.md) - Workflow automation and safety checks
 
