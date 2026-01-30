@@ -14,9 +14,6 @@ const main = defineCommand({
     // Profile management
     profile: () => import("./commands/profile.js").then((m) => m.default),
 
-    // Setup management
-    setup: () => import("./commands/setup.js").then((m) => m.default),
-
     // Add-on management
     addon: () => import("./commands/addon.js").then((m) => m.default),
 
@@ -43,6 +40,9 @@ const main = defineCommand({
 
     // Sync configuration to Claude Code
     sync: () => import("./commands/sync.js").then((m) => m.default),
+
+    // Reset claudeops artifacts
+    reset: () => import("./commands/reset.js").then((m) => m.default),
 
     // Diagnostic tool
     doctor: () => import("./commands/doctor.js").then((m) => m.default),
@@ -98,7 +98,6 @@ const main = defineCommand({
 
     // Extensions
     console.log(pc.bold("\nExtensions:"));
-    console.log(`  ${pc.cyan("setup")}          ${pc.dim("Manage setups (list, info, use, create)")}`);
     console.log(`  ${pc.cyan("addon")}          ${pc.dim("Manage addons (search, install, update, remove)")}`);
     console.log(`  ${pc.cyan("skill")}          ${pc.dim("Manage skills (list, info, install, sync)")}`);
     console.log(`  ${pc.cyan("mcp")}            ${pc.dim("Manage MCP servers (list, add, enable, disable)")}`);
@@ -113,6 +112,7 @@ const main = defineCommand({
     console.log(`  ${pc.cyan("cost")}           ${pc.dim("Cost tracking (today, week, budget, pricing)")}`);
     console.log(`  ${pc.cyan("swarm")}          ${pc.dim("Swarm orchestration (status, tasks, init, stop)")}`);
     console.log(`  ${pc.cyan("doctor")}         ${pc.dim("Diagnose configuration issues")}`);
+    console.log(`  ${pc.cyan("reset")}          ${pc.dim("Remove claudeops-generated artifacts")}`);
     console.log(`  ${pc.cyan("upgrade")}        ${pc.dim("Check for and install updates")}`);
 
     // Examples

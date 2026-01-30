@@ -1,13 +1,12 @@
 /**
  * Install command - Interactive installation wizard
- * cops install [--setup <name>] [--minimal]
+ * cops install [--minimal]
  */
 
 import { defineCommand } from 'citty';
 import * as output from '../ui/output.js';
 import * as prompts from '../ui/prompts.js';
 import { createProfileManager } from '../domain/profile/manager.js';
-import { createSetupManager } from '../domain/setup/manager.js';
 import { getGlobalConfigDir, getClaudeDir } from '../utils/paths.js';
 import { exists, ensureDir, writeFile } from '../utils/fs.js';
 import { join } from 'node:path';
@@ -23,11 +22,6 @@ export default defineCommand({
     description: 'Interactive installation wizard',
   },
   args: {
-    setup: {
-      type: 'string',
-      alias: 's',
-      description: 'Setup to use (skip setup selection)',
-    },
     minimal: {
       type: 'boolean',
       alias: 'm',
@@ -139,34 +133,7 @@ export default defineCommand({
       }
     }
 
-    // Step 2: Select setup
-    let selectedSetup: string | undefined = args.setup;
-
-    if (!selectedSetup) {
-      const setupManager = createSetupManager();
-      const setups = await setupManager.list();
-
-      if (setups.length > 0) {
-        const setupChoice = await prompts.promptSelect(
-          'Select a setup to use as your base configuration:',
-          [
-            { value: 'none', label: 'No setup (start fresh)', hint: 'Create configuration from scratch' },
-            ...setups.map(s => ({
-              value: s.name,
-              label: s.name,
-              hint: s.description ?? `v${s.version}`,
-            })),
-          ]
-        );
-        prompts.handleCancel(setupChoice);
-
-        if (setupChoice !== 'none') {
-          selectedSetup = setupChoice as string;
-        }
-      }
-    }
-
-    // Step 3: Configure model preferences
+    // Step 2: Configure model preferences
     const defaultModel = await prompts.promptSelect(
       'Select your default model:',
       [
@@ -240,9 +207,6 @@ export default defineCommand({
       output.kv('Daily budget', output.formatCurrency(dailyBudget));
     }
     output.kv('Profile', profileName as string);
-    if (selectedSetup) {
-      output.kv('Setup', selectedSetup);
-    }
 
     console.log();
 
@@ -266,7 +230,6 @@ export default defineCommand({
       await ensureDir(configDir);
       await ensureDir(join(configDir, 'profiles'));
       await ensureDir(join(configDir, 'addons'));
-      await ensureDir(join(configDir, 'setups'));
       await ensureDir(join(configDir, 'backups'));
 
       // Write main config
@@ -298,18 +261,6 @@ export default defineCommand({
         activate: true,
       });
 
-      // Apply setup if selected
-      if (selectedSetup) {
-        const setupManager = createSetupManager();
-        const merged = await setupManager.apply(selectedSetup);
-
-        // Write CLAUDE.md to Claude directory
-        if (merged.content) {
-          await ensureDir(claudeDir);
-          await writeFile(join(claudeDir, 'CLAUDE.md'), merged.content);
-        }
-      }
-
       installSpinner.stop('Installation complete');
 
       // Next steps
@@ -320,9 +271,8 @@ export default defineCommand({
         'Run `cops doctor` to verify your installation',
         'Run `cops config show` to view your configuration',
         'Run `cops profile list` to see your profiles',
-        selectedSetup ? '' : 'Run `cops setup list` to see available setups',
         'Run `cops addon search` to find addons',
-      ].filter(Boolean));
+      ]);
 
       prompts.outro('Welcome to claudeops!');
     } catch (err) {

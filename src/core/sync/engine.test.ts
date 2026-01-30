@@ -13,7 +13,7 @@ import {
   getSyncSummary,
   type SyncEngineOptions,
 } from './engine.js';
-import type { MergedConfig, MergedSetup, InstalledAddon } from '@/types';
+import type { MergedConfig } from '@/types';
 import { DEFAULT_MERGED_CONFIG } from '@/types';
 
 // =============================================================================
@@ -27,33 +27,6 @@ function createTestConfig(overrides: Partial<MergedConfig> = {}): MergedConfig {
       name: 'test-profile',
       source: 'global',
     },
-    ...overrides,
-  };
-}
-
-function createTestSetup(overrides: Partial<MergedSetup> = {}): MergedSetup {
-  return {
-    name: 'test-setup',
-    version: '1.0.0',
-    description: 'Test setup',
-    requires: {
-      addons: [],
-    },
-    skills: {
-      enabled: [],
-      disabled: [],
-    },
-    agents: {},
-    mcp: {
-      recommended: [],
-      required: [],
-    },
-    hooks: {
-      templates: [],
-    },
-    commands: {},
-    content: '',
-    sources: [],
     ...overrides,
   };
 }
@@ -91,7 +64,7 @@ describe('engine', () => {
     it('should create an engine instance', () => {
       const options: SyncEngineOptions = {
         loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup(),
+
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -112,13 +85,11 @@ describe('engine', () => {
   // ===========================================================================
 
   describe('loadState', () => {
-    it('should load state with config, setup, and addons', async () => {
+    it('should load state with config and addons', async () => {
       const config = createTestConfig();
-      const setup = createTestSetup();
 
       const engine = createSyncEngine({
         loadConfig: async () => config,
-        loadSetup: async () => setup,
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -127,14 +98,13 @@ describe('engine', () => {
       const state = await engine.loadState();
 
       expect(state.config).toEqual(config);
-      expect(state.setup).toEqual(setup);
       expect(state.addons).toEqual([]);
     });
 
     it('should generate settings from loaded state', async () => {
       const engine = createSyncEngine({
         loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup(),
+
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -149,7 +119,7 @@ describe('engine', () => {
     it('should generate CLAUDE.md from loaded state', async () => {
       const engine = createSyncEngine({
         loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup(),
+
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -170,7 +140,7 @@ describe('engine', () => {
     it('should show create when files do not exist', async () => {
       const engine = createSyncEngine({
         loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup(),
+
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -187,7 +157,7 @@ describe('engine', () => {
       // First sync to create files
       const engine = createSyncEngine({
         loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup(),
+
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -209,7 +179,7 @@ describe('engine', () => {
 
       const engine = createSyncEngine({
         loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup(),
+
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -230,7 +200,7 @@ describe('engine', () => {
     it('should pass validation for valid config', async () => {
       const engine = createSyncEngine({
         loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup(),
+
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -242,54 +212,12 @@ describe('engine', () => {
       expect(result.errors).toHaveLength(0);
     });
 
-    it('should warn when required addon is missing', async () => {
-      const engine = createSyncEngine({
-        loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup({
-          requires: { addons: ['missing-addon'] },
-        }),
-        loadAddons: async () => [],
-        claudeDir,
-        globalConfigDir: configDir,
-      });
-
-      const result = await engine.validate();
-
-      expect(result.errors.some(e => e.code === 'MISSING_ADDON')).toBe(true);
-    });
-
-    it('should warn when required addon is disabled', async () => {
-      const addon: InstalledAddon = {
-        manifest: { name: 'test-addon', version: '1.0.0' },
-        path: '/path/to/addon',
-        installedAt: new Date(),
-        updatedAt: new Date(),
-        enabled: false,
-        config: {},
-        source: { type: 'local' },
-      };
-
-      const engine = createSyncEngine({
-        loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup({
-          requires: { addons: ['test-addon'] },
-        }),
-        loadAddons: async () => [addon],
-        claudeDir,
-        globalConfigDir: configDir,
-      });
-
-      const result = await engine.validate();
-
-      expect(result.warnings.some(w => w.code === 'DISABLED_ADDON')).toBe(true);
-    });
-
     it('should warn for skill conflicts', async () => {
       const engine = createSyncEngine({
         loadConfig: async () => createTestConfig({
           skills: { enabled: ['skill-a'], disabled: ['skill-a'] },
         }),
-        loadSetup: async () => createTestSetup(),
+
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -309,7 +237,7 @@ describe('engine', () => {
     it('should create files on first sync', async () => {
       const engine = createSyncEngine({
         loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup(),
+
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -325,7 +253,7 @@ describe('engine', () => {
     it('should not modify files on dry run', async () => {
       const engine = createSyncEngine({
         loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup(),
+
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -342,7 +270,7 @@ describe('engine', () => {
     it('should only sync settings.json when settingsOnly is true', async () => {
       const engine = createSyncEngine({
         loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup(),
+
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -358,7 +286,7 @@ describe('engine', () => {
     it('should only sync CLAUDE.md when claudeMdOnly is true', async () => {
       const engine = createSyncEngine({
         loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup(),
+
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -375,7 +303,7 @@ describe('engine', () => {
       // Create engine that will fail validation
       const engine = createSyncEngine({
         loadConfig: async () => { throw new Error('Config load failed'); },
-        loadSetup: async () => createTestSetup(),
+
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -393,7 +321,7 @@ describe('engine', () => {
 
       const engine = createSyncEngine({
         loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup(),
+
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -409,7 +337,7 @@ describe('engine', () => {
     it('should be idempotent', async () => {
       const engine = createSyncEngine({
         loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup(),
+
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -434,7 +362,7 @@ describe('engine', () => {
     it('should return true when files need to be created', async () => {
       const engine = createSyncEngine({
         loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup(),
+
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -448,7 +376,7 @@ describe('engine', () => {
     it('should return false when files are in sync', async () => {
       const engine = createSyncEngine({
         loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup(),
+
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -470,7 +398,7 @@ describe('engine', () => {
     it('should return summary of changes', async () => {
       const engine = createSyncEngine({
         loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup(),
+
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,
@@ -489,7 +417,7 @@ describe('engine', () => {
     it('should return zeros when no changes needed', async () => {
       const engine = createSyncEngine({
         loadConfig: async () => createTestConfig(),
-        loadSetup: async () => createTestSetup(),
+
         loadAddons: async () => [],
         claudeDir,
         globalConfigDir: configDir,

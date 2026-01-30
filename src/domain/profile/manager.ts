@@ -130,6 +130,7 @@ export function createProfileManager(storage?: ProfileStorage): ProfileManager {
         },
         overrides: config.model?.overrides ?? {},
       },
+      content: config.content,
     };
 
     // Merge agent configs
@@ -184,6 +185,7 @@ export function createProfileManager(storage?: ProfileStorage): ProfileManager {
           routing: { ...parent.resolved.model.routing, ...resolved.model.routing },
           overrides: { ...parent.resolved.model.overrides, ...resolved.model.overrides },
         },
+        content: resolved.content ?? parent.resolved.content,
       };
     }
 
@@ -389,6 +391,7 @@ export function createProfileManager(storage?: ProfileStorage): ProfileManager {
       agents: options?.agents,
       mcp: options?.mcp,
       model: options?.model,
+      content: options?.content,
     };
 
     // Write the profile

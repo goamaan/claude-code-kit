@@ -1,9 +1,9 @@
 /**
  * CLAUDE.md Generator - Generate CLAUDE.md configuration file
- * Combines setup content with profile-specific additions
+ * Combines profile content with configuration-specific additions
  */
 
-import type { MergedSetup, MergedConfig } from '@/types';
+import type { MergedConfig } from '@/types';
 import { AGENT_CATALOG } from '@/core/router/agent-catalog.js';
 
 // =============================================================================
@@ -149,9 +149,9 @@ function generateModelSection(config: MergedConfig): string {
 /**
  * Generate skills configuration section
  */
-function generateSkillsSection(setup: MergedSetup, config: MergedConfig): string {
-  const enabledSkills = [...new Set([...setup.skills.enabled, ...config.skills.enabled])];
-  const disabledSkills = [...new Set([...setup.skills.disabled, ...config.skills.disabled])];
+function generateSkillsSection(config: MergedConfig): string {
+  const enabledSkills = [...new Set(config.skills.enabled)];
+  const disabledSkills = [...new Set(config.skills.disabled)];
 
   // Filter out skills that are explicitly disabled
   const effectiveEnabled = enabledSkills.filter(s => !disabledSkills.includes(s));
@@ -189,24 +189,16 @@ function generateSkillsSection(setup: MergedSetup, config: MergedConfig): string
 /**
  * Generate agents configuration section
  */
-function generateAgentsSection(setup: MergedSetup, config: MergedConfig): string {
-  const agents = { ...setup.agents };
+function generateAgentsSection(config: MergedConfig): string {
+  const agents: Record<string, { model?: string; priority: number; enabled: boolean }> = {};
 
-  // Merge in config overrides
+  // Populate from config agents
   for (const [name, agentConfig] of Object.entries(config.agents)) {
-    if (agents[name]) {
-      agents[name] = {
-        ...agents[name],
-        model: agentConfig.model,
-        priority: agentConfig.priority,
-      };
-    } else {
-      agents[name] = {
-        model: agentConfig.model,
-        priority: agentConfig.priority,
-        enabled: true,
-      };
-    }
+    agents[name] = {
+      model: agentConfig.model,
+      priority: agentConfig.priority,
+      enabled: true,
+    };
   }
 
   // Filter out disabled agents
@@ -236,88 +228,32 @@ function generateAgentsSection(setup: MergedSetup, config: MergedConfig): string
 /**
  * Generate hooks information section
  */
-function generateHooksSection(setup: MergedSetup): string {
-  const templates = setup.hooks.templates;
-
-  if (templates.length === 0) {
-    return '';
-  }
-
-  const lines: string[] = [
-    '## Hooks',
-    '',
-    'The following hooks are configured:',
-    '',
-  ];
-
-  for (const template of templates) {
-    lines.push(`### ${template.name}`);
-    lines.push('');
-    if (template.description) {
-      lines.push(template.description);
-      lines.push('');
-    }
-    lines.push(`- **Matcher:** \`${template.matcher}\``);
-    lines.push(`- **Handler:** \`${template.handler}\``);
-    lines.push(`- **Priority:** ${template.priority}`);
-    lines.push('');
-  }
-
-  return lines.join('\n');
+function generateHooksSection(): string {
+  return '';
 }
 
 /**
  * Generate MCP information section
  */
-function generateMcpSection(setup: MergedSetup, config: MergedConfig): string {
-  const required = setup.mcp.required;
-  const recommended = setup.mcp.recommended;
+function generateMcpSection(config: MergedConfig): string {
   const enabled = config.mcp.enabled;
   const disabled = config.mcp.disabled;
 
-  if (required.length === 0 && recommended.length === 0 && enabled.length === 0) {
-    return '';
-  }
+  if (enabled.length === 0) return '';
 
   const lines: string[] = [
     '## MCP Servers',
     '',
+    '### Enabled',
+    '',
   ];
 
-  if (required.length > 0) {
-    lines.push('### Required');
-    lines.push('');
-    for (const server of required.sort()) {
-      const isDisabled = disabled.includes(server);
-      lines.push(`- ${server}${isDisabled ? ' (disabled)' : ''}`);
-    }
-    lines.push('');
+  for (const server of enabled.sort()) {
+    const isDisabled = disabled.includes(server);
+    lines.push(`- ${server}${isDisabled ? ' (disabled)' : ''}`);
   }
 
-  if (recommended.length > 0) {
-    lines.push('### Recommended');
-    lines.push('');
-    for (const server of recommended.sort()) {
-      const isEnabled = enabled.includes(server);
-      lines.push(`- ${server}${isEnabled ? ' (enabled)' : ''}`);
-    }
-    lines.push('');
-  }
-
-  // Additional enabled servers not in required/recommended
-  const additional = enabled.filter(s =>
-    !required.includes(s) && !recommended.includes(s)
-  );
-
-  if (additional.length > 0) {
-    lines.push('### Additional');
-    lines.push('');
-    for (const server of additional.sort()) {
-      lines.push(`- ${server}`);
-    }
-    lines.push('');
-  }
-
+  lines.push('');
   return lines.join('\n');
 }
 
@@ -412,7 +348,7 @@ async function generateDynamicContext(): Promise<string> {
 // =============================================================================
 
 /**
- * Generate CLAUDE.md content from setup and config
+ * Generate CLAUDE.md content from config
  *
  * @param setup - Merged setup
  * @param config - Merged configuration
@@ -420,7 +356,6 @@ async function generateDynamicContext(): Promise<string> {
  * @returns Generated CLAUDE.md result
  */
 export async function generateClaudeMd(
-  setup: MergedSetup,
   config: MergedConfig,
   options: GenerateClaudeMdOptions = {},
 ): Promise<GeneratedClaudeMd> {
@@ -449,11 +384,11 @@ export async function generateClaudeMd(
   // Build managed section content
   const managedParts: string[] = [];
 
-  // Setup content first (if any) - INSIDE managed section
-  if (setup.content.trim()) {
-    managedParts.push(setup.content.trim());
+  // Profile content first (if any) - INSIDE managed section
+  if (config.content?.trim()) {
+    managedParts.push(config.content.trim());
     managedParts.push('');
-    includedSections.push('setup-content');
+    includedSections.push('profile-content');
   }
 
   // Header
@@ -488,7 +423,7 @@ export async function generateClaudeMd(
 
   // Skills section
   if (includeSkills) {
-    const skillsSection = generateSkillsSection(setup, config);
+    const skillsSection = generateSkillsSection(config);
     if (skillsSection) {
       managedParts.push(skillsSection);
       includedSections.push('skills');
@@ -497,7 +432,7 @@ export async function generateClaudeMd(
 
   // Agents section
   if (includeAgents) {
-    const agentsSection = generateAgentsSection(setup, config);
+    const agentsSection = generateAgentsSection(config);
     if (agentsSection) {
       managedParts.push(agentsSection);
       includedSections.push('agents');
@@ -506,7 +441,7 @@ export async function generateClaudeMd(
 
   // Hooks section
   if (includeHooks) {
-    const hooksSection = generateHooksSection(setup);
+    const hooksSection = generateHooksSection();
     if (hooksSection) {
       managedParts.push(hooksSection);
       includedSections.push('hooks');
@@ -514,7 +449,7 @@ export async function generateClaudeMd(
   }
 
   // MCP section
-  const mcpSection = generateMcpSection(setup, config);
+  const mcpSection = generateMcpSection(config);
   if (mcpSection) {
     managedParts.push(mcpSection);
     includedSections.push('mcp');
@@ -604,10 +539,9 @@ export function replaceManagedSection(
  * Create minimal CLAUDE.md with only essential information
  */
 export async function createMinimalClaudeMd(
-  setup: MergedSetup,
   config: MergedConfig,
 ): Promise<string> {
-  const result = await generateClaudeMd(setup, config, {
+  const result = await generateClaudeMd(config, {
     includeProfile: false,
     includeAgents: false,
     includeSkills: false,

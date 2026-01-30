@@ -13,8 +13,6 @@ import {
   getProfileDir,
   getAddonsDir,
   getAddonDir,
-  getSetupsDir,
-  getSetupDir,
   expandPath,
   resolvePath,
   isPathWithin,
@@ -67,20 +65,6 @@ describe('paths', () => {
     it('should return addon directory path', () => {
       expect(getAddonDir('my-addon')).toBe(
         join(home, '.claudeops', 'addons', 'my-addon')
-      );
-    });
-  });
-
-  describe('getSetupsDir', () => {
-    it('should return ~/.claudeops/setups', () => {
-      expect(getSetupsDir()).toBe(join(home, '.claudeops', 'setups'));
-    });
-  });
-
-  describe('getSetupDir', () => {
-    it('should return setup directory path', () => {
-      expect(getSetupDir('my-setup')).toBe(
-        join(home, '.claudeops', 'setups', 'my-setup')
       );
     });
   });

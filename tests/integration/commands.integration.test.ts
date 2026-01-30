@@ -59,8 +59,8 @@ describe('CLI command imports', () => {
     expect(mod.default.meta).toBeDefined();
   });
 
-  it('should import setup command', async () => {
-    const mod = await import('@/commands/setup.js');
+  it('should import reset command', async () => {
+    const mod = await import('@/commands/reset.js');
     expect(mod.default).toBeDefined();
     expect(mod.default.meta).toBeDefined();
   });

@@ -20,9 +20,6 @@ export const PROFILES_DIR = 'profiles';
 /** Addons subdirectory */
 export const ADDONS_DIR = 'addons';
 
-/** Setups subdirectory */
-export const SETUPS_DIR = 'setups';
-
 /** Claude settings file */
 export const CLAUDE_SETTINGS_FILE = 'claude_desktop_config.json';
 

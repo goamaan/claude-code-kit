@@ -9,7 +9,6 @@ import {
   CLAUDE_DIR,
   PROFILES_DIR,
   ADDONS_DIR,
-  SETUPS_DIR,
 } from './constants.js';
 
 /**
@@ -67,23 +66,6 @@ export function getAddonsDir(): string {
  */
 export function getAddonDir(addonName: string): string {
   return join(getAddonsDir(), addonName);
-}
-
-/**
- * Get the setups directory
- * @returns ~/.claudeops/setups
- */
-export function getSetupsDir(): string {
-  return join(getGlobalConfigDir(), SETUPS_DIR);
-}
-
-/**
- * Get a specific setup directory
- * @param setupName - Name of the setup
- * @returns ~/.claudeops/setups/<setupName>
- */
-export function getSetupDir(setupName: string): string {
-  return join(getSetupsDir(), setupName);
 }
 
 /**

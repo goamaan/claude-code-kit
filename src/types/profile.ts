@@ -91,6 +91,9 @@ export interface ProfileDetails {
       };
       overrides: Record<string, ModelName>;
     };
+
+    /** Custom CLAUDE.md content */
+    content?: string;
   };
 
   /** Inheritance chain */
@@ -144,6 +147,9 @@ export interface CreateProfileOptions {
       complex?: ModelName;
     };
   };
+
+  /** Custom CLAUDE.md content */
+  content?: string;
 
   /** Whether to activate after creation */
   activate?: boolean;

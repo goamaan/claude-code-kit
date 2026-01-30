@@ -1,6 +1,6 @@
 /**
  * Hook Composer - Merge hooks from multiple sources
- * Combines hooks from addons, setups, and user configurations
+ * Combines hooks from addons and user configurations
  */
 
 import { resolve, isAbsolute } from 'node:path';
@@ -27,7 +27,7 @@ import type {
  */
 export interface HookSource {
   /** Type of source */
-  type: 'addon' | 'setup' | 'user';
+  type: 'addon' | 'user';
 
   /** Name of the source (addon name, setup name, or 'user') */
   name: string;

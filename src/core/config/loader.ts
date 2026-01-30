@@ -259,6 +259,9 @@ export async function loadConfig(options?: {
 
   result.packageManager = globalConfig.packageManager;
 
+  // Content from profile (custom CLAUDE.md instructions)
+  result.content = profileConfig?.content;
+
   return result;
 }
 

@@ -120,9 +120,8 @@ export type MainConfig = z.infer<typeof MainConfigSchema>;
 /**
  * Profile skills configuration.
  * - `disabled`: Skills to exclude (recommended approach)
- * - `enabled`: Skills to include (used by setups, not recommended for profiles)
+ * - `enabled`: Skills to include
  *
- * For profiles, prefer using `disabled` to blacklist specific skills.
  * All skills are enabled by default unless explicitly disabled.
  */
 export const ProfileSkillsConfigSchema = z.object({
@@ -134,9 +133,8 @@ export type ProfileSkillsConfig = z.infer<typeof ProfileSkillsConfigSchema>;
 /**
  * Profile hooks configuration.
  * - `disabled`: Hooks to exclude (recommended approach)
- * - `enabled`: Hooks to include (used by setups, not recommended for profiles)
+ * - `enabled`: Hooks to include
  *
- * For profiles, prefer using `disabled` to blacklist specific hooks.
  * All hooks are enabled by default unless explicitly disabled.
  */
 export const ProfileHooksConfigSchema = z.object({
@@ -171,6 +169,7 @@ export const ProfileFileConfigSchema = z.object({
   model: ModelConfigSchema.optional(),
   cost: CostConfigSchema.optional(),
   packageManager: PackageManagerSchema.optional(),
+  content: z.string().optional(),
 });
 export type ProfileFileConfig = z.infer<typeof ProfileFileConfigSchema>;
 
@@ -268,6 +267,9 @@ export interface MergedConfig {
 
   // Package manager preference
   packageManager?: PackageManager;
+
+  // Custom CLAUDE.md content from profile
+  content?: string;
 }
 
 // =============================================================================
