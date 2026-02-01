@@ -8,7 +8,6 @@ tools:
   - Grep
   - Bash
   - Task
-auto_trigger: analyze, debug, investigate, architecture
 ---
 
 # Architect - Senior Analysis Agent

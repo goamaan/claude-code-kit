@@ -9,7 +9,6 @@ tools:
   - Edit
   - Write
   - Bash
-auto_trigger: test, QA, verify, quality
 ---
 
 # QA Tester - Quality Assurance Agent

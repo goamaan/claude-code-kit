@@ -7,11 +7,6 @@ tools:
   - Glob
   - Grep
   - Bash
-auto_trigger:
-  - vulnerability
-  - OWASP
-  - injection
-  - CVE
 ---
 
 # Security Sentinel Agent

@@ -1,15 +1,9 @@
 ---
 name: scan
-description: AI-enhance .claude/ artifacts with deep codebase analysis
-license: MIT
-metadata:
-  author: claudeops
-  version: "4.0.0"
-  claudeops:
-    domains: [general]
-    userInvocable: true
-    disableModelInvocation: true
-    allowedTools: [Bash, Read, Write, Glob, Grep, Edit]
+description: AI-enhanced .claude/ artifacts with deep codebase analysis
+user-invocable: true
+disable-model-invocation: true
+allowed-tools: [Bash, Read, Write, Glob, Grep, Edit]
 ---
 
 # AI-Enhanced Codebase Analysis
@@ -20,13 +14,13 @@ You are a codebase analysis expert. Your job is to enhance the .claude/ artifact
 
 ### Step 1: Check existing artifacts
 
-Check if `.claude/CLAUDE.md` already exists (from `cops init`). If not, generate the baseline first:
+Check if `.claude/CLAUDE.md` already exists. If not, run the scanner first:
 
 ```bash
-cops init --project --minimal
+node <plugin>/scripts/scan.mjs "$PWD"
 ```
 
-Then read the generated `.claude/CLAUDE.md` to understand what the deterministic scan already captured.
+Use the JSON output to generate a baseline `.claude/CLAUDE.md`. Then read the generated file to understand what the deterministic scan already captured.
 
 ### Step 2: Read key files for deeper context
 
@@ -45,7 +39,7 @@ Review the existing CLAUDE.md and enhance it with insights that deterministic sc
 - Common gotchas or patterns
 - Environment setup notes
 
-**Important:** Preserve the `<!-- cops:project:start -->` / `<!-- cops:project:end -->` managed section. Add your enhancements OUTSIDE this section (before or after it), so that `cops init --project` can update the managed section without clobbering your additions.
+**Important:** Preserve any existing managed sections. Add your enhancements in a way that doesn't conflict with future automated updates.
 
 ### Step 4: Generate .claude/skills/ (only if warranted)
 
@@ -74,7 +68,7 @@ If settings.json already exists, MERGE — don't overwrite.
 ## Important Rules
 
 1. **Preserve existing .claude/ content** — if CLAUDE.md already exists, ask the user before overwriting
-2. **Preserve managed markers** — never remove `<!-- cops:project:start/end -->` markers
+2. **Preserve managed sections** — don't overwrite automated/managed content sections
 3. **Be concise** — Claude reads this every session, brevity matters
 4. **Be specific** — use actual commands from the project, not generic ones
 5. **Don't over-generate** — fewer, better files beat many mediocre ones
@@ -85,7 +79,6 @@ If settings.json already exists, MERGE — don't overwrite.
 ```markdown
 # Project Conventions
 
-<!-- cops:project:start -->
 ## Commands
 - Build: `npm run build`
 - Test: `npm test`
@@ -100,7 +93,6 @@ If settings.json already exists, MERGE — don't overwrite.
 ## Architecture
 - `src/core/` — Core business logic
 - `src/commands/` — CLI commands
-<!-- cops:project:end -->
 
 ## Conventions
 - ESM-only (type: "module" in package.json)

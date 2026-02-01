@@ -1,18 +1,12 @@
+#!/usr/bin/env node
 /**
- * Hook: learning-retriever
- * Event: UserPromptSubmit
- * Description: Retrieves relevant past learnings and injects them as context
- * Matcher: *
- * Enabled: true
- *
  * learning-retriever - UserPromptSubmit Hook
  *
  * On each user prompt, checks .claude/learnings/ for relevant past learnings
  * matching current prompt keywords. Injects brief context about matching
  * learnings to help Claude avoid repeating past mistakes.
  *
- * Hook type: UserPromptSubmit
- * Triggers: Before user prompt is submitted to Claude
+ * Protocol: reads JSON from stdin, outputs context to stdout
  */
 
 import { existsSync, readdirSync, readFileSync } from 'fs';
@@ -120,51 +114,88 @@ function findRelevantLearnings(learningsDir, keywords) {
     .slice(0, 3);
 }
 
-/**
- * Main hook function
- */
-export default async function learningRetrieverHook(context) {
-  const { prompt } = context;
-
-  if (!prompt || typeof prompt !== 'string') {
-    return { decision: 'allow' };
-  }
-
-  // Check for learnings directory
-  const cwd = process.cwd();
-  const learningsDir = join(cwd, '.claude', 'learnings');
-
-  if (!existsSync(learningsDir)) {
-    return { decision: 'allow' };
-  }
-
-  // Extract keywords
-  const keywords = extractKeywords(prompt);
-  if (keywords.length === 0) {
-    return { decision: 'allow' };
-  }
-
-  // Search for matching learnings
-  const matches = findRelevantLearnings(learningsDir, keywords);
-
-  if (matches.length === 0) {
-    return { decision: 'allow' };
-  }
-
-  // Build context injection
-  const learningLines = matches.map(m => {
-    const component = m.component ? ` [${m.component}]` : '';
-    return `- ${m.symptom}${component} (see .claude/learnings/${m.category}/${m.file})`;
-  });
-
-  const injection = `\n\n<past_learnings>\nRelevant learnings from previous sessions:\n${learningLines.join('\n')}\n</past_learnings>`;
-
-  return {
-    decision: 'allow',
-    modifiedPrompt: prompt + injection,
-    metadata: {
-      learningsMatched: matches.length,
-      keywords: keywords.slice(0, 5),
-    },
-  };
+// Read input from stdin
+let input;
+try {
+  const stdinData = readFileSync(0, 'utf8');
+  input = JSON.parse(stdinData);
+} catch {
+  process.exit(0);
 }
+
+const cwd = input.cwd || process.cwd();
+const prompt = input.user_prompt || input.prompt || '';
+
+// Check for learnings directory
+const learningsDir = join(cwd, '.claude', 'learnings');
+
+if (!existsSync(learningsDir)) {
+  process.exit(0);
+}
+
+// Extract keywords from prompt (if available)
+const keywords = extractKeywords(prompt);
+
+// If no prompt available, try to surface recent learnings
+let matches;
+if (keywords.length === 0) {
+  // Fallback: find the 3 most recent learnings regardless of keywords
+  const allLearnings = [];
+  const categoryDirs = [
+    'build-errors', 'test-failures', 'type-errors',
+    'runtime-errors', 'config-issues', 'patterns',
+    'workarounds', 'conventions',
+  ];
+
+  for (const catDir of categoryDirs) {
+    const dir = join(learningsDir, catDir);
+    if (!existsSync(dir)) continue;
+    try {
+      const entries = readdirSync(dir);
+      for (const file of entries) {
+        if (!file.endsWith('.md')) continue;
+        try {
+          const content = readFileSync(join(dir, file), 'utf8');
+          const frontmatterEnd = content.indexOf('\n---', 4);
+          if (frontmatterEnd === -1) continue;
+          const frontmatter = content.slice(0, frontmatterEnd + 4);
+          const dateMatch = frontmatter.match(/date:\s*(\S+)/);
+          const nameMatch = frontmatter.match(/symptoms:\s*\n\s*-\s*"?([^"\n]+)"?/);
+          const componentMatch = frontmatter.match(/component:\s*(.+)/);
+          allLearnings.push({
+            file,
+            category: catDir,
+            symptom: nameMatch ? nameMatch[1].trim() : file.replace('.md', ''),
+            component: componentMatch ? componentMatch[1].trim() : '',
+            date: dateMatch ? dateMatch[1] : '0000-00-00',
+          });
+        } catch { /* skip */ }
+      }
+    } catch { /* skip */ }
+  }
+
+  matches = allLearnings
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 3);
+} else {
+  matches = findRelevantLearnings(learningsDir, keywords);
+}
+
+if (matches.length === 0) {
+  process.exit(0);
+}
+
+// Build context injection
+const learningLines = matches.map(m => {
+  const component = m.component ? ` [${m.component}]` : '';
+  return `- ${m.symptom}${component} (see .claude/learnings/${m.category}/${m.file})`;
+});
+
+const output = {
+  hookSpecificOutput: {
+    hookEventName: 'UserPromptSubmit',
+    additionalContext: `<past_learnings>\nRelevant learnings from previous sessions:\n${learningLines.join('\n')}\n</past_learnings>`
+  }
+};
+console.log(JSON.stringify(output));
+process.exit(0);

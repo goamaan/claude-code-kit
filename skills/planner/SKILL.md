@@ -1,16 +1,9 @@
 ---
 name: planner
 description: Strategic planning with plan approval workflow and maximal requirement gathering
-license: MIT
-metadata:
-  author: claudeops
-  version: "4.0.0"
-  claudeops:
-    triggers: [plan this, how should I approach, design a plan, help me plan]
-    domains: [general]
-    model: opus
-    userInvocable: true
-    disableModelInvocation: false
+user-invocable: true
+disable-model-invocation: false
+model: opus
 ---
 
 # Planner Skill (v5.0)

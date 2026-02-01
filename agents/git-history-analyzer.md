@@ -7,11 +7,6 @@ tools:
   - Glob
   - Grep
   - Bash
-auto_trigger:
-  - git-history
-  - blame
-  - archaeology
-  - changelog
 ---
 
 # Git History Analyzer Agent

@@ -1,16 +1,9 @@
 ---
 name: testing
 description: Testing orchestration with TDD workflow, coverage-driven generation, and parallel execution
-license: MIT
-metadata:
-  author: claudeops
-  version: "4.0.0"
-  claudeops:
-    triggers: [test, coverage, write tests, fix tests, TDD, test suite]
-    domains: [testing]
-    model: sonnet
-    userInvocable: true
-    disableModelInvocation: false
+user-invocable: true
+disable-model-invocation: false
+model: sonnet
 ---
 
 # Testing Skill

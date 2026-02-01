@@ -26,18 +26,13 @@ const execAsync = promisify(exec);
  * Detect package manager from environment or lockfile
  */
 function getPackageManager(projectDir) {
-  // Check env var first (set by claudeops sync)
-  const preferred = process.env.CLAUDEOPS_PACKAGE_MANAGER;
-  if (preferred && ['npm', 'yarn', 'pnpm', 'bun'].includes(preferred)) {
-    return preferred;
-  }
-
   // Detect from lockfile
   const lockfiles = {
     'package-lock.json': 'npm',
     'yarn.lock': 'yarn',
     'pnpm-lock.yaml': 'pnpm',
     'bun.lockb': 'bun',
+    'bun.lock': 'bun',
   };
 
   for (const [file, pm] of Object.entries(lockfiles)) {

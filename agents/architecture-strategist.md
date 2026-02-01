@@ -7,11 +7,6 @@ tools:
   - Glob
   - Grep
   - Bash
-auto_trigger:
-  - architecture
-  - compliance
-  - design-pattern
-  - scalability
 ---
 
 # Architecture Strategist Agent

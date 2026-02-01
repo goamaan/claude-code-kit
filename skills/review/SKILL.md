@@ -1,16 +1,9 @@
 ---
 name: review
 description: Multi-specialist parallel code review with security, performance, and architecture analysis
-license: MIT
-metadata:
-  author: claudeops
-  version: "4.0.0"
-  claudeops:
-    triggers: [review, audit, code review, PR review, review this]
-    domains: [general]
-    model: opus
-    userInvocable: true
-    disableModelInvocation: false
+user-invocable: true
+disable-model-invocation: false
+model: opus
 ---
 
 # Review Skill

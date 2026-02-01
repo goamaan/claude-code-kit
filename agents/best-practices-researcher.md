@@ -7,11 +7,6 @@ tools:
   - Glob
   - Grep
   - Bash
-auto_trigger:
-  - best-practice
-  - convention
-  - standard
-  - recommendation
 ---
 
 # Best Practices Researcher Agent

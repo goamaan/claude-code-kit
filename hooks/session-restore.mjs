@@ -1,18 +1,12 @@
+#!/usr/bin/env node
 /**
- * Hook: session-restore
- * Event: UserPromptSubmit
- * Description: Restores context from previous session on first message
- * Matcher: *
- * Enabled: true
- *
  * session-restore - UserPromptSubmit Hook
  *
  * On the first user message of a session, checks .claude/session-state.json
  * for recent session state and injects brief context about what was
  * happening in the previous session.
  *
- * Hook type: UserPromptSubmit
- * Triggers: Before user prompt is submitted to Claude
+ * Protocol: reads JSON from stdin, outputs context to stdout
  */
 
 import { existsSync, readFileSync, writeFileSync } from 'fs';
@@ -26,7 +20,7 @@ function isFirstPrompt(cwd) {
   const flagPath = join(cwd, '.claude', '.session-restored');
 
   if (existsSync(flagPath)) {
-    // Check if flag is from current process (within last 10 seconds)
+    // Check if flag is from current process (within last 24 hours)
     try {
       const content = readFileSync(flagPath, 'utf8').trim();
       const flagTime = parseInt(content, 10);
@@ -73,58 +67,55 @@ function isRecent(state) {
   return hoursAgo < 48;
 }
 
-/**
- * Main hook function
- */
-export default async function sessionRestoreHook(context) {
-  const { prompt } = context;
-
-  if (!prompt || typeof prompt !== 'string') {
-    return { decision: 'allow' };
-  }
-
-  const cwd = process.cwd();
-
-  // Only inject on first prompt
-  if (!isFirstPrompt(cwd)) {
-    return { decision: 'allow' };
-  }
-
-  // Load and check state
-  const state = loadSessionState(cwd);
-  if (!state || !isRecent(state)) {
-    return { decision: 'allow' };
-  }
-
-  // Build context
-  const parts = [];
-
-  if (state.branch) {
-    parts.push(`Branch: ${state.branch}`);
-  }
-
-  if (state.modifiedFiles?.length > 0) {
-    const fileList = state.modifiedFiles.slice(0, 5).join(', ');
-    const extra = state.modifiedFiles.length > 5 ? ` (+${state.modifiedFiles.length - 5} more)` : '';
-    parts.push(`Modified files: ${fileList}${extra}`);
-  }
-
-  if (state.stopReason && state.stopReason !== 'unknown') {
-    parts.push(`Previous session ended: ${state.stopReason}`);
-  }
-
-  if (parts.length === 0) {
-    return { decision: 'allow' };
-  }
-
-  const injection = `\n\n<previous_session>\n${parts.join('\n')}\n</previous_session>`;
-
-  return {
-    decision: 'allow',
-    modifiedPrompt: prompt + injection,
-    metadata: {
-      sessionRestored: true,
-      lastSession: state.lastSession,
-    },
-  };
+// Read input from stdin
+let input;
+try {
+  const stdinData = readFileSync(0, 'utf8');
+  input = JSON.parse(stdinData);
+} catch {
+  process.exit(0);
 }
+
+const cwd = input.cwd || process.cwd();
+
+// Only inject on first prompt
+if (!isFirstPrompt(cwd)) {
+  process.exit(0);
+}
+
+// Load and check state
+const state = loadSessionState(cwd);
+if (!state || !isRecent(state)) {
+  process.exit(0);
+}
+
+// Build context
+const parts = [];
+
+if (state.branch) {
+  parts.push(`Branch: ${state.branch}`);
+}
+
+if (state.modifiedFiles?.length > 0) {
+  const fileList = state.modifiedFiles.slice(0, 5).join(', ');
+  const extra = state.modifiedFiles.length > 5 ? ` (+${state.modifiedFiles.length - 5} more)` : '';
+  parts.push(`Modified files: ${fileList}${extra}`);
+}
+
+if (state.stopReason && state.stopReason !== 'unknown') {
+  parts.push(`Previous session ended: ${state.stopReason}`);
+}
+
+if (parts.length === 0) {
+  process.exit(0);
+}
+
+// Output context for Claude
+const output = {
+  hookSpecificOutput: {
+    hookEventName: 'UserPromptSubmit',
+    additionalContext: `<previous_session>\n${parts.join('\n')}\n</previous_session>`
+  }
+};
+console.log(JSON.stringify(output));
+process.exit(0);

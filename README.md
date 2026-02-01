@@ -2,15 +2,14 @@
 
 # claudeops
 
-**Batteries-Included Claude Code Enhancement**
+**Multi-Agent Orchestration Plugin for Claude Code**
 
-[![npm version](https://img.shields.io/npm/v/claudeops.svg)](https://www.npmjs.com/package/claudeops)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Node.js >= 20.0.0](https://img.shields.io/badge/node-%3E%3D%2020.0.0-green.svg)](https://nodejs.org)
+[![Claude Code Plugin](https://img.shields.io/badge/claude_code-plugin-purple.svg)](https://docs.anthropic.com/en/docs/claude-code)
 
-Transform Claude Code with profiles, lifecycle hooks, and smart configuration sync.
+Workflow skills, specialized agents, quality hooks, and codebase scanning.
 
-[Quick Start](#quick-start) | [Hooks](#hooks) | [Commands](#cli-commands) | [Configuration](#configuration)
+[Installation](#installation) | [Skills](#skills) | [Agents](#agents) | [Hooks](#hooks) | [Scanner](#scanner)
 
 </div>
 
@@ -18,284 +17,158 @@ Transform Claude Code with profiles, lifecycle hooks, and smart configuration sy
 
 ## What is claudeops?
 
-claudeops is a lean enhancement toolkit for Claude Code that simplifies your workflow with profile-based configuration, lifecycle hooks, and automatic synchronization. Organize your projects, define custom instructions, and automate quality checks with a clean TOML-based system.
+claudeops is a **Claude Code directory plugin** that adds multi-agent orchestration, workflow automation, quality hooks, and codebase scanning to Claude Code. No build step, no dependencies — just markdown, JavaScript, and JSON.
 
-**Why claudeops?**
+## Installation
 
-- **Profile-driven** -- Switch between TOML-based profiles for different projects and workflows
-- **Custom instructions** -- Define per-project CLAUDE.md content and agent configuration
-- **Lifecycle hooks** -- Automate quality checks and enforcement at every stage
-- **Auto-sync** -- Configuration is automatically synced to `~/.claude/` after builds and profile switches
-- **Skills and hooks** -- Extend functionality with built-in and custom capabilities
-
-## Features
-
-- **Profile System** -- TOML-based profiles with inheritance, custom content, and agent configuration
-- **18 Lifecycle Hooks** -- Automated checks and enforcement at every stage of the workflow
-- **Skills** -- Reusable capabilities that can be enabled and synced
-- **Auto-sync** -- Configuration is automatically synced to `~/.claude/` after builds and profile switches
-- **Specialized Skills** -- Built-in skills for documentation, testing, security, and more
-
----
-
-## Quick Start
-
-### Installation
+### Option 1: Clone and use as plugin directory
 
 ```bash
-npm install -g claudeops
+git clone https://github.com/goamaan/claudeops.git ~/.claude-plugins/claudeops
+claude --plugin-dir ~/.claude-plugins/claudeops
 ```
 
-### Initialize
+### Option 2: Use directly from a local clone
 
 ```bash
-cops init
+git clone https://github.com/goamaan/claudeops.git
+cd your-project
+claude --plugin-dir /path/to/claudeops
 ```
 
-Initialize claudeops and set up project artifacts, profiles, and configuration.
+## Skills
 
-### Verify
+Skills are invoked with `/claudeops:<name>` in Claude Code.
 
-```bash
-cops doctor
-```
+| Skill | Description |
+|-------|-------------|
+| **init** | Interactive project setup — scan codebase, generate `.claude/` config |
+| **scan** | AI-enhanced codebase analysis beyond deterministic scanning |
+| **orchestrate** | Core multi-agent orchestration conductor |
+| **autopilot** | Full autonomous execution from idea to working code |
+| **planner** | Strategic planning with requirement gathering |
+| **executor** | Standard code implementation for features and bug fixes |
+| **debug** | Systematic debugging with parallel hypothesis testing |
+| **review** | Multi-specialist parallel code review |
+| **testing** | Testing orchestration with TDD and coverage-driven generation |
+| **security** | OWASP security audit, threat modeling, dependency audit |
+| **doctor** | Diagnose plugin setup and environment health |
+| **learn** | Capture session learnings for future retrieval |
 
-### Switch Profiles
+## Agents
 
-```bash
-cops profile list
-cops profile use fullstack
-```
+Agents are specialized subagent definitions used by skills for delegation.
 
-That's it. Start using Claude Code normally and claudeops handles configuration sync and lifecycle hooks.
-
-### Command Aliases
-
-| Alias | Use For |
+### Opus Tier (Complex/Analytical)
+| Agent | Purpose |
 |-------|---------|
-| `claudeops` | Installation, formal contexts |
-| `cops` | Day-to-day usage (recommended) |
-| `co` | Quick commands |
+| architect | Deep analysis, debugging, system design, verification |
+| executor | Multi-file features, bug fixes, standard implementation |
+| designer | UI/UX, component creation, styling |
+| qa-tester | Test planning, TDD workflow, quality assurance |
+| security | Security audit, threat modeling |
+| researcher | External research, API analysis, tech evaluation |
+| planner | Strategic planning, requirements gathering |
+| critic | Plan review, critical analysis, gap identification |
+| security-sentinel | OWASP vulnerability review, injection analysis |
+| performance-oracle | Performance bottleneck analysis, optimization |
+| architecture-strategist | Architectural compliance, design pattern review |
 
-All examples below use `cops`, but any alias works.
+### Sonnet Tier (Standard)
+| Agent | Purpose |
+|-------|---------|
+| code-simplicity-reviewer | YAGNI detection, over-engineering review |
+| best-practices-researcher | Framework best practices, convention research |
 
----
+### Haiku Tier (Fast/Simple)
+| Agent | Purpose |
+|-------|---------|
+| explore | File search, codebase discovery, structure mapping |
+| executor-low | Single-file boilerplate, trivial changes |
+| writer | Documentation, comments, technical writing |
+| git-history-analyzer | Code archaeology, git log analysis, changelogs |
+| vision | Visual analysis of images, diagrams, UI screenshots |
 
 ## Hooks
 
-claudeops includes 18 lifecycle hooks. Eight are enabled by default; the rest can be enabled per-profile.
+Event-driven scripts that run automatically during Claude Code sessions.
 
-### Enabled by Default
+| Hook | Event | Description |
+|------|-------|-------------|
+| security-scan | PreToolUse (Bash) | Scans for secrets before git commits |
+| git-branch-check | PreToolUse (Bash) | Warns when committing to protected branches |
+| lint-changed | PostToolUse (Edit/Write) | Runs ESLint on modified JS/TS files |
+| typecheck-changed | PostToolUse (Edit/Write) | Runs TypeScript type checking on modified files |
+| continuation-check | Stop | Evaluates completion and blocks premature stopping |
+| session-save | Stop | Saves session state for cross-session restoration |
+| session-learner | Stop | Captures learnings from resolved problems |
+| session-restore | UserPromptSubmit | Restores context from previous session |
+| learning-retriever | UserPromptSubmit | Retrieves relevant past learnings as context |
 
-| Hook | Trigger | Purpose |
-|------|---------|---------|
-| `continuation-check` | Stop | Evaluates completion status, blocks premature stopping |
-| `checkpoint` | Stop | Creates incremental code checkpoints |
-| `version-bump-prompt` | Stop | Suggests version bump per semver |
-| `lint-changed` | PostToolUse:Write | Runs ESLint after Write/Edit operations |
-| `typecheck-changed` | PostToolUse:Write | Type-checks after Write/Edit operations |
-| `keyword-detector` | UserPromptSubmit | Detects keywords for mode activation |
-| `thinking-level` | UserPromptSubmit | Sets extended thinking budget by complexity |
-| `swarm-lifecycle` | SubagentStop | Manages swarm agent lifecycle |
+Hooks are registered in `hooks/hooks.json` using Claude Code's plugin hook format.
 
-### Disabled by Default
+## Scanner
 
-Enable these in your profile's `[hooks]` section:
+The scanner (`scripts/scan.mjs`) performs deterministic codebase analysis and outputs JSON. It detects:
 
-| Hook | Trigger | Purpose |
-|------|---------|---------|
-| `cost-warning` | UserPromptSubmit | Alerts when approaching daily budget |
-| `security-scan` | PreToolUse | Scans for secrets before git commits |
-| `test-reminder` | PostToolUse | Reminds to run tests after code changes |
-| `format-on-save` | PostToolUse | Auto-formats files after Write/Edit |
-| `git-branch-check` | PreToolUse | Warns on commits to main/master |
-| `todo-tracker` | UserPromptSubmit | Tracks TODO items mentioned in prompts |
-| `session-log` | Stop | Logs session summary when Claude stops |
-| `large-file-warning` | PreToolUse | Warns before reading large files |
-| `swarm-cost-tracker` | PostToolUse | Tracks per-agent costs during orchestration |
-| `team-lifecycle` | SubagentStop | Logs team creation and shutdown events |
+- Programming languages and file counts
+- Frameworks (JS, Python, Rust, Go, Java ecosystems)
+- Build systems and scripts
+- Test frameworks and test directories
+- Linters and formatters
+- CI/CD pipelines
+- Database/ORM configurations
+- API styles (REST, GraphQL, gRPC, tRPC)
+- Monorepo tools
+- Code conventions (imports, exports, naming, test location)
+- Language-specific details (Python venvs, Rust editions, Go modules, Java build tools)
 
-Hooks are automatically synced to `~/.claude/settings.json` via `cops sync`.
+### Usage
 
+```bash
+node scripts/scan.mjs /path/to/project
+```
+
+Outputs JSON to stdout. Used by the `init` and `scan` skills.
+
+## Customization
+
+### Adding skills
+
+Create `skills/<name>/SKILL.md` with YAML frontmatter:
+
+```yaml
 ---
-
-## CLI Commands
-
-All commands work with `claudeops`, `cops`, or `co`.
-
-### Getting Started
-
-```bash
-cops init                                 # Initialize claudeops
-cops doctor                               # Run diagnostics
-cops sync                                 # Sync configuration to ~/.claude/
-```
-
-### Profile Management
-
-Profiles are TOML files stored at `~/.claudeops/profiles/`. They support inheritance, custom CLAUDE.md content, agent configuration, and hook/skill toggling.
-
-```bash
-cops profile list                         # List all profiles
-cops profile use <name>                   # Switch active profile (auto-syncs)
-cops profile create <name>                # Create a new profile
-cops profile delete <name>                # Delete a profile
-```
-
-### Utilities
-
-```bash
-cops sync                                 # Sync to ~/.claude/
-cops doctor                               # Run diagnostics
-cops reset                                # Remove claudeops artifacts from ~/.claude/
-cops reset --global                       # Reset global config
-cops reset --all                          # Reset everything
-cops reset --dry-run                      # Preview what would be removed
-cops reset --force                        # Skip confirmation
-cops upgrade                              # Check and install updates
-cops --version                            # Show installed version
-```
-
+name: my-skill
+description: What this skill does
+user-invocable: true
 ---
-
-## Configuration
-
-### Global Configuration
-
-Location: `~/.claudeops/config.toml`
-
-```toml
-[model]
-default = "sonnet"
-
-[model.routing]
-simple = "haiku"
-standard = "sonnet"
-complex = "opus"
-
-[cost]
-tracking = true
-budget_daily = 20.0
-
-[sync]
-auto = true
-watch = false
-
-packageManager = "bun"
 ```
 
-### Profile Configuration
+### Adding agents
 
-Location: `~/.claudeops/profiles/<name>.toml`
+Create `agents/<name>.md` with YAML frontmatter:
 
-Profiles define agent configuration, model routing, skills, hooks, and custom CLAUDE.md content. They support single inheritance via the `extends` field.
-
-```toml
-name = "my-profile"
-description = "Custom development profile"
-extends = "fullstack"
-content = """
-Custom instructions that get written to CLAUDE.md.
-These are injected when the profile is active.
-"""
-
-[model]
-default = "opus"
-
-[model.routing]
-simple = "haiku"
-standard = "sonnet"
-complex = "opus"
-
-[agents.executor]
-model = "opus"
-priority = 80
-
-[agents.architect]
-model = "opus"
-priority = 80
-
-[skills]
-enabled = ["typescript-expert", "tdd"]
-disabled = ["deepsearch"]
-
-[hooks]
-enabled = ["security-scan", "test-reminder"]
-disabled = ["format-on-save"]
-
-[cost]
-tracking = true
-budget_daily = 10.0
-```
-
-### Auto-sync
-
-Configuration is automatically synced to `~/.claude/` in two ways:
-
-1. **postbuild** -- The `postbuild` script runs `cops sync` after every build
-2. **Profile switch** -- `cops profile use <name>` syncs immediately
-
-You can also sync manually at any time with `cops sync`.
-
+```yaml
 ---
-
-## Troubleshooting
-
-### Command Not Found
-
-If `cops` is not found after installation:
-
-```bash
-# Check installation
-npm list -g claudeops
-
-# Add npm bin to PATH
-export PATH="$(npm config get prefix)/bin:$PATH"
-
-# Add to shell profile for persistence
-echo 'export PATH="$(npm config get prefix)/bin:$PATH"' >> ~/.zshrc
-```
-
-### Configuration Issues
-
-```bash
-cops doctor                               # Diagnose all issues
-cops sync --dry-run                       # Preview sync without applying
-```
-
-### Reset to Clean State
-
-```bash
-cops reset --dry-run                      # Preview what gets removed
-cops reset                                # Remove claudeops artifacts from ~/.claude/
-cops reset --all --force                  # Full reset, skip confirmation
-```
-
+name: my-agent
+description: What this agent specializes in
+model: sonnet
 ---
+```
 
-## Contributing
+### Adding hooks
 
-Contributions are welcome. This project uses [Bun](https://bun.sh/) as its package manager and runtime.
+1. Create a `.mjs` file in `hooks/`
+2. Register it in `hooks/hooks.json`
+3. Hook reads JSON from stdin, outputs JSON to stdout
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/my-feature`
-3. Make your changes and verify: `bun run verify`
-4. Commit with conventional messages: `git commit -m "feat: add feature"`
-5. Submit a Pull Request
+## Requirements
 
-When contributing:
-
-- Follow the existing code style
-- Add tests for new functionality
-- Update documentation as needed
-- Ensure `bun run verify` passes (typecheck, lint, test)
-
-## Resources
-
-- **Repository:** https://github.com/goamaan/claudeops
-- **Issues:** https://github.com/goamaan/claudeops/issues
-- **Discussions:** https://github.com/goamaan/claudeops/discussions
+- Claude Code
+- Node.js 20+
+- Git
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) for details.
+MIT

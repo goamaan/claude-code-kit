@@ -9,7 +9,6 @@ tools:
   - Edit
   - Write
   - Bash
-auto_trigger: component, UI, styling, frontend, design
 ---
 
 # Designer - UI/UX Implementation Agent
