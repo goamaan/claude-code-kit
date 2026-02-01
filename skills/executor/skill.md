@@ -1,8 +1,15 @@
 ---
 name: executor
-description: Standard code implementation for features and bug fixes. Balanced approach for most coding tasks.
-model: sonnet
-user-invocable: true
+description: Standard code implementation for features and bug fixes
+license: MIT
+metadata:
+  author: claudeops
+  version: "4.0.0"
+  claudeops:
+    domains: [general]
+    model: sonnet
+    userInvocable: true
+    disableModelInvocation: false
 ---
 
 # Executor Skill

@@ -32,13 +32,15 @@ describe('SkillManager', () => {
 
   describe('loadSkills', () => {
     it('should load skills from all directories', async () => {
-      // Create test skill files
+      // Create test skill files with new format
       writeFileSync(
         join(builtinDir, 'test-skill.md'),
         `---
 name: test-skill
 description: A test skill
-auto_trigger: ["test"]
+metadata:
+  claudeops:
+    triggers: [test]
 ---
 
 This is a test skill.`
@@ -140,17 +142,23 @@ Directory skill content.`
       expect(skills[0]?.metadata.name).toBe('dir-skill');
     });
 
-    it('should parse skill metadata correctly', async () => {
+    it('should parse new agentskills.io-compatible metadata', async () => {
       writeFileSync(
         join(builtinDir, 'complex-skill.md'),
         `---
 name: complex-skill
 description: Complex skill with metadata
-auto_trigger: ["autopilot", "build me"]
-domains: ["frontend", "backend"]
-model: opus
-disable-model-invocation: true
-user-invocable: false
+license: MIT
+metadata:
+  author: claudeops
+  version: "4.0.0"
+  claudeops:
+    triggers: [autopilot, build me]
+    domains: [frontend, backend]
+    model: opus
+    disableModelInvocation: true
+    userInvocable: false
+    alwaysActive: true
 ---
 
 Complex skill content.`
@@ -168,11 +176,81 @@ Complex skill content.`
       const skill = skills[0] as Skill;
       expect(skill.metadata.name).toBe('complex-skill');
       expect(skill.metadata.description).toBe('Complex skill with metadata');
+      expect(skill.metadata.license).toBe('MIT');
       expect(skill.metadata.autoTrigger).toEqual(['autopilot', 'build me']);
       expect(skill.metadata.domains).toEqual(['frontend', 'backend']);
       expect(skill.metadata.model).toBe('opus');
       expect(skill.metadata.disableModelInvocation).toBe(true);
       expect(skill.metadata.userInvocable).toBe(false);
+      expect(skill.metadata.alwaysActive).toBe(true);
+      expect(skill.metadata.rawMetadata).toEqual({
+        author: 'claudeops',
+        version: '4.0.0',
+      });
+    });
+
+    it('should parse allowedTools from metadata.claudeops', async () => {
+      writeFileSync(
+        join(builtinDir, 'tools-skill.md'),
+        `---
+name: tools-skill
+description: Skill with allowed tools
+metadata:
+  claudeops:
+    userInvocable: true
+    disableModelInvocation: true
+    allowedTools: [Bash, Read, Write, Glob, Grep, Edit]
+---
+
+Tools skill content.`
+      );
+
+      const manager = new SkillManager({
+        builtinSkillsDir: builtinDir,
+        globalSkillsDir: globalDir,
+        projectSkillsDir: projectDir,
+      });
+
+      const skills = await manager.loadSkills();
+
+      expect(skills.length).toBe(1);
+      const skill = skills[0] as Skill;
+      expect(skill.metadata.allowedTools).toEqual(['Bash', 'Read', 'Write', 'Glob', 'Grep', 'Edit']);
+      expect(skill.metadata.disableModelInvocation).toBe(true);
+    });
+
+    it('should handle legacy flat frontmatter format', async () => {
+      writeFileSync(
+        join(builtinDir, 'legacy-skill.md'),
+        `---
+name: legacy-skill
+description: Legacy format skill
+auto_trigger: ["test", "check"]
+domains: ["frontend"]
+model: sonnet
+disable-model-invocation: false
+user-invocable: true
+---
+
+Legacy skill content.`
+      );
+
+      const manager = new SkillManager({
+        builtinSkillsDir: builtinDir,
+        globalSkillsDir: globalDir,
+        projectSkillsDir: projectDir,
+      });
+
+      const skills = await manager.loadSkills();
+
+      expect(skills.length).toBe(1);
+      const skill = skills[0] as Skill;
+      expect(skill.metadata.name).toBe('legacy-skill');
+      expect(skill.metadata.autoTrigger).toEqual(['test', 'check']);
+      expect(skill.metadata.domains).toEqual(['frontend']);
+      expect(skill.metadata.model).toBe('sonnet');
+      expect(skill.metadata.disableModelInvocation).toBe(false);
+      expect(skill.metadata.userInvocable).toBe(true);
     });
 
     it('should handle skills without frontmatter', async () => {
@@ -193,6 +271,43 @@ Complex skill content.`
       expect(skills[0]?.metadata.name).toBe('no-frontmatter');
       expect(skills[0]?.metadata.description).toBe('');
     });
+
+    it('should handle ecosystem skills without claudeops metadata', async () => {
+      writeFileSync(
+        join(builtinDir, 'ecosystem-skill.md'),
+        `---
+name: ecosystem-skill
+description: A third-party skill
+license: Apache-2.0
+metadata:
+  author: someone-else
+  version: "1.0.0"
+---
+
+Ecosystem skill content.`
+      );
+
+      const manager = new SkillManager({
+        builtinSkillsDir: builtinDir,
+        globalSkillsDir: globalDir,
+        projectSkillsDir: projectDir,
+      });
+
+      const skills = await manager.loadSkills();
+
+      expect(skills.length).toBe(1);
+      const skill = skills[0] as Skill;
+      expect(skill.metadata.name).toBe('ecosystem-skill');
+      expect(skill.metadata.license).toBe('Apache-2.0');
+      expect(skill.metadata.rawMetadata).toEqual({
+        author: 'someone-else',
+        version: '1.0.0',
+      });
+      // No claudeops-specific fields
+      expect(skill.metadata.autoTrigger).toBeUndefined();
+      expect(skill.metadata.domains).toBeUndefined();
+      expect(skill.metadata.model).toBeUndefined();
+    });
   });
 
   describe('matchSkills', () => {
@@ -204,7 +319,9 @@ Complex skill content.`
         `---
 name: autopilot
 description: Full autonomous execution
-auto_trigger: ["autopilot", "build me"]
+metadata:
+  claudeops:
+    triggers: [autopilot, build me]
 ---
 
 Autopilot skill.`
@@ -215,7 +332,9 @@ Autopilot skill.`
         `---
 name: planner
 description: Planning skill
-auto_trigger: ["plan this"]
+metadata:
+  claudeops:
+    triggers: [plan this]
 ---
 
 Planner skill.`
@@ -230,7 +349,7 @@ Planner skill.`
       await manager.loadSkills();
     });
 
-    it('should match skills by auto_trigger', () => {
+    it('should match skills by trigger', () => {
       const matches = manager.matchSkills('autopilot: build a todo app');
 
       expect(matches.length).toBeGreaterThan(0);
@@ -264,14 +383,16 @@ Planner skill.`
 
     beforeEach(async () => {
       writeFileSync(
-        join(builtinDir, 'frontend-ui-ux.md'),
+        join(builtinDir, 'testing.md'),
         `---
-name: frontend-ui-ux
-description: Frontend skill
-domains: ["frontend"]
+name: testing
+description: Testing skill
+metadata:
+  claudeops:
+    domains: [testing]
 ---
 
-Frontend skill.`
+Testing skill.`
       );
 
       writeFileSync(
@@ -296,7 +417,7 @@ Autopilot skill.`
     it('should match skills by domain', () => {
       const matches = manager.matchByClassification({
         type: 'implementation',
-        domains: ['frontend'],
+        domains: ['testing'],
         complexity: 'moderate',
         signals: {
           wantsPersistence: false,
@@ -316,7 +437,7 @@ Autopilot skill.`
       });
 
       expect(matches.length).toBeGreaterThan(0);
-      expect(matches[0]?.skill.metadata.name).toBe('frontend-ui-ux');
+      expect(matches[0]?.skill.metadata.name).toBe('testing');
       expect(matches[0]?.matchReason).toBe('domain');
     });
 
@@ -364,7 +485,10 @@ Autopilot skill.`
         `---
 name: test-skill
 description: A test skill
-auto_trigger: ["test"]
+license: MIT
+metadata:
+  claudeops:
+    triggers: [test]
 ---
 
 Test skill content.`
@@ -411,12 +535,15 @@ Another skill content.`
         expect(existsSync(testSkillPath)).toBe(true);
         expect(existsSync(anotherSkillPath)).toBe(true);
 
-        // Verify content includes frontmatter
+        // Verify content includes new format frontmatter
         const content = readFileSync(testSkillPath, 'utf-8');
         expect(content).toContain('---');
         expect(content).toContain('name: test-skill');
         expect(content).toContain('description: A test skill');
-        expect(content).toContain('auto_trigger: ["test"]');
+        expect(content).toContain('license: MIT');
+        expect(content).toContain('metadata:');
+        expect(content).toContain('  claudeops:');
+        expect(content).toContain('    triggers: [test]');
         expect(content).toContain('Test skill content.');
       }
     });

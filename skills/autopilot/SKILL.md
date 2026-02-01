@@ -1,12 +1,16 @@
 ---
 name: autopilot
 description: Full autonomous execution from idea to working code with self-organizing swarm support
-triggers:
-  - autopilot
-  - build me
-  - create a complete
-  - make me a
-  - implement everything
+license: MIT
+metadata:
+  author: claudeops
+  version: "4.0.0"
+  claudeops:
+    triggers: [autopilot, build me, create a complete, make me a, implement everything]
+    domains: [general]
+    model: opus
+    userInvocable: true
+    disableModelInvocation: false
 ---
 
 # Autopilot Skill (v5.0)

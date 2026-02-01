@@ -1,362 +1,150 @@
 ---
 name: security
-description: Security review and vulnerability detection. Comprehensive security analysis and threat modeling.
-model: opus
-user-invocable: true
+description: Comprehensive security analysis with OWASP coverage, threat modeling, and dependency auditing
+license: MIT
+metadata:
+  author: claudeops
+  version: "4.0.0"
+  claudeops:
+    triggers: [security audit, vulnerability, pentest, threat model, security review]
+    domains: [security]
+    model: opus
+    userInvocable: true
+    disableModelInvocation: false
 ---
 
 # Security Skill
 
-Comprehensive security analysis, vulnerability detection, and threat modeling.
+Comprehensive security analysis using parallel OWASP category scanning, attack surface mapping, threat modeling, and dependency auditing.
 
-## Purpose
+## When to Activate
 
-The security skill provides:
-- Vulnerability detection
-- Security best practices review
-- Threat modeling
-- Access control analysis
-- Input validation review
-- Dependency security audit
-
-## When to Use
-
-Use security (opus-tier) for:
+- User says "security audit", "vulnerability scan", "security review"
+- User asks about threat modeling or attack surface
+- User wants dependency security audit
 - Pre-deployment security review
-- Authentication/authorization code
-- Input handling review
-- API security audit
-- Dependency vulnerability check
-- Compliance verification
 
-## When NOT to Use
+## Workflows
 
-- Simple code review → Use `code-review`
-- Architecture review → Use `architect`
-- General testing → Use `qa-tester`
+### 1. OWASP-Parallel Audit
 
-## Security Review Protocol
+**Pattern**: Fan-Out (one agent per OWASP category)
 
-### 1. Threat Modeling
+#### Phase 1: Scope
+Map all entry points: API endpoints, form handlers, file uploads, WebSocket connections, CLI inputs.
+
+#### Phase 2: Parallel Analysis (Fan-Out)
+Spawn one agent per OWASP category:
+
 ```
-1. Identify assets
-2. Map attack surface
-3. Identify threat actors
-4. Enumerate threats
-5. Assess risk levels
-```
+Task(subagent_type="security", model="opus", run_in_background=True,
+     prompt="OWASP A01 - Broken Access Control: Review authorization on all endpoints...")
 
-### 2. Code Review
-```
-1. Input validation
-2. Authentication/authorization
-3. Data protection
-4. Error handling
-5. Dependency security
-```
+Task(subagent_type="security", model="opus", run_in_background=True,
+     prompt="OWASP A02 - Cryptographic Failures: Review encryption at rest/transit...")
 
-### 3. Report Findings
-```
-1. Critical vulnerabilities
-2. High-risk issues
-3. Medium-risk issues
-4. Best practice violations
-5. Recommendations
+Task(subagent_type="security", model="opus", run_in_background=True,
+     prompt="OWASP A03 - Injection: Review all user input handling for SQL, XSS, command injection...")
+
+Task(subagent_type="security", model="opus", run_in_background=True,
+     prompt="OWASP A07 - Authentication: Review auth flows, session management, JWT, MFA...")
+
+Task(subagent_type="security", model="opus", run_in_background=True,
+     prompt="OWASP A05 - Security Misconfiguration: Review config, headers, defaults...")
+
+Task(subagent_type="security", model="opus", run_in_background=True,
+     prompt="OWASP A09 - Logging & Monitoring: Review logging, audit trails, error leakage...")
 ```
 
-## Review Checklist
+#### Phase 3: Synthesis
+Collect all findings and produce unified report ranked by severity.
+
+### 2. Threat Modeling
+
+1. **Identify assets** — What needs protection (data, services, credentials)
+2. **Map attack surface** — Entry points, trust boundaries, data flows
+3. **Identify threats (STRIDE)** — Spoofing, Tampering, Repudiation, Info Disclosure, DoS, Elevation
+4. **Assess risk** — Likelihood x Impact for each threat
+5. **Define mitigations** — Security controls for each high-risk threat
+
+### 3. Dependency Audit
+
+1. **Scan** — Run `npm audit` (or equivalent) + check for known CVEs
+2. **Analyze** — Prioritize by severity, exploitability, transitive risk
+3. **Report** — Prioritized upgrade plan with breaking change analysis
+
+## Security Checklist
 
 ### Input Validation
-- [ ] All user inputs validated
-- [ ] SQL injection prevention
-- [ ] XSS prevention
+- [ ] All user inputs validated and sanitized
+- [ ] SQL injection prevention (parameterized queries)
+- [ ] XSS prevention (output encoding)
 - [ ] Command injection prevention
 - [ ] Path traversal prevention
-- [ ] Type validation
-- [ ] Length/size limits
+- [ ] Type and length validation
 
 ### Authentication & Authorization
-- [ ] Strong password requirements
-- [ ] Secure session management
-- [ ] Token security (JWT/OAuth)
-- [ ] MFA support
+- [ ] Secure password storage (bcrypt/Argon2)
+- [ ] Session management (secure cookies, expiry)
+- [ ] Token security (JWT validation, refresh strategy)
 - [ ] Authorization checks on all routes
 - [ ] Principle of least privilege
-- [ ] Secure password storage (hashing)
 
 ### Data Protection
-- [ ] Sensitive data encrypted at rest
-- [ ] Sensitive data encrypted in transit (HTTPS)
-- [ ] No secrets in code/logs
-- [ ] Secure data deletion
+- [ ] Sensitive data encrypted at rest and in transit
+- [ ] No secrets in code, logs, or error messages
 - [ ] PII handling compliance
-- [ ] Database query parameterization
+- [ ] Secure data deletion
 
-### Error Handling
-- [ ] No sensitive info in errors
-- [ ] Secure error logging
-- [ ] Graceful degradation
-- [ ] No stack traces to users
-- [ ] Rate limiting on sensitive ops
+### Infrastructure
+- [ ] Security headers (CSP, HSTS, X-Frame-Options)
+- [ ] No default credentials
+- [ ] Debug mode disabled in production
+- [ ] Rate limiting on sensitive operations
 
-### Dependencies
-- [ ] No known vulnerabilities
-- [ ] Dependencies up to date
-- [ ] Supply chain security
-- [ ] License compliance
+## Output Format
 
-## Task Patterns
-
-### Security Audit Report
 ```
 ## Security Audit Report
 
-### Scope
-Files reviewed: [count]
-Components: [list]
-Focus areas: [areas]
-
 ### Executive Summary
-Risk level: [CRITICAL/HIGH/MEDIUM/LOW]
-Critical issues: [count]
-High issues: [count]
-Recommendations: [key actions]
+[Overall security posture assessment]
 
----
+### Risk Rating: [Critical/High/Medium/Low]
 
-### CRITICAL Issues
+### Findings by Severity
 
-#### 1. [Vulnerability Name]
-- Location: [file:line]
-- Risk: [specific threat]
-- Impact: [what could happen]
-- CVSS Score: [if applicable]
+#### Critical
+- **[Finding]** — [file:line]
+  - OWASP: [category], CWE: [CWE-XXX]
+  - Impact: [description]
+  - Remediation: [steps]
 
-**Vulnerable Code:**
-```
-[code snippet]
-```
+#### High
+[...]
 
-**Exploit Scenario:**
-[How attacker could exploit this]
-
-**Fix:**
-```
-[secure code]
-```
-
-**Priority:** IMMEDIATE
-
----
-
-### HIGH Issues
-
-#### 1. [Issue Name]
-- Location: [file:line]
-- Risk: [threat]
-- Impact: [consequences]
-
-**Current Code:**
-```
-[code]
-```
-
-**Recommendation:**
-```
-[fix]
-```
-
-**Priority:** Within 48 hours
-
----
-
-### MEDIUM Issues
-
-[Similar structure]
-
----
-
-### Security Best Practices
-
-#### Followed ✓
-- [Practice 1]
-- [Practice 2]
-
-#### Not Followed ✗
-- [Practice 1]: [recommendation]
-- [Practice 2]: [recommendation]
-
----
-
-### Dependency Security
-
-#### Vulnerabilities Found
-1. [Package@version]: [CVE-ID]
-   - Severity: [Critical/High/Medium/Low]
-   - Fix: Upgrade to [version]
-
-#### Outdated Packages
-- [Package]: [current] → [latest]
-
----
-
-### Compliance
-
-#### OWASP Top 10
-- A01 Broken Access Control: [PASS/FAIL]
-- A02 Cryptographic Failures: [PASS/FAIL]
-- A03 Injection: [PASS/FAIL]
-- [etc...]
-
----
-
-### Recommendations
-
-#### Immediate (Critical)
-1. [Action 1]
-2. [Action 2]
-
-#### Short-term (High)
-1. [Action 1]
-2. [Action 2]
-
-#### Long-term (Medium)
-1. [Action 1]
-2. [Action 2]
-
----
-
-### Conclusion
-[Overall assessment and approval status]
-```
+#### Medium
+[...]
 
 ### Threat Model
-```
-## Threat Model: [Component]
+| Asset | Threat | Likelihood | Impact | Risk | Mitigation |
+|-------|--------|------------|--------|------|------------|
 
-### Assets
-1. [Asset 1]: [value, sensitivity]
-2. [Asset 2]: [value, sensitivity]
+### Dependency Vulnerabilities
+| Package | Version | CVE | Severity | Fix Version |
+|---------|---------|-----|----------|-------------|
 
-### Attack Surface
-- Entry points: [list]
-- Trust boundaries: [list]
-- Data flows: [description]
-
-### Threat Actors
-1. [Actor type]: [motivation, capability]
-2. [Actor type]: [motivation, capability]
-
-### Threats (STRIDE)
-
-#### Spoofing
-- [Threat]: [likelihood, impact]
-  - Mitigation: [control]
-
-#### Tampering
-- [Threat]: [likelihood, impact]
-  - Mitigation: [control]
-
-#### Repudiation
-- [Threat]: [likelihood, impact]
-  - Mitigation: [control]
-
-#### Information Disclosure
-- [Threat]: [likelihood, impact]
-  - Mitigation: [control]
-
-#### Denial of Service
-- [Threat]: [likelihood, impact]
-  - Mitigation: [control]
-
-#### Elevation of Privilege
-- [Threat]: [likelihood, impact]
-  - Mitigation: [control]
-
-### Risk Assessment
-[Summary of highest risks]
-
-### Security Controls
-[Recommended mitigations]
+### Recommendations
+1. [Immediate actions]
+2. [Short-term improvements]
+3. [Long-term security strategy]
 ```
 
-## Common Vulnerabilities
-
-### Injection Flaws
-- SQL injection
-- Command injection
-- LDAP injection
-- XPath injection
-- NoSQL injection
-
-### Broken Authentication
-- Weak passwords
-- Session fixation
-- Insecure session management
-- Missing MFA
-
-### Sensitive Data Exposure
-- Unencrypted data
-- Weak encryption
-- Secrets in code
-- Sensitive logs
-
-### XXE (XML External Entities)
-- XML parser vulnerabilities
-- SSRF via XXE
-
-### Broken Access Control
-- Missing authorization
-- Insecure direct object references
-- Path traversal
-
-### Security Misconfiguration
-- Default credentials
-- Unnecessary features enabled
-- Verbose error messages
-- Missing security headers
-
-### XSS (Cross-Site Scripting)
-- Reflected XSS
-- Stored XSS
-- DOM-based XSS
-
-### Deserialization
-- Insecure deserialization
-- Object injection
-
-### Known Vulnerabilities
-- Outdated dependencies
-- Unpatched libraries
-
-### Insufficient Logging
-- Missing audit logs
-- No intrusion detection
-
-## Anti-Patterns to Avoid
-
-1. **Security through obscurity**
-   - BAD: Hiding secrets in complex code
-   - GOOD: Proper encryption and access control
-
-2. **Trusting user input**
-   - BAD: Direct use of user data
-   - GOOD: Validate, sanitize, escape
-
-3. **Rolling your own crypto**
-   - BAD: Custom encryption algorithms
-   - GOOD: Use proven libraries
-
-4. **Storing passwords in plaintext**
-   - BAD: Readable passwords
-   - GOOD: bcrypt, Argon2, PBKDF2
-
-## Success Criteria
-
-Security review completes when:
-- [ ] All code paths reviewed
-- [ ] Vulnerabilities identified by severity
-- [ ] Fixes provided for all issues
-- [ ] Threat model completed
-- [ ] Dependency audit complete
-- [ ] Clear risk assessment provided
+## Anti-Patterns
+1. **Surface-level scanning** — Dig deep into each OWASP category
+2. **Missing context** — Always map attack surface before auditing
+3. **No remediation** — Every finding must include fix guidance
+4. **Ignoring dependencies** — Transitive vulnerabilities are real threats
+5. **Security through obscurity** — Proper encryption and access control, not hiding
+6. **Rolling your own crypto** — Use proven libraries
+7. **Trusting user input** — Validate, sanitize, escape everything

@@ -1,9 +1,15 @@
 ---
 name: scan
 description: AI-enhance .claude/ artifacts with deep codebase analysis
-user-invocable: true
-disable-model-invocation: true
-allowed-tools: Bash, Read, Write, Glob, Grep, Edit
+license: MIT
+metadata:
+  author: claudeops
+  version: "4.0.0"
+  claudeops:
+    domains: [general]
+    userInvocable: true
+    disableModelInvocation: true
+    allowedTools: [Bash, Read, Write, Glob, Grep, Edit]
 ---
 
 # AI-Enhanced Codebase Analysis

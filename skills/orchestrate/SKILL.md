@@ -1,13 +1,17 @@
 ---
 name: orchestrate
-description: Core multi-agent orchestration skill with native Teams support and graceful degradation
-always_active: true
-triggers:
-  - orchestrate
-  - delegate
-  - parallel
-  - fan-out
-  - swarm
+description: Core multi-agent orchestration conductor for Claude Code
+license: MIT
+metadata:
+  author: claudeops
+  version: "4.0.0"
+  claudeops:
+    triggers: [orchestrate, delegate, parallel, fan-out, swarm]
+    domains: [general]
+    model: opus
+    userInvocable: true
+    disableModelInvocation: false
+    alwaysActive: true
 ---
 
 # Orchestrate Skill (v5.0)

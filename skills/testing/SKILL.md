@@ -1,29 +1,53 @@
 ---
 name: testing
-description: Testing orchestration with coverage-driven generation and parallel execution
-triggers:
-  - test
-  - coverage
-  - write tests
-  - fix tests
-  - TDD
-  - test suite
+description: Testing orchestration with TDD workflow, coverage-driven generation, and parallel execution
+license: MIT
+metadata:
+  author: claudeops
+  version: "4.0.0"
+  claudeops:
+    triggers: [test, coverage, write tests, fix tests, TDD, test suite]
+    domains: [testing]
+    model: sonnet
+    userInvocable: true
+    disableModelInvocation: false
 ---
 
-# Testing Skill (v5.0)
+# Testing Skill
 
-Testing orchestration that generates tests based on coverage gaps, runs suites in parallel, detects flaky tests, and maintains test health.
+Testing orchestration that generates tests based on coverage gaps, enforces TDD workflow, runs suites in parallel, and maintains test health.
 
 ## When to Activate
 
 - User says "write tests", "add tests", "improve coverage"
 - User says "fix tests", "tests are failing"
-- User wants TDD workflow
+- User wants TDD workflow ("test first", "red-green-refactor")
 - User asks about test coverage
 
 ## Workflows
 
-### 1. Coverage-Driven Generation
+### 1. TDD: Red-Green-Refactor
+
+For test-driven development:
+
+1. **RED** — Write failing test that specifies the desired behavior
+   - Run test, confirm it fails
+   - Verify failure is for the right reason (not syntax error)
+2. **GREEN** — Write minimal code to make the test pass
+   - No gold-plating — only what's needed to pass
+   - Run test, confirm it passes
+3. **REFACTOR** — Improve code quality while keeping tests green
+   - Remove duplication, improve naming, optimize
+   - Run all tests, confirm nothing broke
+4. **REPEAT** — Next requirement
+
+Rules:
+- No implementation without a failing test first
+- Minimal implementation only — no features not yet tested
+- Only refactor when all tests are green
+- One failing test at a time
+
+### 2. Coverage-Driven Generation
 
 **Pattern**: Map-Reduce
 
@@ -33,20 +57,20 @@ Task(subagent_type="explore", model="haiku", run_in_background=True,
      prompt="Identify all source files without corresponding test files. Map test coverage gaps...")
 
 Task(subagent_type="explore", model="haiku", run_in_background=True,
-     prompt="Analyze existing test patterns in this project. Find testing conventions, frameworks, helpers...")
+     prompt="Analyze existing test patterns. Find testing conventions, frameworks, helpers...")
 
 Task(subagent_type="architect", model="opus",
-     prompt="Given coverage gaps and existing patterns, prioritize which modules need tests most urgently...")
+     prompt="Given coverage gaps and existing patterns, prioritize which modules need tests most...")
 ```
 
 #### Phase 2: Generate (Fan-Out)
-Spawn qa-tester agents per module in parallel:
+Spawn test-writing agents per module in parallel:
 ```
 Task(subagent_type="qa-tester", model="sonnet", run_in_background=True,
-     prompt="Write unit tests for [module]. Follow existing test patterns. Cover: happy path, edge cases, error conditions...")
+     prompt="Write unit tests for [module]. Follow existing patterns. Cover: happy path, edge cases, errors...")
 
 Task(subagent_type="qa-tester", model="sonnet", run_in_background=True,
-     prompt="Write integration tests for [module]. Test interactions between components...")
+     prompt="Write integration tests for [module]. Test component interactions...")
 ```
 
 #### Phase 3: Validate (Pipeline)
@@ -55,79 +79,48 @@ Task(subagent_type="qa-tester", model="sonnet",
      prompt="Run the full test suite. Measure coverage. Report results...")
 
 Task(subagent_type="architect", model="opus",
-     prompt="Review test quality. Check: meaningful assertions, not just coverage. Edge cases covered. No fragile tests...")
+     prompt="Review test quality. Check: meaningful assertions, edge cases, no fragile tests...")
 ```
 
-### 2. Parallel Test Execution
-
-**Pattern**: Fan-Out
+### 3. Parallel Test Execution
 
 Run independent test suites simultaneously:
 
 ```
 Task(subagent_type="qa-tester", model="sonnet", run_in_background=True,
-     prompt="Run unit tests: npm test -- --testPathPattern=unit. Report results...")
+     prompt="Run unit tests. Report results...")
 
 Task(subagent_type="qa-tester", model="sonnet", run_in_background=True,
-     prompt="Run integration tests: npm test -- --testPathPattern=integration. Report results...")
-
-Task(subagent_type="qa-tester", model="sonnet", run_in_background=True,
-     prompt="Run E2E tests: npm test -- --testPathPattern=e2e. Report results...")
+     prompt="Run integration tests. Report results...")
 ```
 
 Collect results and produce unified test report.
 
-### 3. Flaky Test Detection
-
-**Pattern**: Speculative (run 3x)
-
-```
-# Run same suite 3 times in parallel
-Task(subagent_type="qa-tester", model="sonnet", run_in_background=True,
-     prompt="Run test suite: npm test. Record ALL results including timing. Run #1...")
-
-Task(subagent_type="qa-tester", model="sonnet", run_in_background=True,
-     prompt="Run test suite: npm test. Record ALL results including timing. Run #2...")
-
-Task(subagent_type="qa-tester", model="sonnet", run_in_background=True,
-     prompt="Run test suite: npm test. Record ALL results including timing. Run #3...")
-```
-
-Compare results across runs. Tests that pass in some runs but fail in others are flaky. Report with frequency analysis.
-
 ### 4. Test Maintenance
 
-**Pattern**: Pipeline
+1. **Find** — Locate failing/broken tests
+2. **Diagnose** — Determine why tests fail (code change? test assumption? environment?)
+3. **Fix** — Update tests to match current behavior or fix the code
+4. **Verify** — Confirm all tests pass
 
-1. **Find** — Spawn explore to locate failing/broken tests
-2. **Diagnose** — Spawn architect to determine why tests fail (code change? test assumption? environment?)
-3. **Fix** — Spawn executor to update tests
-4. **Verify** — Spawn qa-tester to confirm all tests pass
+### 5. Flaky Test Detection
 
-### 5. TDD Workflow
+Run same suite 3 times in parallel. Tests that pass in some runs but fail in others are flaky. Report with frequency analysis.
 
-**Pattern**: Pipeline (iterative)
+## Test Quality Standards
 
-For test-driven development:
+### What to Test
+- **Happy path** — Standard use case works
+- **Edge cases** — Boundary conditions, empty inputs, limits
+- **Error cases** — Invalid inputs, network failures, missing data
+- **Integration** — Component interactions work correctly
+- **Regression** — Previously fixed bugs stay fixed
 
-1. **Red** — Spawn qa-tester to write failing tests for the feature
-2. **Green** — Spawn executor to implement minimum code to pass tests
-3. **Refactor** — Spawn executor to clean up implementation while keeping tests green
-4. **Verify** — Run full suite to confirm no regressions
-
-## Agent Assignment
-
-| Task | Agent | Model |
-|------|-------|-------|
-| Coverage analysis | explore | haiku |
-| Test prioritization | architect | opus |
-| Unit test writing | qa-tester | sonnet |
-| Integration test writing | qa-tester | sonnet |
-| E2E test writing | qa-tester | opus |
-| Test execution | qa-tester | sonnet |
-| Test quality review | architect | opus |
-| Test fixing | executor | sonnet |
-| Flaky detection | qa-tester | sonnet |
+### What NOT to Test
+- Implementation details (private methods, internal state)
+- Trivial getters/setters with no logic
+- Third-party library internals
+- Volatile data (timestamps, random IDs) — use matchers instead
 
 ## Output Format
 
@@ -154,8 +147,11 @@ For test-driven development:
 ```
 
 ## Anti-Patterns
-1. **Testing implementation details** — Test behavior, not internal code structure
-2. **Low-value tests** — Focus on critical paths, not trivial getters/setters
-3. **Fragile assertions** — Don't assert on volatile data (timestamps, random IDs)
-4. **No edge cases** — Always test boundary conditions and error paths
-5. **Sequential test execution** — Parallelize independent test suites
+1. **Testing implementation details** — Test behavior, not internal structure
+2. **Skipping RED phase in TDD** — Verify test fails before implementing
+3. **Over-implementing in GREEN** — Only code needed for current test
+4. **Low-value tests** — Focus on critical paths, not trivial accessors
+5. **Fragile assertions** — Don't assert on volatile data
+6. **No edge cases** — Always test boundary conditions and error paths
+7. **Sequential test execution** — Parallelize independent test suites
+8. **Ignoring failures** — Investigate every failure, don't skip flaky tests
