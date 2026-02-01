@@ -64,6 +64,12 @@ describe('CLI command imports', () => {
     expect(mod.default).toBeDefined();
     expect(mod.default.meta).toBeDefined();
   });
+
+  it('should import scan command', async () => {
+    const mod = await import('@/commands/scan.js');
+    expect(mod.default).toBeDefined();
+    expect(mod.default.meta).toBeDefined();
+  });
 });
 
 // =============================================================================
@@ -147,6 +153,17 @@ describe('command definitions', () => {
     expect(subCommands.show).toBeDefined();
     expect(subCommands.evolve).toBeDefined();
     expect(subCommands.clear).toBeDefined();
+  });
+
+  it('scan command should have expected args', async () => {
+    const { default: scanCmd } = await import('@/commands/scan.js');
+    expect(scanCmd.args).toBeDefined();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const args = scanCmd.args as any;
+    expect(args.json).toBeDefined();
+    expect(args.generate).toBeDefined();
+    expect(args.conventions).toBeDefined();
+    expect(args.path).toBeDefined();
   });
 });
 
@@ -275,6 +292,11 @@ describe('skill command helpers', () => {
   it.skip('skill manager loadSkills requires test environment', () => {
     // Skip - loadSkills() reads from actual ~/.claudeops/skills/ directory
     // To test this properly, we need test fixtures
+  });
+
+  it('should export convention detection', async () => {
+    const { detectConventions } = await import('@/core/scanner/index.js');
+    expect(typeof detectConventions).toBe('function');
   });
 
   it('should export learning manager', async () => {

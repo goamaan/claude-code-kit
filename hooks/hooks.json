@@ -106,6 +106,13 @@
       "description": "Tracks per-agent costs when Task tool is used for orchestration"
     },
     {
+      "name": "convention-check",
+      "type": "PostToolUse",
+      "enabled": false,
+      "path": "./convention-check.mjs",
+      "description": "Checks file writes against project conventions and warns on violations"
+    },
+    {
       "name": "session-learner",
       "type": "Stop",
       "enabled": true,

@@ -17,6 +17,10 @@ import type {
   MonorepoInfo,
   KeyFile,
   ExistingClaudeConfig,
+  PythonInfo,
+  RustInfo,
+  GoInfo,
+  JavaInfo,
 } from './types.js';
 
 /**
@@ -574,6 +578,192 @@ export function detectExistingConfig(root: string): ExistingClaudeConfig {
     hasSkills,
     skillNames,
   };
+}
+
+// =============================================================================
+// Key Files Detection
+// =============================================================================
+
+// =============================================================================
+// Python Enhanced Detection
+// =============================================================================
+
+export function detectPython(root: string): PythonInfo | undefined {
+  const hasPython = fileExists(join(root, 'pyproject.toml')) ||
+    fileExists(join(root, 'requirements.txt')) ||
+    fileExists(join(root, 'setup.py'));
+  if (!hasPython) return undefined;
+
+  const info: PythonInfo = {};
+
+  // Virtual env type
+  if (fileExists(join(root, 'poetry.lock'))) info.venvType = 'poetry';
+  else if (fileExists(join(root, 'Pipfile'))) info.venvType = 'pipenv';
+  else if (fileExists(join(root, 'uv.lock'))) info.venvType = 'uv';
+  else if (isDir(join(root, 'venv')) || isDir(join(root, '.venv'))) info.venvType = 'venv';
+
+  // Python version
+  if (fileExists(join(root, '.python-version'))) {
+    try {
+      const v = readFileSync(join(root, '.python-version'), 'utf-8').trim();
+      if (v) info.version = v;
+    } catch { /* ignore */ }
+  }
+  if (!info.version && fileExists(join(root, 'pyproject.toml'))) {
+    try {
+      const content = readFileSync(join(root, 'pyproject.toml'), 'utf-8');
+      const match = content.match(/requires-python\s*=\s*"([^"]+)"/);
+      if (match?.[1]) info.version = match[1];
+    } catch { /* ignore */ }
+  }
+
+  // Type checker
+  if (fileExists(join(root, 'mypy.ini')) || fileExists(join(root, '.mypy.ini'))) {
+    info.typeChecker = 'mypy';
+  } else if (fileExists(join(root, 'pyrightconfig.json'))) {
+    info.typeChecker = 'pyright';
+  }
+  if (!info.typeChecker && fileExists(join(root, 'pyproject.toml'))) {
+    try {
+      const content = readFileSync(join(root, 'pyproject.toml'), 'utf-8');
+      if (content.includes('[tool.mypy]')) info.typeChecker = 'mypy';
+      else if (content.includes('[tool.pyright]')) info.typeChecker = 'pyright';
+      else if (content.includes('[tool.basedpyright]')) info.typeChecker = 'basedpyright';
+    } catch { /* ignore */ }
+  }
+
+  // Package layout
+  if (isDir(join(root, 'src'))) {
+    const srcEntries = listDir(join(root, 'src'));
+    const hasPyPackage = srcEntries.some(e => isDir(join(root, 'src', e)) && fileExists(join(root, 'src', e, '__init__.py')));
+    if (hasPyPackage) info.packageLayout = 'src';
+  }
+  if (!info.packageLayout) info.packageLayout = 'flat';
+
+  return info;
+}
+
+// =============================================================================
+// Rust Enhanced Detection
+// =============================================================================
+
+export function detectRust(root: string): RustInfo | undefined {
+  if (!fileExists(join(root, 'Cargo.toml'))) return undefined;
+
+  const info: RustInfo = {};
+
+  try {
+    const content = readFileSync(join(root, 'Cargo.toml'), 'utf-8');
+
+    // Edition
+    const editionMatch = content.match(/edition\s*=\s*"(\d{4})"/);
+    if (editionMatch?.[1]) info.edition = editionMatch[1];
+
+    // Workspace
+    info.workspace = content.includes('[workspace]');
+
+    // Features
+    const featuresMatch = content.match(/\[features\]\n([\s\S]*?)(?:\n\[|$)/);
+    if (featuresMatch?.[1]) {
+      const featureLines = featuresMatch[1].split('\n').filter(l => l.includes('='));
+      info.features = featureLines.map(l => l.split('=')[0]?.trim() || '').filter(Boolean);
+    }
+
+    // Build script
+    info.hasBuildScript = fileExists(join(root, 'build.rs'));
+
+    // Clippy
+    info.hasClippy = fileExists(join(root, 'clippy.toml')) || fileExists(join(root, '.clippy.toml'));
+  } catch { /* ignore */ }
+
+  return info;
+}
+
+// =============================================================================
+// Go Enhanced Detection
+// =============================================================================
+
+export function detectGo(root: string): GoInfo | undefined {
+  if (!fileExists(join(root, 'go.mod'))) return undefined;
+
+  const info: GoInfo = {};
+
+  try {
+    const content = readFileSync(join(root, 'go.mod'), 'utf-8');
+
+    // Go version
+    const versionMatch = content.match(/^go\s+(\d+\.\d+)/m);
+    if (versionMatch?.[1]) info.version = versionMatch[1];
+
+    // Module path
+    const moduleMatch = content.match(/^module\s+(.+)/m);
+    if (moduleMatch?.[1]) info.modulePath = moduleMatch[1].trim();
+  } catch { /* ignore */ }
+
+  // Internal packages
+  info.hasInternal = isDir(join(root, 'internal'));
+
+  // Makefile
+  info.hasMakefile = fileExists(join(root, 'Makefile'));
+
+  return info;
+}
+
+// =============================================================================
+// Java/JVM Enhanced Detection
+// =============================================================================
+
+export function detectJava(root: string): JavaInfo | undefined {
+  const hasMaven = fileExists(join(root, 'pom.xml'));
+  const hasGradle = fileExists(join(root, 'build.gradle'));
+  const hasGradleKts = fileExists(join(root, 'build.gradle.kts'));
+
+  if (!hasMaven && !hasGradle && !hasGradleKts) return undefined;
+
+  const info: JavaInfo = {};
+
+  // Build tool
+  if (hasMaven) {
+    info.buildTool = 'maven';
+    try {
+      const content = readFileSync(join(root, 'pom.xml'), 'utf-8');
+      if (content.includes('spring-boot')) info.springBoot = true;
+
+      // Java version
+      const versionMatch = content.match(/<java\.version>(\d+)<\/java\.version>/);
+      if (versionMatch?.[1]) info.javaVersion = versionMatch[1];
+
+      // JUnit version
+      if (content.includes('junit-jupiter') || content.includes('junit-platform')) info.junitVersion = '5';
+      else if (content.includes('junit')) info.junitVersion = '4';
+    } catch { /* ignore */ }
+  } else if (hasGradleKts) {
+    info.buildTool = 'gradle-kotlin';
+    try {
+      const content = readFileSync(join(root, 'build.gradle.kts'), 'utf-8');
+      if (content.includes('spring-boot')) info.springBoot = true;
+
+      const versionMatch = content.match(/jvmToolchain\((\d+)\)/);
+      if (versionMatch?.[1]) info.javaVersion = versionMatch[1];
+    } catch { /* ignore */ }
+  } else {
+    info.buildTool = 'gradle';
+    try {
+      const content = readFileSync(join(root, 'build.gradle'), 'utf-8');
+      if (content.includes('spring-boot')) info.springBoot = true;
+    } catch { /* ignore */ }
+  }
+
+  // Check gradle.properties for Java version if not found
+  if (!info.javaVersion && fileExists(join(root, 'gradle.properties'))) {
+    try {
+      const content = readFileSync(join(root, 'gradle.properties'), 'utf-8');
+      const match = content.match(/(?:java|jvm)(?:Version|Target)\s*=\s*(\d+)/i);
+      if (match?.[1]) info.javaVersion = match[1];
+    } catch { /* ignore */ }
+  }
+
+  return info;
 }
 
 // =============================================================================

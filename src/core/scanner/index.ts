@@ -18,9 +18,15 @@ import {
   detectDirectories,
   detectExistingConfig,
   detectKeyFiles,
+  detectPython,
+  detectRust,
+  detectGo,
+  detectJava,
 } from './detectors.js';
 
 export type { ScanResult, ScanOptions } from './types.js';
+export type { ProjectConventions } from './conventions.js';
+export { detectConventions } from './conventions.js';
 
 /**
  * Perform a full codebase scan
@@ -45,5 +51,9 @@ export async function scan(options?: ScanOptions): Promise<ScanResult> {
     directories: detectDirectories(root),
     existingConfig: detectExistingConfig(root),
     keyFiles: detectKeyFiles(root),
+    python: detectPython(root),
+    rust: detectRust(root),
+    go: detectGo(root),
+    java: detectJava(root),
   };
 }
