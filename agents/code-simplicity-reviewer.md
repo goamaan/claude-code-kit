@@ -6,11 +6,6 @@ tools:
   - Read
   - Glob
   - Grep
-auto_trigger:
-  - simplify
-  - over-engineering
-  - YAGNI
-  - complexity
 ---
 
 # Code Simplicity Reviewer Agent

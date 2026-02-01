@@ -7,7 +7,6 @@ tools:
   - Glob
   - Grep
   - Task
-auto_trigger: plan, design, architect, scope
 ---
 
 # Planner - Strategic Planning Agent

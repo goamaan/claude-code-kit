@@ -1,16 +1,9 @@
 ---
 name: debug
 description: Systematic debugging orchestration with parallel hypothesis testing
-license: MIT
-metadata:
-  author: claudeops
-  version: "4.0.0"
-  claudeops:
-    triggers: [debug, investigate, diagnose, fix bug, why is, not working]
-    domains: [general]
-    model: opus
-    userInvocable: true
-    disableModelInvocation: false
+user-invocable: true
+disable-model-invocation: false
+model: opus
 ---
 
 # Debug Skill (v5.0)

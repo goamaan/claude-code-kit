@@ -1,144 +1,39 @@
 {
-  "hooks": [
-    {
-      "name": "continuation-check",
-      "type": "Stop",
-      "enabled": true,
-      "path": "./continuation-check.mjs",
-      "description": "Evaluates completion status and blocks premature stopping when tasks remain"
-    },
-    {
-      "name": "lint-changed",
-      "type": "PostToolUse",
-      "enabled": true,
-      "path": "./lint-changed.mjs",
-      "description": "Runs ESLint after Write/Edit on JavaScript/TypeScript files"
-    },
-    {
-      "name": "typecheck-changed",
-      "type": "PostToolUse",
-      "enabled": true,
-      "path": "./typecheck-changed.mjs",
-      "description": "Runs TypeScript type checking after Write/Edit on .ts/.tsx files"
-    },
-    {
-      "name": "checkpoint",
-      "type": "Stop",
-      "enabled": true,
-      "path": "./checkpoint.mjs",
-      "description": "Creates git stash checkpoint before session ends if uncommitted changes exist"
-    },
-    {
-      "name": "thinking-level",
-      "type": "UserPromptSubmit",
-      "enabled": true,
-      "path": "./thinking-level.mjs",
-      "description": "Detects complex tasks and adds reasoning enhancement instructions"
-    },
-    {
-      "name": "cost-warning",
-      "type": "UserPromptSubmit",
-      "enabled": false,
-      "path": "./cost-warning.mjs",
-      "description": "Warns when approaching daily cost budget based on token usage"
-    },
-    {
-      "name": "security-scan",
-      "type": "PreToolUse",
-      "enabled": false,
-      "path": "./security-scan.mjs",
-      "description": "Scans for secrets before git commits"
-    },
-    {
-      "name": "test-reminder",
-      "type": "PostToolUse",
-      "enabled": false,
-      "path": "./test-reminder.mjs",
-      "description": "Reminds to run tests after code changes"
-    },
-    {
-      "name": "format-on-save",
-      "type": "PostToolUse",
-      "enabled": false,
-      "path": "./format-on-save.mjs",
-      "description": "Auto-formats files after Write/Edit operations"
-    },
-    {
-      "name": "git-branch-check",
-      "type": "PreToolUse",
-      "enabled": false,
-      "path": "./git-branch-check.mjs",
-      "description": "Warns when committing to main/master branches"
-    },
-    {
-      "name": "todo-tracker",
-      "type": "UserPromptSubmit",
-      "enabled": false,
-      "path": "./todo-tracker.mjs",
-      "description": "Tracks TODO items mentioned in prompts"
-    },
-    {
-      "name": "session-log",
-      "type": "Stop",
-      "enabled": false,
-      "path": "./session-log.mjs",
-      "description": "Logs session summary when Claude stops"
-    },
-    {
-      "name": "large-file-warning",
-      "type": "PreToolUse",
-      "enabled": false,
-      "path": "./large-file-warning.mjs",
-      "description": "Warns before reading large files"
-    },
-    {
-      "name": "team-lifecycle",
-      "type": "SubagentStop",
-      "enabled": false,
-      "path": "./team-lifecycle.mjs",
-      "description": "Logs team creation and shutdown events for native Claude Code Teams"
-    },
-    {
-      "name": "swarm-cost-tracker",
-      "type": "PostToolUse",
-      "enabled": false,
-      "path": "./swarm-cost-tracker.mjs",
-      "description": "Tracks per-agent costs when Task tool is used for orchestration"
-    },
-    {
-      "name": "convention-check",
-      "type": "PostToolUse",
-      "enabled": false,
-      "path": "./convention-check.mjs",
-      "description": "Checks file writes against project conventions and warns on violations"
-    },
-    {
-      "name": "session-learner",
-      "type": "Stop",
-      "enabled": true,
-      "path": "./session-learner.mjs",
-      "description": "Captures learnings from resolved problems in Claude Code sessions"
-    },
-    {
-      "name": "learning-retriever",
-      "type": "UserPromptSubmit",
-      "enabled": true,
-      "path": "./learning-retriever.mjs",
-      "description": "Retrieves relevant past learnings and injects them as context"
-    },
-    {
-      "name": "session-save",
-      "type": "Stop",
-      "enabled": true,
-      "path": "./session-save.mjs",
-      "description": "Saves session state for cross-session context restoration"
-    },
-    {
-      "name": "session-restore",
-      "type": "UserPromptSubmit",
-      "enabled": true,
-      "path": "./session-restore.mjs",
-      "description": "Restores context from previous session on first message"
-    }
-  ]
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "node ./hooks/security-scan.mjs", "timeout": 10 },
+          { "type": "command", "command": "node ./hooks/git-branch-check.mjs", "timeout": 5 }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          { "type": "command", "command": "node ./hooks/lint-changed.mjs", "timeout": 30 },
+          { "type": "command", "command": "node ./hooks/typecheck-changed.mjs", "timeout": 60 }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node ./hooks/continuation-check.mjs", "timeout": 15 },
+          { "type": "command", "command": "node ./hooks/session-save.mjs", "timeout": 10 },
+          { "type": "command", "command": "node ./hooks/session-learner.mjs", "timeout": 15 }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node ./hooks/session-restore.mjs", "timeout": 10 },
+          { "type": "command", "command": "node ./hooks/learning-retriever.mjs", "timeout": 10 }
+        ]
+      }
+    ]
+  }
 }

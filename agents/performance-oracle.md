@@ -7,11 +7,6 @@ tools:
   - Glob
   - Grep
   - Bash
-auto_trigger:
-  - performance
-  - bottleneck
-  - latency
-  - optimization
 ---
 
 # Performance Oracle Agent

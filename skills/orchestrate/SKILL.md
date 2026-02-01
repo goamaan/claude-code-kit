@@ -1,17 +1,9 @@
 ---
 name: orchestrate
 description: Core multi-agent orchestration conductor for Claude Code
-license: MIT
-metadata:
-  author: claudeops
-  version: "4.0.0"
-  claudeops:
-    triggers: [orchestrate, delegate, parallel, fan-out, swarm]
-    domains: [general]
-    model: opus
-    userInvocable: true
-    disableModelInvocation: false
-    alwaysActive: true
+user-invocable: true
+disable-model-invocation: false
+model: opus
 ---
 
 # Orchestrate Skill (v5.0)

@@ -1,3 +1,51 @@
+## [4.0.0] - 2026-02-01
+
+### Breaking Changes
+
+**claudeops is now a Claude Code directory plugin.** The entire CLI, build system, profile system, sync engine, and npm package have been removed. claudeops is now a zero-dependency directory of skills, agents, hooks, and scripts.
+
+#### Removed
+- **CLI**: All `cops` commands (`sync`, `init`, `profile`, `skill`, `hook`, `config`, etc.)
+- **TypeScript source**: `src/` directory (~50 files, ~15K lines)
+- **Build system**: package.json, tsconfig.json, tsdown, vitest, eslint configs
+- **Profile system**: `profiles/` directory, TOML config loader, profile inheritance
+- **Sync engine**: Managed CLAUDE.md sections, settings.json generation
+- **Addon system**: `addons/` directory, addon templates
+- **Tests**: All unit, integration, and e2e tests
+- **Documentation**: `docs/` directory
+- **16 hooks**: checkpoint, convention-check, cost-warning, format-on-save, keyword-detector, large-file-warning, session-log, swarm-cost-tracker, swarm-lifecycle, team-lifecycle, test-reminder, thinking-level, todo-tracker, version-bump-prompt
+- **Dependencies**: All npm dependencies (citty, zod, @ltd/j-toml, etc.)
+
+#### Added
+- **Plugin manifest**: `.claude-plugin/plugin.json`
+- **Scanner script**: `scripts/scan.mjs` — pure ESM JavaScript port of the TypeScript scanner, no dependencies
+- **Init skill**: `/claudeops:init` — interactive project setup using scanner + AI enhancement
+- **Learn skill**: `/claudeops:learn` — capture session learnings for future retrieval
+
+#### Changed
+- **Skills**: Frontmatter converted from nested claudeops format to flat Claude Code plugin format
+- **Doctor skill**: Rewritten to diagnose plugin setup instead of CLI installation
+- **Scan skill**: Updated to reference `scripts/scan.mjs` instead of `cops init`
+- **Hooks format**: `hooks/hooks.json` rewritten from proprietary array format to Claude Code plugin hooks format
+- **session-restore hook**: Refactored from module export to stdin/stdout protocol
+- **learning-retriever hook**: Refactored from module export to stdin/stdout protocol
+- **lint-changed hook**: Removed CLAUDEOPS_PACKAGE_MANAGER env var, added bun.lock detection
+- **typecheck-changed hook**: Removed CLAUDEOPS_PACKAGE_MANAGER env var, added bun.lock detection
+- **Agents**: Removed `auto_trigger` field from all agent frontmatter
+- **File renames**: `executor/skill.md` → `executor/SKILL.md`, `security/skill.md` → `security/SKILL.md`
+
+#### Migration
+
+There is no migration path. If you were using claudeops as a CLI (`cops sync`, `cops init`), you now use it as a plugin directory:
+
+```bash
+claude --plugin-dir /path/to/claudeops
+```
+
+Skills are invoked as `/claudeops:<name>` (e.g., `/claudeops:init`, `/claudeops:scan`).
+
+---
+
 ## [3.2.0] - 2026-01-29
 
 ### Added
