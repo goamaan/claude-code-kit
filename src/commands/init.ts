@@ -280,6 +280,38 @@ async function initProject(
     s.stop('.claude/settings.json skipped (no permissions to add)');
   }
 
+  // Create learnings directory structure
+  const learningsDir = join(projectClaudeDir, 'learnings');
+  await ensureDir(learningsDir);
+  await ensureDir(join(learningsDir, 'build-errors'));
+  await ensureDir(join(learningsDir, 'test-failures'));
+  await ensureDir(join(learningsDir, 'type-errors'));
+  await ensureDir(join(learningsDir, 'runtime-errors'));
+  await ensureDir(join(learningsDir, 'config-issues'));
+  await ensureDir(join(learningsDir, 'patterns'));
+
+  // Generate learnings schema from scan results
+  const schemaPath = join(learningsDir, 'schema.json');
+  if (!(await exists(schemaPath)) || force) {
+    const components = [
+      ...scanResult.languages.map(l => l.name.toLowerCase()),
+      ...scanResult.frameworks.map(f => f.name.toLowerCase()),
+      ...(scanResult.testing || []).map(t => t.framework.toLowerCase()),
+      ...(scanResult.linting || []).map(l => l.tool.toLowerCase()),
+    ].filter((v, i, a) => a.indexOf(v) === i); // dedupe
+
+    const schema = {
+      version: 1,
+      generatedFrom: 'scanner',
+      categories: ['build-error', 'test-failure', 'type-error', 'runtime-error', 'config-issue', 'pattern', 'workaround', 'convention'],
+      components,
+      rootCauses: ['missing-dependency', 'type-mismatch', 'config-error', 'api-change', 'version-conflict'],
+      resolutionTypes: ['code-fix', 'config-change', 'dependency-update', 'workaround', 'refactor', 'documentation'],
+    };
+
+    await writeJson(schemaPath, schema);
+  }
+
   return result;
 }
 
@@ -498,6 +530,7 @@ export default defineCommand({
       await ensureDir(join(configDir, 'skills'));
       await ensureDir(join(configDir, 'hooks'));
       await ensureDir(join(configDir, 'backups'));
+      await ensureDir(join(configDir, 'learnings'));
 
       s.stop('Directories ready');
     }

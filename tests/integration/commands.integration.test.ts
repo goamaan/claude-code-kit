@@ -58,6 +58,12 @@ describe('CLI command imports', () => {
     expect(mod.default).toBeDefined();
     expect(mod.default.meta).toBeDefined();
   });
+
+  it('should import learn command', async () => {
+    const mod = await import('@/commands/learn.js');
+    expect(mod.default).toBeDefined();
+    expect(mod.default.meta).toBeDefined();
+  });
 });
 
 // =============================================================================
@@ -130,6 +136,17 @@ describe('command definitions', () => {
     expect(subCommands.list).toBeDefined();
     expect(subCommands.enable).toBeDefined();
     expect(subCommands.disable).toBeDefined();
+  });
+
+  it('learn command should have subcommands', async () => {
+    const { default: learnCmd } = await import('@/commands/learn.js');
+    expect(learnCmd.subCommands).toBeDefined();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const subCommands = learnCmd.subCommands as any;
+    expect(subCommands.list).toBeDefined();
+    expect(subCommands.show).toBeDefined();
+    expect(subCommands.evolve).toBeDefined();
+    expect(subCommands.clear).toBeDefined();
   });
 });
 
@@ -258,6 +275,17 @@ describe('skill command helpers', () => {
   it.skip('skill manager loadSkills requires test environment', () => {
     // Skip - loadSkills() reads from actual ~/.claudeops/skills/ directory
     // To test this properly, we need test fixtures
+  });
+
+  it('should export learning manager', async () => {
+    const { createLearningManager } = await import('@/domain/learning/index.js');
+    const manager = createLearningManager();
+    expect(manager).toBeDefined();
+    expect(typeof manager.list).toBe('function');
+    expect(typeof manager.save).toBe('function');
+    expect(typeof manager.search).toBe('function');
+    expect(typeof manager.clear).toBe('function');
+    expect(typeof manager.evolve).toBe('function');
   });
 
   it('should export installer functions', async () => {
