@@ -1,6 +1,14 @@
 ---
 name: doctor
-description: Diagnose and fix installation, configuration, and runtime issues. Use when something isn't working, for troubleshooting, or when system health checks are needed.
+description: Diagnose and fix installation, configuration, and runtime issues
+license: MIT
+metadata:
+  author: claudeops
+  version: "4.0.0"
+  claudeops:
+    domains: [general]
+    userInvocable: true
+    disableModelInvocation: false
 ---
 
 # Doctor Skill

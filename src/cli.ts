@@ -23,6 +23,10 @@ const main = defineCommand({
     // Diagnostic tool
     doctor: () => import("./commands/doctor.js").then((m) => m.default),
 
+    // Ecosystem: skill and hook management
+    skill: () => import("./commands/skill.js").then((m) => m.default),
+    hook: () => import("./commands/hook.js").then((m) => m.default),
+
     // Reset claudeops artifacts
     reset: () => import("./commands/reset.js").then((m) => m.default),
 
@@ -61,6 +65,11 @@ const main = defineCommand({
     console.log(pc.bold("\nCore Commands:"));
     console.log(`  ${pc.cyan("profile")}        ${pc.dim("Manage profiles (list, use, create, delete)")}`);
     console.log(`  ${pc.cyan("sync")}           ${pc.dim("Sync configuration to Claude Code")}`);
+
+    // Ecosystem
+    console.log(pc.bold("\nEcosystem:"));
+    console.log(`  ${pc.cyan("skill")}          ${pc.dim("Manage skills (add, remove, list)")}`);
+    console.log(`  ${pc.cyan("hook")}           ${pc.dim("Manage hooks (add, remove, list)")}`);
 
     // Utilities
     console.log(pc.bold("\nUtilities:"));

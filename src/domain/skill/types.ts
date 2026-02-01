@@ -18,7 +18,7 @@ export type Domain =
 // =============================================================================
 
 /**
- * Skill metadata from YAML frontmatter
+ * Skill metadata from YAML frontmatter (agentskills.io-compatible format)
  */
 export interface SkillMetadata {
   /** Unique skill identifier */
@@ -27,11 +27,19 @@ export interface SkillMetadata {
   /** Human-readable description */
   description: string;
 
+  /** License (e.g., "MIT") */
+  license?: string;
+
+  // claudeops-specific (from metadata.claudeops.*)
+
   /** Patterns that trigger this skill (optional) */
   autoTrigger?: string[];
 
   /** Domains this skill applies to */
   domains?: Domain[];
+
+  /** Model to use when skill runs in subagent */
+  model?: 'haiku' | 'sonnet' | 'opus' | 'inherit';
 
   /** Whether to disable auto-invocation by Claude */
   disableModelInvocation?: boolean;
@@ -42,8 +50,11 @@ export interface SkillMetadata {
   /** Tools this skill is allowed to use */
   allowedTools?: string[];
 
-  /** Model to use when skill runs in subagent */
-  model?: 'haiku' | 'sonnet' | 'opus' | 'inherit';
+  /** Whether this skill is always active (loaded regardless of context) */
+  alwaysActive?: boolean;
+
+  /** Original metadata block (for ecosystem skills) */
+  rawMetadata?: Record<string, unknown>;
 }
 
 /**
