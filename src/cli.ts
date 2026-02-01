@@ -30,6 +30,9 @@ const main = defineCommand({
     // Learning system
     learn: () => import("./commands/learn.js").then((m) => m.default),
 
+    // Codebase analysis
+    scan: () => import("./commands/scan.js").then((m) => m.default),
+
     // Reset claudeops artifacts
     reset: () => import("./commands/reset.js").then((m) => m.default),
 
@@ -74,6 +77,10 @@ const main = defineCommand({
     console.log(`  ${pc.cyan("skill")}          ${pc.dim("Manage skills (add, remove, list)")}`);
     console.log(`  ${pc.cyan("hook")}           ${pc.dim("Manage hooks (add, remove, list)")}`);
     console.log(`  ${pc.cyan("learn")}          ${pc.dim("Manage learnings (list, show, evolve, clear)")}`);
+
+    // Analysis
+    console.log(pc.bold("\nAnalysis:"));
+    console.log(`  ${pc.cyan("scan")}           ${pc.dim("Scan codebase and display analysis")}`);
 
     // Utilities
     console.log(pc.bold("\nUtilities:"));
