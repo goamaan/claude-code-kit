@@ -27,6 +27,9 @@ const main = defineCommand({
     skill: () => import("./commands/skill.js").then((m) => m.default),
     hook: () => import("./commands/hook.js").then((m) => m.default),
 
+    // Learning system
+    learn: () => import("./commands/learn.js").then((m) => m.default),
+
     // Reset claudeops artifacts
     reset: () => import("./commands/reset.js").then((m) => m.default),
 
@@ -70,6 +73,7 @@ const main = defineCommand({
     console.log(pc.bold("\nEcosystem:"));
     console.log(`  ${pc.cyan("skill")}          ${pc.dim("Manage skills (add, remove, list)")}`);
     console.log(`  ${pc.cyan("hook")}           ${pc.dim("Manage hooks (add, remove, list)")}`);
+    console.log(`  ${pc.cyan("learn")}          ${pc.dim("Manage learnings (list, show, evolve, clear)")}`);
 
     // Utilities
     console.log(pc.bold("\nUtilities:"));

@@ -104,6 +104,20 @@
       "enabled": false,
       "path": "./swarm-cost-tracker.mjs",
       "description": "Tracks per-agent costs when Task tool is used for orchestration"
+    },
+    {
+      "name": "session-learner",
+      "type": "Stop",
+      "enabled": true,
+      "path": "./session-learner.mjs",
+      "description": "Captures learnings from resolved problems in Claude Code sessions"
+    },
+    {
+      "name": "learning-retriever",
+      "type": "UserPromptSubmit",
+      "enabled": true,
+      "path": "./learning-retriever.mjs",
+      "description": "Retrieves relevant past learnings and injects them as context"
     }
   ]
 }
