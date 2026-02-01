@@ -68,6 +68,29 @@ interface ParsedSkillFile {
   content: string;
 }
 
+/**
+ * Parse a simple inline YAML array: [item1, item2, "item 3"]
+ */
+function parseInlineArray(value: string): string[] {
+  if (!value.startsWith('[')) return [];
+  return value
+    .slice(1, -1)
+    .split(',')
+    .map(s => s.trim().replace(/["']/g, ''))
+    .filter(s => s.length > 0);
+}
+
+/**
+ * Strip quotes from a YAML value string
+ */
+function stripQuotes(value: string): string {
+  if ((value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))) {
+    return value.slice(1, -1);
+  }
+  return value;
+}
+
 function parseSkillFile(fileContent: string, filePath: string): ParsedSkillFile {
   const lines = fileContent.split('\n');
 
@@ -99,60 +122,149 @@ function parseSkillFile(fileContent: string, filePath: string): ParsedSkillFile 
     };
   }
 
-  // Parse YAML frontmatter (simple key: value parsing)
+  // Parse YAML frontmatter with nested metadata support
   const frontmatterLines = lines.slice(1, endIndex);
   const metadata: SkillMetadata = { name: '', description: '' };
+  const rawMetadata: Record<string, unknown> = {};
+
+  // Track nesting context: '', 'metadata', 'metadata.claudeops'
+  let context = '';
 
   for (const line of frontmatterLines) {
-    const colonIndex = line.indexOf(':');
+    // Skip empty lines and comments
+    if (line.trim() === '' || line.trim().startsWith('#')) continue;
+
+    // Detect indentation level
+    const indent = line.length - line.trimStart().length;
+    const trimmed = line.trim();
+
+    const colonIndex = trimmed.indexOf(':');
     if (colonIndex === -1) continue;
 
-    const key = line.slice(0, colonIndex).trim();
-    let value = line.slice(colonIndex + 1).trim();
+    const key = trimmed.slice(0, colonIndex).trim();
+    const rawValue = trimmed.slice(colonIndex + 1).trim();
 
-    // Remove quotes if present
-    if ((value.startsWith('"') && value.endsWith('"')) ||
-        (value.startsWith("'") && value.endsWith("'"))) {
-      value = value.slice(1, -1);
+    // Determine nesting context based on indentation
+    if (indent === 0) {
+      context = '';
+    } else if (indent <= 2 && context.startsWith('metadata')) {
+      // Still in metadata block (indent 2)
+      if (!context.includes('.')) {
+        context = 'metadata';
+      }
+    } else if (indent <= 4 && context === 'metadata.claudeops') {
+      // Still in claudeops block (indent 4+)
+      context = 'metadata.claudeops';
     }
 
-    switch (key) {
-      case 'name':
-        metadata.name = value;
-        break;
-      case 'description':
-        metadata.description = value;
-        break;
-      case 'auto_trigger':
-      case 'autoTrigger':
-        // Handle array format
-        if (value.startsWith('[')) {
-          metadata.autoTrigger = value
-            .slice(1, -1)
-            .split(',')
-            .map(s => s.trim().replace(/["']/g, ''));
-        }
-        break;
-      case 'domains':
-        if (value.startsWith('[')) {
-          metadata.domains = value
-            .slice(1, -1)
-            .split(',')
-            .map(s => s.trim().replace(/["']/g, '')) as Domain[];
-        }
-        break;
-      case 'model':
-        metadata.model = value as SkillMetadata['model'];
-        break;
-      case 'disable-model-invocation':
-      case 'disableModelInvocation':
-        metadata.disableModelInvocation = value === 'true';
-        break;
-      case 'user-invocable':
-      case 'userInvocable':
-        metadata.userInvocable = value !== 'false';
-        break;
+    // Handle context-setting keys (block openers with no value)
+    if (rawValue === '' || rawValue === undefined) {
+      if (key === 'metadata' && indent === 0) {
+        context = 'metadata';
+        continue;
+      }
+      if (key === 'claudeops' && context === 'metadata') {
+        context = 'metadata.claudeops';
+        continue;
+      }
     }
+
+    // Parse based on context
+    if (context === 'metadata.claudeops') {
+      // Inside metadata.claudeops block
+      const value = stripQuotes(rawValue);
+      switch (key) {
+        case 'triggers':
+          metadata.autoTrigger = parseInlineArray(rawValue);
+          break;
+        case 'domains':
+          metadata.domains = parseInlineArray(rawValue) as Domain[];
+          break;
+        case 'model':
+          metadata.model = value as SkillMetadata['model'];
+          break;
+        case 'disableModelInvocation':
+          metadata.disableModelInvocation = value === 'true';
+          break;
+        case 'userInvocable':
+          metadata.userInvocable = value !== 'false';
+          break;
+        case 'allowedTools':
+          metadata.allowedTools = parseInlineArray(rawValue);
+          break;
+        case 'alwaysActive':
+          metadata.alwaysActive = value === 'true';
+          break;
+      }
+    } else if (context === 'metadata') {
+      // Inside metadata block (but not claudeops sub-block)
+      rawMetadata[key] = stripQuotes(rawValue);
+    } else {
+      // Top-level keys
+      const value = stripQuotes(rawValue);
+      switch (key) {
+        case 'name':
+          metadata.name = value;
+          break;
+        case 'description':
+          metadata.description = value;
+          break;
+        case 'license':
+          metadata.license = value;
+          break;
+        // Legacy flat format support (for ecosystem/external skills)
+        case 'auto_trigger':
+        case 'autoTrigger':
+          if (!metadata.autoTrigger) {
+            metadata.autoTrigger = parseInlineArray(rawValue);
+          }
+          break;
+        case 'triggers':
+          if (!metadata.autoTrigger) {
+            metadata.autoTrigger = parseInlineArray(rawValue);
+          }
+          break;
+        case 'domains':
+          if (!metadata.domains) {
+            metadata.domains = parseInlineArray(rawValue) as Domain[];
+          }
+          break;
+        case 'model':
+          if (!metadata.model) {
+            metadata.model = value as SkillMetadata['model'];
+          }
+          break;
+        case 'disable-model-invocation':
+        case 'disableModelInvocation':
+          if (metadata.disableModelInvocation === undefined) {
+            metadata.disableModelInvocation = value === 'true';
+          }
+          break;
+        case 'user-invocable':
+        case 'userInvocable':
+          if (metadata.userInvocable === undefined) {
+            metadata.userInvocable = value !== 'false';
+          }
+          break;
+        case 'allowed-tools':
+        case 'allowedTools':
+          if (!metadata.allowedTools) {
+            metadata.allowedTools = value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+          }
+          break;
+        case 'always_active':
+        case 'alwaysActive':
+          if (metadata.alwaysActive === undefined) {
+            metadata.alwaysActive = value === 'true';
+          }
+          break;
+      }
+    }
+  }
+
+  // Store raw metadata if present
+  if (Object.keys(rawMetadata).length > 0) {
+    metadata.rawMetadata = rawMetadata;
   }
 
   // Default name from filename if not in frontmatter
@@ -326,9 +438,6 @@ export class SkillManager {
       if (classification.signals.wantsAutonomy && skill.metadata.name === 'autopilot') {
         matches.push({ skill, matchReason: 'classification', score: 0.9 });
       }
-      if (classification.domains.includes('frontend') && skill.metadata.name === 'frontend-ui-ux') {
-        matches.push({ skill, matchReason: 'classification', score: 0.85 });
-      }
     }
 
     // Dedupe by skill name, keeping highest score
@@ -449,27 +558,46 @@ export class SkillManager {
           expectedSkills.add(`${skill.metadata.name}.md`);
           expectedSkills.add(skill.metadata.name); // Track directory name for references
 
-          // Build full skill file with frontmatter
+          // Build full skill file with agentskills.io-compatible frontmatter
           const frontmatter = [
             '---',
             `name: ${skill.metadata.name}`,
             `description: ${skill.metadata.description || ''}`,
           ];
 
+          if (skill.metadata.license) {
+            frontmatter.push(`license: ${skill.metadata.license}`);
+          }
+
+          // Build metadata.claudeops block
+          const claudeopsFields: string[] = [];
+
           if (skill.metadata.autoTrigger?.length) {
-            frontmatter.push(`auto_trigger: [${skill.metadata.autoTrigger.map(t => `"${t}"`).join(', ')}]`);
+            claudeopsFields.push(`    triggers: [${skill.metadata.autoTrigger.join(', ')}]`);
           }
           if (skill.metadata.domains?.length) {
-            frontmatter.push(`domains: [${skill.metadata.domains.map(d => `"${d}"`).join(', ')}]`);
+            claudeopsFields.push(`    domains: [${skill.metadata.domains.join(', ')}]`);
           }
           if (skill.metadata.model) {
-            frontmatter.push(`model: ${skill.metadata.model}`);
-          }
-          if (skill.metadata.disableModelInvocation !== undefined) {
-            frontmatter.push(`disable-model-invocation: ${skill.metadata.disableModelInvocation}`);
+            claudeopsFields.push(`    model: ${skill.metadata.model}`);
           }
           if (skill.metadata.userInvocable !== undefined) {
-            frontmatter.push(`user-invocable: ${skill.metadata.userInvocable}`);
+            claudeopsFields.push(`    userInvocable: ${skill.metadata.userInvocable}`);
+          }
+          if (skill.metadata.disableModelInvocation !== undefined) {
+            claudeopsFields.push(`    disableModelInvocation: ${skill.metadata.disableModelInvocation}`);
+          }
+          if (skill.metadata.allowedTools?.length) {
+            claudeopsFields.push(`    allowedTools: [${skill.metadata.allowedTools.join(', ')}]`);
+          }
+          if (skill.metadata.alwaysActive !== undefined) {
+            claudeopsFields.push(`    alwaysActive: ${skill.metadata.alwaysActive}`);
+          }
+
+          if (claudeopsFields.length > 0) {
+            frontmatter.push('metadata:');
+            frontmatter.push('  claudeops:');
+            frontmatter.push(...claudeopsFields);
           }
 
           frontmatter.push('---', '');
