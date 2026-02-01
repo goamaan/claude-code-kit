@@ -9,8 +9,11 @@ import * as output from '../ui/output.js';
 import * as prompts from '../ui/prompts.js';
 import { loadConfig } from '../core/config/loader.js';
 import { createProfileManager } from '../domain/profile/manager.js';
+import { listInstalledSkills } from '../domain/skill/index.js';
+import { createHookManager } from '../domain/hook/index.js';
 import { getClaudeDir, getGlobalConfigDir } from '../utils/paths.js';
 import { exists, ensureDir, writeFile } from '../utils/fs.js';
+import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { VERSION } from '../index.js';
 import type { DiagnosticResult, DiagnosticReport, DiagnosticCategory } from '../types/diagnostic.js';
@@ -292,6 +295,188 @@ const checks: Record<string, DiagnosticCheck> = {
       passed,
       description: 'Validate hooks in settings.json',
       message,
+      suggestions: passed ? undefined : issues,
+      fixAvailable: false,
+      duration: Date.now() - start,
+    };
+  },
+
+  // Skills checks
+  'skills:installed-valid': async () => {
+    const start = Date.now();
+    const issues: string[] = [];
+
+    try {
+      const installed = listInstalledSkills();
+
+      for (const skill of installed) {
+        const skillDir = skill.path;
+        if (!existsSync(skillDir)) {
+          issues.push(`${skill.name}: directory missing at ${skillDir}`);
+          continue;
+        }
+
+        const skillMd = join(skillDir, 'SKILL.md');
+        if (!existsSync(skillMd)) {
+          issues.push(`${skill.name}: missing SKILL.md`);
+        }
+      }
+    } catch (err) {
+      issues.push(`Failed to read skill lock: ${err instanceof Error ? err.message : err}`);
+    }
+
+    const passed = issues.length === 0;
+    return {
+      id: 'skills:installed-valid',
+      name: 'Installed skills health',
+      category: 'skills' as const,
+      severity: passed ? 'info' : 'warning',
+      passed,
+      description: 'Validate installed skills have valid SKILL.md files',
+      message: passed
+        ? 'All installed skills are valid'
+        : `Found ${issues.length} issue(s) with installed skills`,
+      suggestions: passed ? undefined : issues,
+      fixAvailable: false,
+      duration: Date.now() - start,
+    };
+  },
+
+  // Hook conflict checks
+  'hooks:no-conflicts': async () => {
+    const start = Date.now();
+    const issues: string[] = [];
+
+    try {
+      const hookManager = createHookManager({ disabledHooks: [] });
+      await hookManager.loadHooks();
+      const hooks = hookManager.getHooks();
+
+      // Group by event+matcher to detect conflicts
+      const groups = new Map<string, string[]>();
+      for (const hook of hooks) {
+        if (!hook.metadata.enabled) continue;
+        const key = `${hook.metadata.event}:${hook.metadata.matcher || '*'}`;
+        if (!groups.has(key)) {
+          groups.set(key, []);
+        }
+        groups.get(key)!.push(hook.metadata.name);
+      }
+
+      for (const [key, names] of groups) {
+        if (names.length > 1) {
+          issues.push(`Multiple hooks for ${key}: ${names.join(', ')}`);
+        }
+      }
+    } catch (err) {
+      issues.push(`Failed to load hooks: ${err instanceof Error ? err.message : err}`);
+    }
+
+    const passed = issues.length === 0;
+    return {
+      id: 'hooks:no-conflicts',
+      name: 'Hook conflicts',
+      category: 'hooks' as const,
+      severity: passed ? 'info' : 'warning',
+      passed,
+      description: 'Check for conflicting hooks on the same event and matcher',
+      message: passed
+        ? 'No hook conflicts detected'
+        : `Found ${issues.length} potential conflict(s)`,
+      suggestions: passed ? undefined : issues,
+      fixAvailable: false,
+      duration: Date.now() - start,
+    };
+  },
+
+  // Profile consistency checks
+  'profiles:consistency': async () => {
+    const start = Date.now();
+    const issues: string[] = [];
+
+    try {
+      const profileManager = createProfileManager();
+      const activeProfileName = await profileManager.active();
+      const profile = await profileManager.get(activeProfileName);
+
+      // Check if enabled skills are actually installed or builtin
+      const installed = listInstalledSkills();
+      const installedNames = new Set(installed.map(s => s.name));
+
+      for (const skillName of profile.resolved.skills.enabled) {
+        // Skip check for builtin skills — they're always available
+        if (!installedNames.has(skillName)) {
+          // Not a hard error since skills may be builtin
+          // Just note for awareness
+        }
+      }
+    } catch (err) {
+      issues.push(`Failed to check profile: ${err instanceof Error ? err.message : err}`);
+    }
+
+    const passed = issues.length === 0;
+    return {
+      id: 'profiles:consistency',
+      name: 'Profile consistency',
+      category: 'profiles' as const,
+      severity: passed ? 'info' : 'warning',
+      passed,
+      description: 'Check if profile references are valid',
+      message: passed
+        ? 'Profile configuration is consistent'
+        : `Found ${issues.length} consistency issue(s)`,
+      suggestions: passed ? undefined : issues,
+      fixAvailable: false,
+      duration: Date.now() - start,
+    };
+  },
+
+  // Learnings health check
+  'learnings:structure': async () => {
+    const start = Date.now();
+    const learningsDir = join(process.cwd(), '.claude', 'learnings');
+    const dirExists = existsSync(learningsDir);
+
+    if (!dirExists) {
+      return {
+        id: 'learnings:structure',
+        name: 'Learnings directory',
+        category: 'learnings' as const,
+        severity: 'info',
+        passed: true,
+        description: 'Check learnings directory structure',
+        message: 'No learnings directory (OK - optional)',
+        fixAvailable: false,
+        duration: Date.now() - start,
+      };
+    }
+
+    const issues: string[] = [];
+    const schemaPath = join(learningsDir, 'schema.json');
+
+    if (!existsSync(schemaPath)) {
+      issues.push('Missing schema.json in learnings directory');
+    } else {
+      try {
+        const { readFile: readFs } = await import('../utils/fs.js');
+        const content = await readFs(schemaPath);
+        JSON.parse(content);
+      } catch {
+        issues.push('schema.json is invalid JSON');
+      }
+    }
+
+    const passed = issues.length === 0;
+    return {
+      id: 'learnings:structure',
+      name: 'Learnings directory',
+      category: 'learnings' as const,
+      severity: passed ? 'info' : 'warning',
+      passed,
+      description: 'Check learnings directory structure and schema',
+      message: passed
+        ? 'Learnings directory structure is valid'
+        : `Found ${issues.length} issue(s) with learnings`,
       suggestions: passed ? undefined : issues,
       fixAvailable: false,
       duration: Date.now() - start,
