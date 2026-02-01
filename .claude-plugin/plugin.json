@@ -1,7 +1,7 @@
 {
   "name": "claudeops",
   "description": "Multi-agent orchestration, codebase scanning, quality hooks, and workflow skills for Claude Code",
-  "version": "4.0.0",
+  "version": "1.0.0",
   "author": {
     "name": "Amaan"
   },
