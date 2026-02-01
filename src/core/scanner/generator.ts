@@ -3,6 +3,7 @@
  */
 
 import type { ScanResult } from './types.js';
+import type { ProjectConventions } from './conventions.js';
 
 /** Marker for start of claudeops managed section */
 export const MANAGED_START = '<!-- claudeops:managed:start -->';
@@ -96,6 +97,21 @@ export function generateProjectSettings(scan: ScanResult): Record<string, unknow
   return {
     permissions: { allow },
   };
+}
+
+/**
+ * Generate a conventions section for CLAUDE.md from detected conventions
+ */
+export function generateConventionsSection(conventions: ProjectConventions): string {
+  const lines: string[] = ['## Conventions', ''];
+
+  lines.push(`- **Imports:** ${conventions.imports.style}${conventions.imports.barrelFiles?.length ? ` (barrel files: ${conventions.imports.barrelFiles.join(', ')})` : ''}`);
+  lines.push(`- **Tests:** ${conventions.tests.location}${conventions.tests.directory ? ` in \`${conventions.tests.directory}/\`` : ''} as \`${conventions.tests.pattern}\``);
+  lines.push(`- **Exports:** ${conventions.exports.style} exports preferred`);
+  lines.push(`- **File naming:** ${conventions.naming.files}`);
+  lines.push('');
+
+  return lines.join('\n');
 }
 
 /**
