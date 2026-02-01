@@ -46,6 +46,18 @@ describe('CLI command imports', () => {
     expect(mod.default).toBeDefined();
     expect(mod.default.meta).toBeDefined();
   });
+
+  it('should import skill command', async () => {
+    const mod = await import('@/commands/skill.js');
+    expect(mod.default).toBeDefined();
+    expect(mod.default.meta).toBeDefined();
+  });
+
+  it('should import hook command', async () => {
+    const mod = await import('@/commands/hook.js');
+    expect(mod.default).toBeDefined();
+    expect(mod.default.meta).toBeDefined();
+  });
 });
 
 // =============================================================================
@@ -94,6 +106,30 @@ describe('command definitions', () => {
     expect(args.fix).toBeDefined();
     expect(args.json).toBeDefined();
     expect(args.category).toBeDefined();
+  });
+
+  it('skill command should have subcommands', async () => {
+    const { default: skillCmd } = await import('@/commands/skill.js');
+    expect(skillCmd.subCommands).toBeDefined();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const subCommands = skillCmd.subCommands as any;
+    expect(subCommands.add).toBeDefined();
+    expect(subCommands.remove).toBeDefined();
+    expect(subCommands.list).toBeDefined();
+    expect(subCommands.enable).toBeDefined();
+    expect(subCommands.disable).toBeDefined();
+  });
+
+  it('hook command should have subcommands', async () => {
+    const { default: hookCmd } = await import('@/commands/hook.js');
+    expect(hookCmd.subCommands).toBeDefined();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const subCommands = hookCmd.subCommands as any;
+    expect(subCommands.add).toBeDefined();
+    expect(subCommands.remove).toBeDefined();
+    expect(subCommands.list).toBeDefined();
+    expect(subCommands.enable).toBeDefined();
+    expect(subCommands.disable).toBeDefined();
   });
 });
 
@@ -222,6 +258,25 @@ describe('skill command helpers', () => {
   it.skip('skill manager loadSkills requires test environment', () => {
     // Skip - loadSkills() reads from actual ~/.claudeops/skills/ directory
     // To test this properly, we need test fixtures
+  });
+
+  it('should export installer functions', async () => {
+    const {
+      parseSource,
+      discoverSkills,
+      installFromSource,
+      removeSkill,
+      listInstalledSkills,
+      readLockFile,
+      writeLockFile,
+    } = await import('@/domain/skill/index.js');
+    expect(typeof parseSource).toBe('function');
+    expect(typeof discoverSkills).toBe('function');
+    expect(typeof installFromSource).toBe('function');
+    expect(typeof removeSkill).toBe('function');
+    expect(typeof listInstalledSkills).toBe('function');
+    expect(typeof readLockFile).toBe('function');
+    expect(typeof writeLockFile).toBe('function');
   });
 });
 
