@@ -26,8 +26,8 @@ Run each check and report results:
 Verify the claudeops plugin directory contains required files:
 
 - `.claude-plugin/plugin.json` exists and is valid JSON
-- `skills/` directory exists with SKILL.md files
-- `agents/` directory exists with .md files
+- `skills/` directory exists with SKILL.md files (expected: 7 skills)
+- `agents/` directory exists with .md files (expected: 7 agents: architect, designer, executor, explore, researcher, security, tester)
 - `hooks/hooks.json` exists and is valid JSON
 - `hooks/` contains the .mjs files referenced in hooks.json
 - `scripts/scan.mjs` exists
@@ -80,7 +80,7 @@ For each hook referenced in hooks.json, verify:
 ### Status: [HEALTHY / WARNING / ERROR]
 
 ### Checks
-- [x] Plugin structure valid (N skills, N agents, N hooks)
+- [x] Plugin structure valid (7 skills, 7 agents, 9 hooks)
 - [x] Node.js v22.0.0 (meets v20+ requirement)
 - [x] Git configured (user: Name <email>)
 - [ ] Project .claude/CLAUDE.md missing

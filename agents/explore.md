@@ -1,7 +1,6 @@
 ---
 name: explore
 description: Fast codebase exploration and file discovery
-model: haiku
 tools:
   - Read
   - Glob
@@ -86,14 +85,6 @@ Project structure:
   - utils/ - Utilities
 - tests/ - Test files
 ```
-
-## Escalation
-
-Escalate to `explore` with `model="sonnet"` when:
-- Need deeper understanding of code
-- Complex pattern matching required
-- Cross-file relationship mapping needed
-- Analysis beyond simple lookup
 
 ## Efficiency Rules
 

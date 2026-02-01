@@ -42,16 +42,11 @@ Skills are invoked with `/claudeops:<name>` in Claude Code.
 
 | Skill | Description |
 |-------|-------------|
-| **init** | Interactive project setup — scan codebase, generate `.claude/` config |
+| **init** | Interactive project setup — scan codebase, generate `.claude/` config with orchestration |
 | **scan** | AI-enhanced codebase analysis beyond deterministic scanning |
-| **orchestrate** | Core multi-agent orchestration conductor |
 | **autopilot** | Full autonomous execution from idea to working code |
-| **planner** | Strategic planning with requirement gathering |
-| **executor** | Standard code implementation for features and bug fixes |
 | **debug** | Systematic debugging with parallel hypothesis testing |
 | **review** | Multi-specialist parallel code review |
-| **testing** | Testing orchestration with TDD and coverage-driven generation |
-| **security** | OWASP security audit, threat modeling, dependency audit |
 | **doctor** | Diagnose plugin setup and environment health |
 | **learn** | Capture session learnings for future retrieval |
 
@@ -59,35 +54,15 @@ Skills are invoked with `/claudeops:<name>` in Claude Code.
 
 Agents are specialized subagent definitions used by skills for delegation.
 
-### Opus Tier (Complex/Analytical)
 | Agent | Purpose |
 |-------|---------|
-| architect | Deep analysis, debugging, system design, verification |
-| executor | Multi-file features, bug fixes, standard implementation |
-| designer | UI/UX, component creation, styling |
-| qa-tester | Test planning, TDD workflow, quality assurance |
-| security | Security audit, threat modeling |
-| researcher | External research, API analysis, tech evaluation |
-| planner | Strategic planning, requirements gathering |
-| critic | Plan review, critical analysis, gap identification |
-| security-sentinel | OWASP vulnerability review, injection analysis |
-| performance-oracle | Performance bottleneck analysis, optimization |
-| architecture-strategist | Architectural compliance, design pattern review |
-
-### Sonnet Tier (Standard)
-| Agent | Purpose |
-|-------|---------|
-| code-simplicity-reviewer | YAGNI detection, over-engineering review |
-| best-practices-researcher | Framework best practices, convention research |
-
-### Haiku Tier (Fast/Simple)
-| Agent | Purpose |
-|-------|---------|
+| architect | Deep analysis, debugging, system design, performance review, plan critique |
+| executor | Code implementation, bug fixes, refactoring (any complexity) |
 | explore | File search, codebase discovery, structure mapping |
-| executor-low | Single-file boilerplate, trivial changes |
-| writer | Documentation, comments, technical writing |
-| git-history-analyzer | Code archaeology, git log analysis, changelogs |
-| vision | Visual analysis of images, diagrams, UI screenshots |
+| designer | UI/UX, component creation, styling, responsive layouts |
+| tester | Test planning, TDD workflow, test writing, quality assurance |
+| security | Security audit, threat modeling, vulnerability assessment, OWASP compliance |
+| researcher | Technology evaluation, best practices, API analysis, framework conventions |
 
 ## Hooks
 
@@ -153,7 +128,6 @@ Create `agents/<name>.md` with YAML frontmatter:
 ---
 name: my-agent
 description: What this agent specializes in
-model: sonnet
 ---
 ```
 

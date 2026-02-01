@@ -1,14 +1,13 @@
 ---
 name: review
-description: Multi-specialist parallel code review with security, performance, and architecture analysis
+description: Multi-specialist parallel code review with security, architecture, and testing analysis
 user-invocable: true
 disable-model-invocation: false
-model: opus
 ---
 
 # Review Skill
 
-Multi-specialist parallel code review system. Spawns parallel review agents covering security, performance, architecture, and simplicity, then synthesizes findings into a unified review report.
+Multi-specialist parallel code review system. Spawns parallel review agents covering security, architecture, and testing, then synthesizes findings into a unified review report.
 
 ## When to Activate
 
@@ -24,24 +23,20 @@ Multi-specialist parallel code review system. Spawns parallel review agents cove
 **Pattern**: Fan-Out + Reduce
 
 #### Phase 1: Context
-1. Spawn explore agent (haiku) to identify all changed files
+1. Spawn explore agent to identify all changed files
 2. Gather PR context: description, commits, linked issues
-3. Load `references/domains/code-review.md` domain guide
 
 #### Phase 2: Parallel Review (Fan-Out)
-Spawn 4 specialist agents simultaneously:
+Spawn 3 specialist agents simultaneously:
 
 ```
-Task(subagent_type="security", model="opus", run_in_background=True,
+Task(subagent_type="security", run_in_background=True,
      prompt="Review these files for security vulnerabilities: [files]. Focus on OWASP Top 10...")
 
-Task(subagent_type="architect", model="opus", run_in_background=True,
-     prompt="Review these files for performance and architecture: [files]. Check algorithms, patterns...")
+Task(subagent_type="architect", run_in_background=True,
+     prompt="Review these files for architecture, performance, design quality, and simplicity: [files]. Check patterns, YAGNI, complexity, algorithms...")
 
-Task(subagent_type="critic", model="opus", run_in_background=True,
-     prompt="Review these files for over-engineering and simplicity: [files]. Check YAGNI, complexity...")
-
-Task(subagent_type="explore", model="haiku", run_in_background=True,
+Task(subagent_type="tester", run_in_background=True,
      prompt="Check test coverage for changed files: [files]. Identify missing test scenarios...")
 ```
 
@@ -102,7 +97,6 @@ Gates (all must pass):
 ### Summary by Specialist
 - **Security**: [N findings] ([critical/high/medium/low])
 - **Architecture**: [N findings]
-- **Simplicity**: [N findings]
 - **Testing**: [N findings]
 ```
 

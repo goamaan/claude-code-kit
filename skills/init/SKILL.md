@@ -1,6 +1,6 @@
 ---
 name: init
-description: Interactive project setup - scan codebase and generate .claude/ configuration
+description: Interactive project setup - scan codebase and generate .claude/ configuration with orchestration
 user-invocable: true
 disable-model-invocation: true
 allowed-tools: [Bash, Read, Write, Glob, Grep, Edit, AskUserQuestion]
@@ -8,7 +8,7 @@ allowed-tools: [Bash, Read, Write, Glob, Grep, Edit, AskUserQuestion]
 
 # Project Initialization Skill
 
-Initialize a project with claudeops by scanning the codebase and generating `.claude/` configuration files.
+Initialize a project with claudeops by scanning the codebase and generating `.claude/` configuration files with embedded orchestration.
 
 ## Execution Steps
 
@@ -41,7 +41,25 @@ Extract the following from the JSON:
 - `configFiles`: important configuration files
 - `packageManager`: npm, yarn, pnpm, bun, etc.
 
-### 3. Clarify with User
+### 3. Filter Agent Catalog
+
+Based on scan results, determine which agents are relevant to this project:
+
+| Scan Signal | Agents Included |
+|-------------|----------------|
+| Always | `architect`, `executor`, `explore` |
+| Frontend detected (React/Vue/Svelte/Angular/CSS/Tailwind) | + `designer` |
+| Test framework or test scripts detected | + `tester` |
+| Web framework, API, auth deps detected | + `security` |
+| Complex project (>3 languages, monorepo, large) | + `researcher` |
+
+**Detection heuristics:**
+- **Frontend**: Look for React, Vue, Svelte, Angular, Next.js, Nuxt, SvelteKit, Remix, Astro in dependencies; CSS/SCSS/Tailwind files; `src/components/` or similar directories
+- **Test framework**: Look for jest, vitest, mocha, pytest, go test, cargo test, JUnit in dependencies or config; `test/`, `tests/`, `__tests__/`, `*.test.*`, `*.spec.*` directories/files; test scripts in package.json
+- **Web/API/Security**: Look for express, fastify, koa, django, flask, gin, actix, spring in dependencies; auth libraries (passport, next-auth, clerk, auth0); API route directories
+- **Complex**: More than 3 languages detected; monorepo tools (nx, turborepo, lerna, pnpm workspaces); large file count (>500 source files)
+
+### 4. Clarify with User
 
 Use AskUserQuestion to resolve ambiguities and gather preferences:
 
@@ -53,7 +71,7 @@ Use AskUserQuestion to resolve ambiguities and gather preferences:
 
 **Anti-pattern**: Do NOT ask questions the scanner already answered (e.g., "what package manager do you use?" when package.json exists).
 
-### 4. Check for Existing Configuration
+### 5. Check for Existing Configuration
 
 Before generating files, check if `.claude/CLAUDE.md` exists:
 
@@ -66,13 +84,13 @@ If it exists:
 - Ask: "A .claude/CLAUDE.md already exists. Should I (o)verwrite, (m)erge, or (c)ancel?"
 - If merge: preserve user-added sections, update detected content
 
-### 5. Generate .claude/CLAUDE.md
+### 6. Generate .claude/CLAUDE.md with Orchestration
 
-Create a concise, scannable reference document. Claude reads this every session, so brevity is critical.
+Create a concise, scannable reference document with embedded orchestration instructions. Claude reads this every session, so brevity is critical.
 
 **Template**:
 
-```markdown
+````markdown
 # {Project Name}
 
 {One-line description from package.json or user input}
@@ -109,16 +127,71 @@ Create a concise, scannable reference document. Claude reads this every session,
 
 - `{file}`: {purpose}
 - `{file}`: {purpose}
-```
+
+## Orchestration
+
+You are a conductor. Delegate all implementation work to specialized agents.
+
+### Available Agents
+
+{Generate a table with ONLY the agents included by the filter in step 3}
+
+| Agent | Use For |
+|-------|---------|
+| architect | Deep analysis, debugging, system design, performance review, plan critique |
+| executor | Code changes of any complexity, bug fixes, refactoring |
+| explore | File search, codebase discovery, structure mapping |
+{if designer included:}
+| designer | UI/UX, component creation, styling, responsive layouts |
+{if tester included:}
+| tester | Test planning, TDD workflow, test writing, quality assurance |
+{if security included:}
+| security | Security audit, threat modeling, vulnerability assessment |
+{if researcher included:}
+| researcher | Technology evaluation, best practices, API analysis |
+
+### Delegation Rules
+
+- Code changes → executor
+- Deep analysis, debugging, architecture review → architect
+- Codebase search and discovery → explore
+{if designer included:}
+- UI/frontend work → designer
+{if tester included:}
+- Test writing and execution → tester
+{if security included:}
+- Security analysis and auditing → security
+{if researcher included:}
+- Research and technology evaluation → researcher
+- Plan and decision review → architect (review mode)
+
+### Orchestration Patterns
+
+- **Independent subtasks** → spawn agents in parallel (fan-out)
+- **Sequential dependencies** → pipeline (pass results forward)
+- **Complex dependencies** → task graph (TaskCreate with blockedBy)
+- **Uncertain approach** → speculative (try 2-3 approaches, pick best)
+
+### Worker Prompt Template
+
+Structure every agent prompt with 5 elements:
+
+1. **Preamble**: "You are a [agent-type] agent working on a specific subtask."
+2. **Context**: Project description, tech stack, previous results, relevant files
+3. **Scope**: Precise task description + DO/DO NOT boundaries
+4. **Constraints**: Read before modify, match patterns, verify after changes
+5. **Expected Output**: Files modified, changes made, verification results
+````
 
 **Guidelines**:
-- Keep total length under 100 lines
+- Keep total length under 120 lines
 - Use bullet points, not paragraphs
 - Highlight only critical information
 - Skip empty sections
 - Focus on what Claude needs to know to make code changes
+- The orchestration section is always included
 
-### 6. Generate/Merge .claude/settings.json
+### 7. Generate/Merge .claude/settings.json
 
 Create or update settings.json with appropriate permissions for detected tools.
 
@@ -149,12 +222,13 @@ If settings.json exists, merge the allowedCommands and allowedPaths arrays intel
 - Preserve user-added custom commands
 - Sort alphabetically for consistency
 
-### 7. Verify and Report
+### 8. Verify and Report
 
 After generation:
 - Confirm files were written
 - Show the user where files were created
 - List the key detected features
+- List which agents were included and why
 - Suggest next steps (e.g., "Review and customize `.claude/CLAUDE.md`")
 
 ## Anti-Patterns
@@ -164,6 +238,7 @@ After generation:
 - Don't add speculative sections (e.g., "Deployment" if no deploy config exists)
 - Don't overwrite user content without asking
 - Don't add commands to allowedCommands that weren't actually detected
+- Don't include agents that aren't relevant to the detected project
 
 ## Example Output
 
@@ -171,14 +246,23 @@ After generation:
 Project initialized successfully.
 
 Created:
-- .claude/CLAUDE.md (87 lines)
+- .claude/CLAUDE.md (98 lines)
 - .claude/settings.json (merged with existing)
 
 Detected:
 - TypeScript + Node.js project
 - Bun package manager
 - Vitest test framework
-- tsdown bundler
+- Express API framework
+
+Agents included:
+- architect, executor, explore (always)
+- tester (vitest detected)
+- security (express API detected)
+
+Excluded:
+- designer (no frontend detected)
+- researcher (single language, not complex)
 
 Next steps:
 1. Review .claude/CLAUDE.md and customize as needed

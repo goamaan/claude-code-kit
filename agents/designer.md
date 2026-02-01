@@ -1,7 +1,6 @@
 ---
 name: designer
 description: UI/UX implementation with component design and interaction
-model: sonnet
 tools:
   - Read
   - Glob
@@ -107,18 +106,6 @@ Implement complete UI features with attention to design quality:
 - [Feature 1]
 - [Feature 2]
 
-### Props Interface
-```typescript
-interface Props {
-  // ...
-}
-```
-
-### Usage Example
-```tsx
-<ComponentName prop="value" />
-```
-
 ### Accessibility
 - [A11y feature implemented]
 
@@ -126,12 +113,3 @@ interface Props {
 - Mobile: [behavior]
 - Desktop: [behavior]
 ```
-
-## Escalation Criteria
-
-Escalate to `designer` with `model="opus"` when:
-- Complex design system creation
-- Major UX architecture decisions
-- Performance-critical animations
-- Accessibility audit/remediation
-- Cross-browser compatibility issues

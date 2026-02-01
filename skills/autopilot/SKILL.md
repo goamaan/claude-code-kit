@@ -3,10 +3,9 @@ name: autopilot
 description: Full autonomous execution from idea to working code with self-organizing swarm support
 user-invocable: true
 disable-model-invocation: false
-model: opus
 ---
 
-# Autopilot Skill (v5.0)
+# Autopilot Skill (v6.0)
 
 Full autonomous execution from idea to working code. Gathers requirements, creates comprehensive plan, executes in parallel, verifies continuously, and self-corrects until complete.
 
@@ -41,10 +40,30 @@ When TeammateTool is NOT available, use the 5-phase pipeline:
 Understand what needs to be built.
 
 ### Actions
-1. Load relevant domain guide from `references/domains/`
-2. Spawn explore agent (haiku) to map codebase structure
-3. Spawn architect agent (opus) to analyze requirements and existing patterns
-4. If requirements are ambiguous, use AskUserQuestion (max 4 questions, 4 options each, rich descriptions)
+1. Spawn explore agent to map codebase structure
+2. Spawn architect agent to analyze requirements and existing patterns
+3. If requirements are ambiguous, use AskUserQuestion (max 4 questions, 4 options each, rich descriptions)
+
+### Interview Methodology
+
+Before asking ANY questions, explore the codebase automatically:
+- Map directory structure
+- Find relevant files for the request
+- Identify existing patterns and conventions
+- Discover tech stack and dependencies
+
+**Golden Rule**: Ask ONLY preference questions. Never ask questions you can answer by exploring the codebase.
+
+What to ask (preferences & decisions):
+- "Would you prefer approach A or B?"
+- "How important is X vs Y?"
+- "What's the scope boundary?"
+- "Are there constraints I should know about?"
+
+What NOT to ask (discoverable facts):
+- "What framework do you use?" → Explore and find out
+- "Where are the config files?" → Use Glob/Grep to find them
+- "What testing library?" → Check package.json/go.mod/etc.
 
 ### Gate
 - Codebase structure understood
@@ -65,14 +84,13 @@ Understand what needs to be built.
 Create strategic plan and architecture.
 
 ### Actions
-1. Spawn planner agent (opus) to create task breakdown
-2. Spawn architect agent (opus) to define technical approach
-3. Spawn critic agent (opus) to review the plan
-4. Create all tasks with TaskCreate, including dependencies
-5. Identify parallelization opportunities
+1. Spawn architect agent to create task breakdown and define technical approach
+2. Spawn architect agent (in review mode) to critique the plan
+3. Create all tasks with TaskCreate, including dependencies
+4. Identify parallelization opportunities
 
 ### Gate
-- Plan reviewed and approved by critic
+- Plan reviewed and approved
 - All tasks created with clear dependencies
 - Parallelization opportunities identified
 
@@ -92,20 +110,17 @@ Execute the plan with maximum parallelism.
 1. Check TaskList for ready tasks (pending, no blockers)
 2. Spawn executor agents for independent tasks in parallel:
    - Use `Task(run_in_background=True)` for parallel execution
-   - Assign appropriate model tier based on task complexity
    - Use the 5-element worker prompt template
 3. As tasks complete, check for newly unblocked tasks
 4. Spawn additional agents for newly ready tasks
 5. Continue until all execution tasks complete
 
-### Model Routing for Execution
-| Task Type | Agent | Model |
-|-----------|-------|-------|
-| Simple file changes | executor-low | haiku |
-| Standard features | executor | sonnet |
-| Complex implementation | executor | opus |
-| UI/frontend work | designer | sonnet/opus |
-| Test writing | qa-tester | sonnet |
+### Agent Assignment for Execution
+| Task Type | Agent |
+|-----------|-------|
+| Code changes (any complexity) | executor |
+| UI/frontend work | designer |
+| Test writing | tester |
 
 ### Parallel Execution Rules
 - Maximum 5-7 agents running simultaneously
@@ -122,7 +137,7 @@ Execute the plan with maximum parallelism.
 Continuous testing and self-correction.
 
 ### Actions
-1. Spawn qa-tester agent to run full test suite
+1. Spawn tester agent to run full test suite
 2. Spawn architect agent to verify implementation matches plan
 3. Run build: `npm run build` (or project equivalent)
 4. Run tests: `npm test` (or project equivalent)
@@ -137,7 +152,7 @@ while (failures exist AND retries < 3):
   1. Analyze failure (architect agent)
   2. Create fix task (TaskCreate)
   3. Execute fix (executor agent)
-  4. Re-verify (qa-tester agent)
+  4. Re-verify (tester agent)
 ```
 
 ### Gate
@@ -165,14 +180,61 @@ Final review and user handoff.
 - [file:line] — [description]
 
 ### Verification Results
-- Build: ✓ Pass
-- Tests: ✓ Pass ([N] tests)
+- Build: Pass
+- Tests: Pass ([N] tests)
 
 ### How to Use
 [Usage instructions, examples, or next steps]
 
 ### Architecture Notes
 [Key architectural decisions and their rationale]
+```
+
+## Worker Prompt Template
+
+Structure every worker prompt with 5 elements:
+
+### 1. Preamble
+```
+You are a [agent-type] agent working on a specific subtask within a larger orchestrated workflow.
+```
+
+### 2. Context
+```
+## Context
+- Project: [brief project description]
+- Language/Framework: [tech stack]
+- Previous results: [any results from prior agents]
+- Relevant files: [specific file paths to examine]
+```
+
+### 3. Scope
+```
+## Your Task
+[Precise description of what to accomplish]
+
+## Scope Boundaries
+- DO: [explicit inclusions]
+- DO NOT: [explicit exclusions]
+```
+
+### 4. Constraints
+```
+## Constraints
+- Read files before modifying them
+- Match existing code patterns and style
+- Do not modify files outside your scope
+- Run verification commands after changes
+```
+
+### 5. Expected Output
+```
+## Expected Output
+Report your results in this format:
+- Files modified: [list with line references]
+- Changes made: [description of each change]
+- Verification: [build/test results]
+- Issues found: [any blockers or concerns]
 ```
 
 ## Resume Capability
@@ -187,27 +249,25 @@ To resume: "resume autopilot" or "continue where you left off"
 
 ## Agent Delegation by Phase
 
-| Phase | Agent | Model | Purpose |
-|-------|-------|-------|---------|
-| Discovery | explore | haiku | File discovery, structure mapping |
-| Discovery | architect | opus | Requirements analysis |
-| Planning | planner | opus | Task decomposition |
-| Planning | architect | opus | Technical approach |
-| Planning | critic | opus | Plan review |
-| Execution | executor | sonnet/opus | Code implementation |
-| Execution | executor-low | haiku | Simple changes |
-| Execution | designer | sonnet/opus | UI components |
-| Execution | qa-tester | sonnet | Test writing |
-| Verification | qa-tester | sonnet | Test execution |
-| Verification | architect | opus | Implementation review |
-| Completion | architect | opus | Final verification |
+| Phase | Agent | Purpose |
+|-------|-------|---------|
+| Discovery | explore | File discovery, structure mapping |
+| Discovery | architect | Requirements analysis |
+| Planning | architect | Task decomposition + technical approach |
+| Planning | architect (review mode) | Plan review |
+| Execution | executor | Code implementation |
+| Execution | designer | UI components |
+| Execution | tester | Test writing |
+| Verification | tester | Test execution |
+| Verification | architect | Implementation review |
+| Completion | architect | Final verification |
 
 ## Anti-Patterns to Avoid
 
 1. **Starting without discovery** — Always explore the codebase first
 2. **Sequential execution** — Parallelize independent tasks
 3. **Skipping verification** — Always run build and tests
-4. **Ignoring critic feedback** — Address plan review findings
+4. **Ignoring review feedback** — Address plan review findings
 5. **No self-correction** — Retry failed tasks, don't give up
 6. **Implementing directly** — ALWAYS delegate to agents
 7. **Missing task tracking** — Use TaskCreate for every work item
