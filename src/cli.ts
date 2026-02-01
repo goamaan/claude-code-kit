@@ -30,6 +30,9 @@ const main = defineCommand({
     // Learning system
     learn: () => import("./commands/learn.js").then((m) => m.default),
 
+    // Team sharing
+    team: () => import("./commands/team.js").then((m) => m.default),
+
     // Codebase analysis
     scan: () => import("./commands/scan.js").then((m) => m.default),
 
@@ -77,6 +80,10 @@ const main = defineCommand({
     console.log(`  ${pc.cyan("skill")}          ${pc.dim("Manage skills (add, remove, list)")}`);
     console.log(`  ${pc.cyan("hook")}           ${pc.dim("Manage hooks (add, remove, list)")}`);
     console.log(`  ${pc.cyan("learn")}          ${pc.dim("Manage learnings (list, show, evolve, clear)")}`);
+
+    // Sharing
+    console.log(pc.bold("\nSharing:"));
+    console.log(`  ${pc.cyan("team")}           ${pc.dim("Export and import team configurations")}`);
 
     // Analysis
     console.log(pc.bold("\nAnalysis:"));

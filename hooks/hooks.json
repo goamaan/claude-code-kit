@@ -125,6 +125,20 @@
       "enabled": true,
       "path": "./learning-retriever.mjs",
       "description": "Retrieves relevant past learnings and injects them as context"
+    },
+    {
+      "name": "session-save",
+      "type": "Stop",
+      "enabled": true,
+      "path": "./session-save.mjs",
+      "description": "Saves session state for cross-session context restoration"
+    },
+    {
+      "name": "session-restore",
+      "type": "UserPromptSubmit",
+      "enabled": true,
+      "path": "./session-restore.mjs",
+      "description": "Restores context from previous session on first message"
     }
   ]
 }
