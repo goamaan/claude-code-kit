@@ -70,6 +70,12 @@ describe('CLI command imports', () => {
     expect(mod.default).toBeDefined();
     expect(mod.default.meta).toBeDefined();
   });
+
+  it('should import team command', async () => {
+    const mod = await import('@/commands/team.js');
+    expect(mod.default).toBeDefined();
+    expect(mod.default.meta).toBeDefined();
+  });
 });
 
 // =============================================================================
@@ -164,6 +170,15 @@ describe('command definitions', () => {
     expect(args.generate).toBeDefined();
     expect(args.conventions).toBeDefined();
     expect(args.path).toBeDefined();
+  });
+
+  it('team command should have subcommands', async () => {
+    const { default: teamCmd } = await import('@/commands/team.js');
+    expect(teamCmd.subCommands).toBeDefined();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const subCommands = teamCmd.subCommands as any;
+    expect(subCommands.export).toBeDefined();
+    expect(subCommands.import).toBeDefined();
   });
 });
 

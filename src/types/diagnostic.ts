@@ -63,6 +63,8 @@ export type DiagnosticCategory =
   | 'mcp'
   | 'hooks'
   | 'profiles'
+  | 'skills'
+  | 'learnings'
   | 'addons'
   | 'sync'
   | 'system';
