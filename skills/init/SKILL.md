@@ -13,13 +13,12 @@ Initialize a project with claudeops by scanning the codebase and generating `.cl
 
 ### 1. Run the Scanner
 
-Execute the deterministic scanner to detect project characteristics:
+Execute the deterministic scanner to detect project characteristics. The scanner is at `scripts/scan.mjs` in the claudeops plugin root (cached at `~/.claude/plugins/cache/claudeops/claudeops/<version>/`):
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/scan.mjs "$PWD"
+SCANNER=$(command find ~/.claude/plugins/cache -name "scan.mjs" -path "*/claudeops/*/scripts/*" -print -quit 2>/dev/null)
+node "$SCANNER" "$PWD"
 ```
-
-**Note**: `<plugin>` refers to the claudeops plugin directory. Claude Code automatically resolves this to the installed plugin location.
 
 The scanner outputs JSON containing:
 - Detected languages and frameworks
