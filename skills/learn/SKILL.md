@@ -1,4 +1,5 @@
 ---
+name: learn
 description: >
   Capture valuable learnings from the current session for future retrieval. Use when a
   non-trivial problem was resolved, a framework gotcha was discovered, a flaky test was

@@ -1,4 +1,5 @@
 ---
+name: doctor
 description: Diagnose claudeops plugin setup, project configuration, and environment health. Run all checks and report pass/fail status.
 user-invocable: true
 disable-model-invocation: true
