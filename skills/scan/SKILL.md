@@ -19,7 +19,7 @@ You are a codebase analysis expert. Your job is to enhance the .claude/ artifact
 Check if `.claude/CLAUDE.md` already exists. If not, run the scanner first:
 
 ```bash
-node <plugin>/scripts/scan.mjs "$PWD"
+node ${CLAUDE_PLUGIN_ROOT}/scripts/scan.mjs "$PWD"
 ```
 
 Use the JSON output to generate a baseline `.claude/CLAUDE.md`. Then read the generated file to understand what the deterministic scan already captured.

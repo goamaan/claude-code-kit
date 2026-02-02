@@ -16,7 +16,7 @@ Initialize a project with claudeops by scanning the codebase and generating `.cl
 Execute the deterministic scanner to detect project characteristics:
 
 ```bash
-node <plugin>/scripts/scan.mjs "$PWD"
+node ${CLAUDE_PLUGIN_ROOT}/scripts/scan.mjs "$PWD"
 ```
 
 **Note**: `<plugin>` refers to the claudeops plugin directory. Claude Code automatically resolves this to the installed plugin location.
