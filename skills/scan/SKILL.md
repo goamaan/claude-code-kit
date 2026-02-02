@@ -1,8 +1,11 @@
 ---
 name: scan
-description: AI-enhanced .claude/ artifacts with deep codebase analysis
+description: >
+  AI-enhanced codebase analysis that goes beyond deterministic scanning. Reads key files,
+  discovers non-obvious conventions, and enhances .claude/CLAUDE.md with architecture insights,
+  gotchas, and patterns. Use when the user wants deeper codebase analysis or asks to improve
+  their project configuration.
 user-invocable: true
-disable-model-invocation: true
 allowed-tools: [Bash, Read, Write, Glob, Grep, Edit]
 ---
 

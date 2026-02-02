@@ -1,8 +1,11 @@
 ---
 name: debug
-description: Systematic debugging orchestration with parallel hypothesis testing
+description: >
+  Systematic debugging with parallel hypothesis testing. Use when the user says "debug",
+  "investigate", "diagnose", "fix bug", "why is X not working", reports an error, or
+  describes unexpected behavior. Spawns parallel diagnostic agents, forms hypotheses,
+  tests fixes, and verifies resolution.
 user-invocable: true
-disable-model-invocation: false
 ---
 
 # Debug Skill (v6.0)

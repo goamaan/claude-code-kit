@@ -54,15 +54,15 @@ Skills are invoked with `/claudeops:<name>` in Claude Code.
 
 Agents are specialized subagent definitions used by skills for delegation.
 
-| Agent | Purpose |
-|-------|---------|
-| architect | Deep analysis, debugging, system design, performance review, plan critique |
-| executor | Code implementation, bug fixes, refactoring (any complexity) |
-| explore | File search, codebase discovery, structure mapping |
-| designer | UI/UX, component creation, styling, responsive layouts |
-| tester | Test planning, TDD workflow, test writing, quality assurance |
-| security | Security audit, threat modeling, vulnerability assessment, OWASP compliance |
-| researcher | Technology evaluation, best practices, API analysis, framework conventions |
+| Agent | Model | Purpose |
+|-------|-------|---------|
+| architect | opus | Deep analysis, debugging, system design, performance review, plan critique |
+| executor | sonnet | Code implementation, bug fixes, refactoring (any complexity) |
+| explore | haiku | File search, codebase discovery, structure mapping |
+| designer | sonnet | UI/UX, component creation, styling, responsive layouts |
+| tester | sonnet | Test planning, TDD workflow, test writing, quality assurance |
+| security | opus | Security audit, threat modeling, vulnerability assessment, OWASP compliance |
+| researcher | sonnet | Technology evaluation, best practices, API analysis, framework conventions |
 
 ## Hooks
 
@@ -127,7 +127,8 @@ Create `agents/<name>.md` with YAML frontmatter:
 ```yaml
 ---
 name: my-agent
-description: What this agent specializes in
+description: What this agent specializes in. Use proactively when...
+model: sonnet
 ---
 ```
 

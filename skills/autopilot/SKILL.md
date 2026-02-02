@@ -1,8 +1,11 @@
 ---
 name: autopilot
-description: Full autonomous execution from idea to working code with self-organizing swarm support
+description: >
+  Full autonomous execution from idea to working code. Use when the user says "autopilot",
+  "build me", "create me", "make me", "implement everything", "full auto", "handle it all",
+  or describes a complete feature/system to build end-to-end. Gathers requirements, plans,
+  executes in parallel with specialized agents, verifies, and self-corrects.
 user-invocable: true
-disable-model-invocation: false
 ---
 
 # Autopilot Skill (v6.0)

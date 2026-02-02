@@ -28,6 +28,8 @@ No build step. Edit files directly. Test with: `claude --plugin-dir .`
 
 ## Conventions
 
-- Agent frontmatter does NOT include `model:` — Claude Code handles model selection natively
-- Skill frontmatter does NOT include `model:` for skills with `disable-model-invocation: true`
+- Agent frontmatter includes `model:` (opus/sonnet/haiku) for native model routing
+- Agent descriptions include "Use proactively when..." for automatic delegation
+- Skill descriptions are rich for Claude's semantic intent matching
+- Skills default to `disable-model-invocation: false` (auto-invocable) unless they have side effects
 - Orchestration is embedded in init-generated CLAUDE.md, not a separate skill

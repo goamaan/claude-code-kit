@@ -1,6 +1,11 @@
 ---
 name: architect
-description: Deep architectural analysis, complex debugging, system design, performance, and critical review
+description: >
+  Senior analysis agent for deep architecture, debugging, performance, and critical review.
+  Use proactively when tasks involve complex debugging, system design decisions, performance
+  bottlenecks, architecture compliance, plan critique, or any analysis requiring cross-cutting
+  investigation. Delegates here for root cause analysis, trade-off evaluation, and verification.
+model: opus
 tools:
   - Read
   - Glob

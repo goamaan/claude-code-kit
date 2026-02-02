@@ -1,6 +1,10 @@
 ---
 name: explore
-description: Fast codebase exploration and file discovery
+description: >
+  Fast read-only codebase exploration agent. Use proactively for file discovery, finding
+  definitions, mapping project structure, searching code patterns, and gathering context
+  before implementation. Optimized for speed over depth.
+model: haiku
 tools:
   - Read
   - Glob

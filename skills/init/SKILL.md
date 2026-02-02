@@ -1,6 +1,6 @@
 ---
 name: init
-description: Interactive project setup - scan codebase and generate .claude/ configuration with orchestration
+description: Interactive project setup — scan codebase and generate .claude/CLAUDE.md with orchestration instructions and .claude/settings.json with permissions.
 user-invocable: true
 disable-model-invocation: true
 allowed-tools: [Bash, Read, Write, Glob, Grep, Edit, AskUserQuestion]
@@ -136,19 +136,19 @@ You are a conductor. Delegate all implementation work to specialized agents.
 
 {Generate a table with ONLY the agents included by the filter in step 3}
 
-| Agent | Use For |
-|-------|---------|
-| architect | Deep analysis, debugging, system design, performance review, plan critique |
-| executor | Code changes of any complexity, bug fixes, refactoring |
-| explore | File search, codebase discovery, structure mapping |
+| Agent | Model | Use For |
+|-------|-------|---------|
+| architect | opus | Deep analysis, debugging, system design, performance review, plan critique |
+| executor | sonnet | Code changes of any complexity, bug fixes, refactoring |
+| explore | haiku | File search, codebase discovery, structure mapping |
 {if designer included:}
-| designer | UI/UX, component creation, styling, responsive layouts |
+| designer | sonnet | UI/UX, component creation, styling, responsive layouts |
 {if tester included:}
-| tester | Test planning, TDD workflow, test writing, quality assurance |
+| tester | sonnet | Test planning, TDD workflow, test writing, quality assurance |
 {if security included:}
-| security | Security audit, threat modeling, vulnerability assessment |
+| security | opus | Security audit, threat modeling, vulnerability assessment |
 {if researcher included:}
-| researcher | Technology evaluation, best practices, API analysis |
+| researcher | sonnet | Technology evaluation, best practices, API analysis |
 
 ### Delegation Rules
 

@@ -1,8 +1,11 @@
 ---
 name: learn
-description: Capture learnings from current session for future retrieval
+description: >
+  Capture valuable learnings from the current session for future retrieval. Use when a
+  non-trivial problem was resolved, a framework gotcha was discovered, a flaky test was
+  debugged, a tooling limitation was worked around, or an important pattern decision was made.
+  Saves structured learning files to .claude/learnings/ for future context.
 user-invocable: true
-disable-model-invocation: true
 allowed-tools: [Read, Write, Glob]
 ---
 

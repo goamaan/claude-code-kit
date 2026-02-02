@@ -1,8 +1,11 @@
 ---
 name: review
-description: Multi-specialist parallel code review with security, architecture, and testing analysis
+description: >
+  Multi-specialist parallel code review. Use when the user says "review", "audit", "code review",
+  "PR review", asks for security/architecture/performance review, wants pre-merge validation,
+  or wants a plan/design critiqued. Spawns parallel security, architecture, and testing agents
+  then synthesizes findings into a unified report.
 user-invocable: true
-disable-model-invocation: false
 ---
 
 # Review Skill
