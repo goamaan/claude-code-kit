@@ -25,7 +25,7 @@ Run each check and report results:
 Verify the claudeops plugin directory contains required files:
 
 - `.claude-plugin/plugin.json` exists and is valid JSON
-- `skills/` directory exists with SKILL.md files (expected: 7 skills)
+- `skills/` directory exists with SKILL.md files (expected: 9 skills)
 - `agents/` directory exists with .md files (expected: 7 agents: architect, designer, executor, explore, researcher, security, tester)
 - `hooks/hooks.json` exists and is valid JSON
 - `hooks/` contains the .mjs files referenced in hooks.json
@@ -71,6 +71,36 @@ For each hook referenced in hooks.json, verify:
 - The .mjs file exists
 - The file is syntactically valid (`node --check <file>`)
 
+### Check 7: Environment Optimization
+
+Detect environment features and suggest productivity optimizations:
+
+```bash
+# Detect tmux
+tmux list-sessions 2>/dev/null && echo "tmux detected"
+
+# Detect shell
+echo $SHELL
+
+# Detect OS
+uname -s
+
+# Check if statusline is configured
+cat ~/.claude/settings.json 2>/dev/null | grep -q "statusline" && echo "statusline configured"
+```
+
+**Suggestions by detection**:
+
+| Detection | Suggestion |
+|-----------|-----------|
+| tmux detected | Suggest session persistence: `tmux new -s claude` for long-running autopilot tasks |
+| bash/zsh detected | Suggest aliases: `alias za='claude --plugin-dir <path>'` for quick worktree access |
+| Statusline not configured | Suggest `/statusline` with context usage + branch info |
+| macOS detected | Suggest voice dictation: press `fn fn` for hands-free prompting |
+| No `.claude/CLAUDE.md` in project | Suggest running `/claudeops:init` |
+
+Output actionable tips, not just diagnostics.
+
 ## Report Format
 
 ```
@@ -79,12 +109,16 @@ For each hook referenced in hooks.json, verify:
 ### Status: [HEALTHY / WARNING / ERROR]
 
 ### Checks
-- [x] Plugin structure valid (7 skills, 7 agents, 9 hooks)
+- [x] Plugin structure valid (9 skills, 7 agents, 11 hooks)
 - [x] Node.js v22.0.0 (meets v20+ requirement)
 - [x] Git configured (user: Name <email>)
 - [ ] Project .claude/CLAUDE.md missing
 - [x] Scanner available
 - [x] All hook scripts valid
+
+### Environment Tips
+- [tip 1]
+- [tip 2]
 
 ### Issues Found
 

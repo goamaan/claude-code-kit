@@ -2,8 +2,10 @@
 description: >
   Full autonomous execution from idea to working code. Use when the user says "autopilot",
   "build me", "create me", "make me", "implement everything", "full auto", "handle it all",
-  or describes a complete feature/system to build end-to-end. Gathers requirements, plans,
-  executes in parallel with specialized agents, verifies, and self-corrects.
+  "plan first", "plan before coding", "plan mode", "review the plan", "work on features in
+  parallel", "worktrees", "parallel branches", or describes a complete feature/system to build
+  end-to-end. Gathers requirements, plans, executes in parallel with specialized agents,
+  verifies, and self-corrects.
 user-invocable: true
 ---
 
@@ -19,6 +21,8 @@ User says one of:
 - "create a complete [system]"
 - "make me a [thing]"
 - "implement everything for [feature]"
+- "plan first", "plan before coding", "plan mode"
+- "worktrees", "parallel branches", "work on multiple features"
 
 ## Execution Modes
 
@@ -35,7 +39,128 @@ When TeammateTool is detected in available tools:
 
 ### Mode B: Pipeline (Fallback / Default)
 
-When TeammateTool is NOT available, use the 5-phase pipeline:
+When TeammateTool is NOT available, use the 5-phase pipeline.
+
+### Mode C: Parallel Worktree
+
+Triggered by: "worktrees", "parallel branches", "work on multiple features"
+
+For fully independent feature tracks that don't share files.
+
+#### Decision Heuristic
+- **Use subagents** when tasks share files or have dependencies
+- **Use worktrees** when tasks are fully independent feature tracks (different directories, no shared state)
+
+#### Steps
+
+1. **Identify independent tracks**
+```
+Task(subagent_type="architect",
+     prompt="Analyze these tasks and identify which are fully independent (no shared files).
+     Group into independent tracks. Flag any that share files — those should use subagents instead...")
+```
+
+2. **Create worktrees**
+```
+# For each independent track:
+Bash: git worktree add ../<project>-wt-<name> -b feat/<name>
+```
+
+3. **Spawn scoped agents**
+```
+# Each executor works in its own worktree
+Task(subagent_type="executor", run_in_background=True,
+     prompt="Work in directory ../<project>-wt-<name>.
+     Implement [feature]. Stay within your worktree. Do not touch files outside it...")
+```
+
+4. **Output ready-to-use commands**
+```
+## Worktree Setup Complete
+
+### Active Worktrees
+| Worktree | Branch | Feature |
+|----------|--------|---------|
+| ../<project>-wt-auth | feat/auth | Authentication system |
+| ../<project>-wt-api | feat/api | API endpoints |
+
+### Quick Access
+```bash
+# Launch Claude in each worktree:
+claude --plugin-dir <plugin-path> ../<project>-wt-auth
+claude --plugin-dir <plugin-path> ../<project>-wt-api
+
+# Suggested aliases:
+alias za='cd ../<project>-wt-auth && claude --plugin-dir <plugin-path>'
+alias zb='cd ../<project>-wt-api && claude --plugin-dir <plugin-path>'
+```
+
+### Merging
+When ready: `git worktree remove ../<project>-wt-<name>` after merging branch.
+```
+
+### Mode D: Plan-First (Strict Planning Gate)
+
+Triggered by: "plan first", "plan before coding", "plan mode"
+
+Same as Pipeline mode but with an **explicit user approval gate** between planning and execution.
+
+#### Phase 1: Discovery
+Same as Pipeline Phase 1.
+
+#### Phase 2: Planning (BLOCKING)
+1. Spawn architect to create comprehensive plan
+2. Spawn architect (review mode) as staff engineer critic:
+```
+Task(subagent_type="architect",
+     prompt="Critique this plan as a senior staff engineer. Challenge:
+     - Are the task boundaries correct?
+     - Are there missing edge cases?
+     - Is the architecture over-engineered or under-engineered?
+     - What are the risks?
+     Produce a revised plan with your recommendations...")
+```
+3. Present plan to user with `AskUserQuestion`:
+   - Option 1: "Approve plan — proceed to execution"
+   - Option 2: "Revise plan — address these concerns: [user input]"
+   - Option 3: "Reject — start over with different approach"
+
+**No execution until user explicitly approves.**
+
+#### Phase 3-5: Execution, Verification, Completion
+Same as Pipeline, but with a re-planning safety valve:
+- If execution diverges significantly from plan → re-enter Phase 2 with failure context
+- Maximum 2 re-plan cycles before escalating to user
+
+## Subagent Context Management
+
+Guidelines for efficient delegation to subagents.
+
+### When to Delegate vs Do Directly
+- **Direct** (no subagent): Single-file changes under ~20 lines, simple renames, config tweaks
+- **Delegate**: Multi-file changes, anything requiring exploration, changes needing verification
+
+### Context Budget
+Only include files the agent actually needs to touch. Overloading agents with irrelevant context degrades quality.
+
+```
+# BAD: Dumping everything
+Task(prompt="Here are 50 files... fix the bug somewhere in here")
+
+# GOOD: Scoped context
+Task(subagent_type="explore", prompt="Find files related to [feature]...")
+# Then pass only the relevant files to executor
+Task(subagent_type="executor", prompt="Fix [bug] in src/auth/login.ts and src/auth/session.ts...")
+```
+
+### Pattern: Explore First
+Always use explore agent to identify relevant files before passing to executor:
+1. `explore` → identifies files
+2. `architect` → analyzes and plans (if complex)
+3. `executor` → implements with scoped file list
+
+### Keep Main Context Clean
+The orchestrator's context is for coordination decisions, not implementation details. Delegate all file reading and code changes to subagents.
 
 ## Phase 1: Discovery
 

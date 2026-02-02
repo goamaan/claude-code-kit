@@ -50,12 +50,14 @@ Skills are invoked with `/claudeops:<name>` in Claude Code.
 | Skill | Description |
 |-------|-------------|
 | **init** | Interactive project setup — scan codebase, generate `.claude/` config with orchestration |
-| **scan** | AI-enhanced codebase analysis beyond deterministic scanning |
-| **autopilot** | Full autonomous execution from idea to working code |
-| **debug** | Systematic debugging with parallel hypothesis testing |
-| **review** | Multi-specialist parallel code review |
-| **doctor** | Diagnose plugin setup and environment health |
+| **scan** | AI-enhanced codebase analysis, tech debt scanning, and context aggregation |
+| **autopilot** | Full autonomous execution — pipeline, swarm, worktree, and plan-first modes |
+| **debug** | Systematic debugging — hypothesis testing, CI/pipeline, container, and paste-and-fix |
+| **review** | Multi-specialist code review — PR review, adversarial challenge, and explain/teach |
+| **doctor** | Diagnose plugin setup, environment health, and optimization tips |
 | **learn** | Capture session learnings for future retrieval |
+| **query** | Natural language to SQL/database query translation and analysis |
+| **create-skill** | Generate new claudeops skills from templates (user-only) |
 
 ## Agents
 
@@ -77,11 +79,13 @@ Event-driven scripts that run automatically during Claude Code sessions.
 
 | Hook | Event | Description |
 |------|-------|-------------|
+| smart-approve | PreToolUse (Bash) | Auto-approves safe commands, flags dangerous ones |
 | security-scan | PreToolUse (Bash) | Scans for secrets before git commits |
 | git-branch-check | PreToolUse (Bash) | Warns when committing to protected branches |
 | lint-changed | PostToolUse (Edit/Write) | Runs ESLint on modified JS/TS files |
 | typecheck-changed | PostToolUse (Edit/Write) | Runs TypeScript type checking on modified files |
 | continuation-check | Stop | Evaluates completion and blocks premature stopping |
+| rule-suggester | Stop | Detects corrections and prompts CLAUDE.md rule updates |
 | session-save | Stop | Saves session state for cross-session restoration |
 | session-learner | Stop | Captures learnings from resolved problems |
 | session-restore | UserPromptSubmit | Restores context from previous session |

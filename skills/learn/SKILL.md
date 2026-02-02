@@ -26,6 +26,8 @@ Capture learnings when you've:
 - Made a pattern decision that affects future code
 - Found an undocumented behavior or edge case
 
+**Rule check**: If the learning implies a behavioral rule (e.g., "always use X instead of Y", "never do Z in this project"), also consider appending a rule to `.claude/CLAUDE.md` under the `## Rules` section. Format: `- ALWAYS/DO NOT [rule]. (learned YYYY-MM-DD)`
+
 **Don't capture**:
 - Routine fixes with obvious causes
 - Simple typos or syntax errors

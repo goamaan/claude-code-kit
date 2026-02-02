@@ -1,7 +1,9 @@
 ---
 description: >
   Multi-specialist parallel code review. Use when the user says "review", "audit", "code review",
-  "PR review", asks for security/architecture/performance review, wants pre-merge validation,
+  "PR review", "grill me", "challenge this", "prove it works", "adversarial", "devil's advocate",
+  "poke holes", "explain", "how does this work", "walk me through", "teach me", "create a diagram",
+  "visualize", asks for security/architecture/performance review, wants pre-merge validation,
   or wants a plan/design critiqued. Spawns parallel security, architecture, and testing agents
   then synthesizes findings into a unified report.
 user-invocable: true
@@ -17,6 +19,9 @@ Multi-specialist parallel code review system. Spawns parallel review agents cove
 - User asks for security review, architecture review, or performance review
 - User wants pre-merge validation
 - User wants a plan, design, or architecture critiqued
+- User says "grill me", "challenge this", "prove it works", "poke holes", "devil's advocate"
+- User says "explain", "how does this work", "walk me through", "teach me"
+- User says "create a diagram", "visualize"
 
 ## Review Modes
 
@@ -64,6 +69,123 @@ Gates (all must pass):
 2. **Tests** — all tests pass
 3. **Review** — No critical findings from parallel review
 4. **Docs** — Documentation updated if API changed
+
+### 4. Adversarial / Challenge
+
+**Pattern**: Adversarial Fan-Out
+
+Triggered by: "grill me", "challenge this", "prove it works", "poke holes", "devil's advocate"
+
+#### Phase 1: Understand Claims
+Identify the claims being made (from PR description, code comments, or user's explanation).
+
+#### Phase 2: Adversarial Review (Fan-Out)
+```
+Task(subagent_type="architect", run_in_background=True,
+     prompt="Act as a hostile staff engineer reviewing this code. For every claim:
+     - Demand evidence: 'How do you know this works?'
+     - Test assumptions: 'What if [dependency] fails? What if [input] is malformed?'
+     - Challenge scale: 'Does this work with 10x load? 100x?'
+     - Question necessity: 'Why not [simpler approach]?'
+     Be rigorous, not polite. No rubber stamps...")
+
+Task(subagent_type="security", run_in_background=True,
+     prompt="Red-team this code. Find attack vectors, injection points, auth bypasses,
+     data leaks, privilege escalation paths. Assume adversarial input everywhere...")
+```
+
+#### Phase 3: "Prove It Works" Variant
+If triggered by "prove it works":
+```
+Bash: git diff main...HEAD --stat
+Task(subagent_type="tester",
+     prompt="Diff behavior between main and current branch. For each changed behavior:
+     - Does it have a test?
+     - Can you break it with edge case input?
+     - What happens under failure conditions?")
+```
+
+#### Phase 4: Challenge Report
+Produce a challenge report. Won't approve until all critical concerns are addressed.
+
+```
+## Challenge Report
+
+### Claims vs Evidence
+| # | Claim | Evidence | Verdict |
+|---|-------|----------|---------|
+| 1 | [claim] | [evidence or lack thereof] | Proven / Unproven / Disproven |
+
+### Attack Surface
+- [vulnerability or attack vector]
+
+### Failure Modes
+- [what happens when X fails]
+
+### Unaddressed Concerns
+- [concern that needs resolution before approval]
+
+### Decision: [APPROVED / NOT PROVEN / REJECTED]
+```
+
+### 5. Explain / Teach
+
+**Pattern**: Guided Exploration + Synthesis
+
+Triggered by: "explain", "how does this work", "walk me through", "teach me", "create a diagram", "visualize"
+
+#### Phase 1: Map the Territory
+```
+Task(subagent_type="explore", run_in_background=True,
+     prompt="Map all files, functions, and data flows related to [topic]. Build a dependency graph...")
+
+Task(subagent_type="architect", run_in_background=True,
+     prompt="Trace the code paths for [topic] from entry point to final output.
+     Identify the key abstractions, data transformations, and control flow decisions...")
+```
+
+#### Phase 2: Build Explanation (Simple → Complex)
+Synthesize findings into a layered explanation:
+
+1. **High-level overview** — What does this system/feature do? (1-2 sentences)
+2. **ASCII architecture diagram** — Visual map of components and data flow
+3. **Step-by-step walkthrough** — Trace a request/operation through the code
+4. **Key file annotations** — What each important file does and why
+
+#### Phase 3: Output Format
+
+```
+## How [Topic] Works
+
+### Overview
+[1-2 sentence summary]
+
+### Architecture
+```
+[ASCII diagram showing components, data flow, and relationships]
+```
+
+### Walkthrough
+1. [Step 1]: [file:line] — [what happens and why]
+2. [Step 2]: [file:line] — [what happens and why]
+...
+
+### Key Files
+| File | Purpose | Key Functions |
+|------|---------|---------------|
+| [file] | [purpose] | [function1, function2] |
+
+### Concepts to Understand
+- **[Concept 1]**: [explanation]
+- **[Concept 2]**: [explanation]
+```
+
+#### Optional: HTML Presentation
+If user asks for a presentation or visualization, generate a self-contained HTML file with:
+- Code highlights with syntax coloring
+- Interactive expandable sections
+- Architecture diagrams using ASCII or SVG
+- Step-by-step animation of data flow
 
 ## Severity Scale
 

@@ -180,6 +180,38 @@ Structure every agent prompt with 5 elements:
 3. **Scope**: Precise task description + DO/DO NOT boundaries
 4. **Constraints**: Read before modify, match patterns, verify after changes
 5. **Expected Output**: Files modified, changes made, verification results
+
+### Subagent Context Management
+
+- **Direct** (no subagent): Single-file changes under ~20 lines, simple renames, config tweaks
+- **Delegate**: Multi-file changes, anything requiring exploration, changes needing verification
+- **Context budget**: Only include files the agent needs to touch — less is more
+- **Explore first**: Always use explore agent to identify relevant files before passing to executor
+- **Keep main context clean**: Orchestrator context is for coordination, not implementation
+
+### Intent Routing
+
+| User Says | Skill | Mode |
+|-----------|-------|------|
+| "build me X", "autopilot", "full auto" | autopilot | Pipeline/Swarm |
+| "plan first", "plan before coding" | autopilot | Plan-First |
+| "worktrees", "parallel branches" | autopilot | Parallel Worktree |
+| "debug", "fix bug", "why is X broken" | debug | Diagnose-Hypothesize-Fix |
+| "fix CI", "pipeline failed" | debug | CI/Pipeline |
+| "fix containers", "docker broken" | debug | Container |
+| [pastes error with no context] | debug | Paste-and-Fix |
+| "review", "audit", "PR review" | review | PR Review |
+| "grill me", "challenge", "prove it works" | review | Adversarial |
+| "explain", "how does this work", "teach me" | review | Explain |
+| "scan", "analyze codebase" | scan | Full Scan |
+| "tech debt", "find dead code", "TODOs" | scan | Tech Debt |
+| "context dump", "summarize project" | scan | Context Aggregation |
+| "query", "SQL", "analytics" | query | Query |
+| "capture learning", "save this" | learn | Capture |
+
+## Rules
+
+<!-- Rules are auto-captured from corrections. Run corrections naturally and they'll appear here. -->
 ````
 
 **Guidelines**:

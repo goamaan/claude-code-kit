@@ -2,8 +2,10 @@
 description: >
   AI-enhanced codebase analysis that goes beyond deterministic scanning. Reads key files,
   discovers non-obvious conventions, and enhances .claude/CLAUDE.md with architecture insights,
-  gotchas, and patterns. Use when the user wants deeper codebase analysis or asks to improve
-  their project configuration.
+  gotchas, and patterns. Use when the user wants deeper codebase analysis, asks to improve
+  their project configuration, says "tech debt", "find dead code", "find duplicated code",
+  "missing tests", "find TODOs", "code quality", "context dump", "summarize project",
+  "project summary", or "onboard me".
 user-invocable: true
 allowed-tools: [Bash, Read, Write, Glob, Grep, Edit]
 ---
@@ -77,6 +79,143 @@ If settings.json already exists, MERGE — don't overwrite.
 4. **Be specific** — use actual commands from the project, not generic ones
 5. **Don't over-generate** — fewer, better files beat many mediocre ones
 6. **Git-friendly** — everything goes in `.claude/` which teams can commit
+
+## Additional Workflows
+
+### Tech Debt Analysis
+
+Triggered by: "tech debt", "find dead code", "find duplicated code", "missing tests", "find TODOs", "code quality"
+
+#### Step 1: Scan for Markers
+```
+# Find all TODO/FIXME/HACK/XXX comments
+Grep: pattern="TODO|FIXME|HACK|XXX|DEPRECATED|WORKAROUND" (all source files)
+```
+
+#### Step 2: Identify Dead Code and Duplication
+```
+Task(subagent_type="explore", run_in_background=True,
+     prompt="Find dead code: exported functions/classes that are never imported elsewhere,
+     unused variables, unreachable code paths. List each with file:line...")
+
+Task(subagent_type="architect", run_in_background=True,
+     prompt="Identify duplicated logic patterns: functions that do similar things,
+     copy-pasted code blocks, repeated error handling patterns. Group by similarity...")
+```
+
+#### Step 3: Find Missing Test Coverage
+```
+Task(subagent_type="tester",
+     prompt="Find source files without corresponding test files. Check:
+     - src/foo.ts → test for foo.test.ts or __tests__/foo.test.ts
+     - Identify critical paths (auth, payments, data mutations) without tests
+     List each untested file with a priority rating...")
+```
+
+#### Step 4: Output Report
+```
+## Tech Debt Report
+
+### Summary
+- TODO/FIXME comments: [N]
+- Dead exports: [N]
+- Duplicated patterns: [N]
+- Untested source files: [N] of [M]
+
+### Priority Items (Fix These First)
+| # | Type | Location | Description | Priority |
+|---|------|----------|-------------|----------|
+| 1 | [type] | [file:line] | [description] | Critical |
+
+### TODO/FIXME Comments
+| File:Line | Comment | Age (git blame) |
+|-----------|---------|-----------------|
+| [file:line] | [comment text] | [date] |
+
+### Dead Code
+- [file:line] — [exported symbol never imported]
+
+### Duplicated Logic
+- Pattern: [description]
+  - [file1:line] and [file2:line]
+
+### Missing Tests
+| Source File | Priority | Reason |
+|-------------|----------|--------|
+| [file] | High | Critical auth path |
+```
+
+### Context Aggregation
+
+Triggered by: "context dump", "summarize project", "project summary", "onboard me"
+
+Produces a single structured context document for onboarding or handoff.
+
+#### Step 1: Gather Project Metadata
+```bash
+# Read project docs
+cat README.md CONTRIBUTING.md .claude/CLAUDE.md 2>/dev/null
+
+# Recent activity
+git log --oneline -30
+git shortlog -sn --since="30 days ago"
+
+# Open work
+gh pr list --state open --limit 10 2>/dev/null
+gh issue list --state open --limit 10 2>/dev/null
+```
+
+#### Step 2: Analyze Architecture
+```
+Task(subagent_type="explore",
+     prompt="Map the project's high-level architecture: entry points, key modules,
+     data flow, external dependencies. Produce an ASCII diagram...")
+```
+
+#### Step 3: Output Context Document
+```
+## Project Context: [Project Name]
+Generated: [date]
+
+### Overview
+[1-2 sentences from README]
+
+### Tech Stack
+- [language] + [framework] + [build tool]
+
+### Architecture
+```
+[ASCII diagram of key components]
+```
+
+### Key Directories
+| Directory | Purpose |
+|-----------|---------|
+| [dir] | [purpose] |
+
+### Active Development
+- Open PRs: [list with titles]
+- Open Issues: [list with titles]
+- Recent commits: [last 10 with short descriptions]
+
+### Top Contributors (Last 30 Days)
+| Author | Commits |
+|--------|---------|
+| [name] | [count] |
+
+### Build & Test
+```bash
+[build command]
+[test command]
+[dev command]
+```
+
+### Known Issues / Tech Debt
+[Summary from TODO/FIXME scan if available]
+```
+
+#### Optional: Save to File
+If user asks, write the output to `.claude/context-dump.md` for sharing.
 
 ## Example Enhanced CLAUDE.md Output
 

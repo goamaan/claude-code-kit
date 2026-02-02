@@ -7,7 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Major restructuring: fewer, better pieces. Consolidate 18 agents to 7, 12 skills to 7, remove model routing, and make orchestration the default behavior via init-generated CLAUDE.md.
+Major restructuring + Boris's 10 Tips integration. Consolidate 18 agents to 7, expand 7 skills to 9 with new workflows/modes, add 2 hooks (9→11), and make orchestration the default behavior via init-generated CLAUDE.md. Zero new commands to memorize (except `create-skill` for meta/setup).
+
+### Added
+
+- **2 new skills** (7 → 9):
+  - `query`: Natural language to SQL/database query translation with safety gates
+  - `create-skill`: Generate new claudeops skills from templates (user-only)
+- **2 new hooks** (9 → 11):
+  - `rule-suggester` (Stop): Detects user corrections during session, prompts CLAUDE.md rule updates
+  - `smart-approve` (PreToolUse Bash): Auto-approves safe commands (read-only, git read, build/test), flags dangerous ones (rm -rf, force push, sudo, pipe-to-shell, destructive SQL)
+- **3 new debug workflows**: CI/Pipeline debugging (zero-context from CI logs), Container/Docker debugging, Paste-and-Fix (quick mode for pasted errors)
+- **2 new review modes**: Adversarial/Challenge (demands evidence, red-teams code), Explain/Teach (layered explanations with ASCII diagrams)
+- **3 new autopilot modes**: Parallel Worktree (independent feature tracks via git worktree), Plan-First (strict user approval gate between plan and execution), Subagent Context Management guidance
+- **2 new scan workflows**: Tech Debt Analysis (TODOs, dead code, duplication, missing tests), Context Aggregation (project summary for onboarding)
+- **Environment optimization** in doctor: tmux detection, shell aliases, statusline config, OS-specific tips
+- **Intent routing table** in init-generated CLAUDE.md template
+- **Rules section placeholder** in init-generated CLAUDE.md template
+- **Rule check note** in learn skill for behavioral rules
 
 ### Changed
 
