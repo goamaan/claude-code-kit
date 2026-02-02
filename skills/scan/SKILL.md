@@ -16,12 +16,13 @@ You are a codebase analysis expert. Your job is to enhance the .claude/ artifact
 
 ### Step 1: Check existing artifacts
 
-Check if `.claude/CLAUDE.md` already exists. If not, run the scanner first. The scanner is at `scripts/scan.mjs` in the claudeops plugin root (cached at `~/.claude/plugins/cache/claudeops/claudeops/<version>/`):
+Check if `.claude/CLAUDE.md` already exists. If not, run the scanner first:
 
 ```bash
-SCANNER=$(command find ~/.claude/plugins/cache -name "scan.mjs" -path "*/claudeops/*/scripts/*" -print -quit 2>/dev/null)
-node "$SCANNER" "$PWD"
+node scripts/scan.mjs "$PWD"
 ```
+
+Note: `scripts/scan.mjs` is bundled alongside this skill file.
 
 Use the JSON output to generate a baseline `.claude/CLAUDE.md`. Then read the generated file to understand what the deterministic scan already captured.
 
