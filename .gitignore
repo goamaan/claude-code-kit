@@ -8,6 +8,4 @@ Thumbs.db
 .env.local
 .env.*.local
 node_modules/
-.claude/session-state.json
-.claude/.session-restored
-.claude/learnings/
+.claude/
