@@ -2,148 +2,183 @@
 
 # claudeops
 
-**Multi-Agent Orchestration Plugin for Claude Code**
+**Make Claude Code do more — without learning more.**
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Claude Code Plugin](https://img.shields.io/badge/claude_code-plugin-purple.svg)](https://docs.anthropic.com/en/docs/claude-code)
 
-Workflow skills, specialized agents, quality hooks, and codebase scanning.
+9 workflow skills. 7 specialized agents. 11 quality hooks. Zero dependencies.
 
-[Installation](#installation) | [Skills](#skills) | [Agents](#agents) | [Hooks](#hooks) | [Scanner](#scanner)
+[Get Started](#installation) | [What It Does](#what-can-it-do) | [How It Works](#how-it-works) | [Reference](#skills)
 
 </div>
 
 ---
 
-## What is claudeops?
+## Why claudeops?
 
-claudeops is a **Claude Code directory plugin** that adds multi-agent orchestration, workflow automation, quality hooks, and codebase scanning to Claude Code. No build step, no dependencies — just markdown, JavaScript, and JSON.
+Claude Code is already good. But it works alone, forgets between sessions, and doesn't know your project's conventions until you tell it — every time.
+
+claudeops fixes that. Install it once, run `/claudeops:init`, and Claude Code gains:
+
+- **Multi-agent orchestration** — fan out work to specialized agents that run in parallel
+- **Session memory** — learnings, corrections, and context persist across sessions
+- **Intent routing** — say "fix CI" or paste an error and the right workflow fires automatically
+- **Quality guardrails** — hooks catch secrets, flag dangerous commands, and lint your code before you see it
+
+### Design philosophy
+
+**No new mental model.** You don't install claudeops to learn claudeops. You install it to make the thing you already use — Claude Code — better at the thing you already do — writing software.
+
+There are no background services to run, no databases to configure, no separate CLI to learn, no runtimes to install. No Byzantine consensus algorithms. No WebAssembly sidecars. No vector databases. No web UIs on localhost ports.
+
+claudeops is **markdown, JavaScript, and JSON**. You can read every file in it. You can understand what each piece does. You can change anything in minutes.
+
+| Principle | What it means |
+|-----------|---------------|
+| **Zero overhead** | No build step, no dependencies, no runtime services, no lock-in |
+| **Just talk** | Describe what you want in natural language — intent routing handles the rest |
+| **Few commands** | 1 new command to memorize (`/claudeops:create-skill`). Everything else auto-invokes. |
+| **Quality over quantity** | 9 skills that cover real workflows, not 30+ thin wrappers |
+| **Readable internals** | Every skill is a SKILL.md you can open and understand |
+| **Native plugin** | Uses Claude Code's plugin system as designed — skills, agents, hooks |
 
 ## Installation
 
-### Option 1: Install from marketplace (recommended)
+### Option 1: Marketplace (recommended)
 
 ```shell
 /plugin marketplace add goamaan/claudeops
 /plugin install claudeops@claudeops
 ```
 
-### Option 2: Clone and use as plugin directory
+### Option 2: Clone
 
 ```bash
 git clone https://github.com/goamaan/claudeops.git ~/.claude-plugins/claudeops
 claude --plugin-dir ~/.claude-plugins/claudeops
 ```
 
-### Option 3: Use directly from a local clone
+Then initialize your project:
 
-```bash
-git clone https://github.com/goamaan/claudeops.git
-cd your-project
-claude --plugin-dir /path/to/claudeops
+```
+/claudeops:init
 ```
 
-## Skills
+This scans your codebase, detects your stack, and generates `.claude/CLAUDE.md` with orchestration instructions, an intent routing table, and project-specific conventions. Claude reads this every session — no repeated explanations.
 
-Skills are invoked with `/claudeops:<name>` in Claude Code.
+## What can it do?
 
-| Skill | Description |
-|-------|-------------|
-| **init** | Interactive project setup — scan codebase, generate `.claude/` config with orchestration |
-| **scan** | AI-enhanced codebase analysis, tech debt scanning, and context aggregation |
-| **autopilot** | Full autonomous execution — pipeline, swarm, worktree, and plan-first modes |
-| **debug** | Systematic debugging — hypothesis testing, CI/pipeline, container, and paste-and-fix |
-| **review** | Multi-specialist code review — PR review, adversarial challenge, and explain/teach |
-| **doctor** | Diagnose plugin setup, environment health, and optimization tips |
-| **learn** | Capture session learnings for future retrieval |
-| **query** | Natural language to SQL/database query translation and analysis |
-| **create-skill** | Generate new claudeops skills from templates (user-only) |
+### Say what you want. The right thing happens.
 
-## Agents
+You don't pick modes or memorize commands. Just describe the problem.
 
-Agents are specialized subagent definitions used by skills for delegation.
+| You say | What happens |
+|---------|-------------|
+| "build me an auth system" | **Autopilot** — discovers codebase, plans, executes in parallel, verifies, self-corrects |
+| "plan first, then build" | **Plan-first mode** — architect plans, staff-engineer critiques, you approve, then execution |
+| "fix CI" | **CI debugger** — pulls failure logs from `gh run`, diagnoses, fixes, verifies. Zero context needed from you. |
+| *[paste a stack trace]* | **Paste-and-fix** — parses file paths and errors, skips interview, fixes directly |
+| "fix containers" | **Container debugger** — reads Dockerfile + compose logs, diagnoses port/volume/env issues |
+| "review this PR" | **Parallel review** — security, architecture, and testing agents review simultaneously |
+| "grill me on this code" | **Adversarial review** — hostile staff engineer + red team. Demands evidence, won't rubber-stamp. |
+| "explain how auth works" | **Teach mode** — traces code paths, generates ASCII architecture diagrams, step-by-step walkthrough |
+| "tech debt report" | **Tech debt scan** — finds TODOs, dead code, duplicated logic, missing tests |
+| "onboard me" | **Context dump** — project summary with architecture, recent activity, open PRs/issues |
+| "query users by signup date" | **Query skill** — detects your database, writes SQL, shows it for approval, executes, analyzes results |
+| "work on auth and API in parallel" | **Worktree mode** — creates git worktrees for independent features, scoped agents per worktree |
 
-| Agent | Model | Purpose |
-|-------|-------|---------|
-| architect | opus | Deep analysis, debugging, system design, performance review, plan critique |
-| executor | sonnet | Code implementation, bug fixes, refactoring (any complexity) |
-| explore | haiku | File search, codebase discovery, structure mapping |
-| designer | sonnet | UI/UX, component creation, styling, responsive layouts |
-| tester | sonnet | Test planning, TDD workflow, test writing, quality assurance |
-| security | opus | Security audit, threat modeling, vulnerability assessment, OWASP compliance |
-| researcher | sonnet | Technology evaluation, best practices, API analysis, framework conventions |
+### What you don't have to do
 
-## Hooks
+You don't have to remember that "fix CI" maps to the debug skill's CI workflow. The skill descriptions contain trigger phrases, and Claude matches your intent automatically. This is how Claude Code plugins are designed to work — you just haven't seen it done this way before.
 
-Event-driven scripts that run automatically during Claude Code sessions.
+### Hooks that work in the background
 
-| Hook | Event | Description |
-|------|-------|-------------|
-| smart-approve | PreToolUse (Bash) | Auto-approves safe commands, flags dangerous ones |
-| security-scan | PreToolUse (Bash) | Scans for secrets before git commits |
-| git-branch-check | PreToolUse (Bash) | Warns when committing to protected branches |
-| lint-changed | PostToolUse (Edit/Write) | Runs ESLint on modified JS/TS files |
-| typecheck-changed | PostToolUse (Edit/Write) | Runs TypeScript type checking on modified files |
-| continuation-check | Stop | Evaluates completion and blocks premature stopping |
-| rule-suggester | Stop | Detects corrections and prompts CLAUDE.md rule updates |
-| session-save | Stop | Saves session state for cross-session restoration |
-| session-learner | Stop | Captures learnings from resolved problems |
-| session-restore | UserPromptSubmit | Restores context from previous session |
-| learning-retriever | UserPromptSubmit | Retrieves relevant past learnings as context |
+Things you never have to think about:
 
-Hooks are registered in `hooks/hooks.json` using Claude Code's plugin hook format.
+- **Smart command approval** — `ls`, `git status`, `npm test` run without friction. `rm -rf`, `git push --force`, `sudo` get flagged with a warning.
+- **Secret scanning** — catches API keys, tokens, and credentials before they hit git.
+- **Branch protection** — warns when you're about to commit to main.
+- **Auto-lint and typecheck** — runs on files you just edited, not the whole project.
+- **Session memory** — saves state on exit, restores on next session. Learnings from past debugging sessions surface when relevant.
+- **Rule learning** — when you correct Claude ("don't do that", "always use X"), the rule-suggester prompts Claude to save it to your CLAUDE.md. Next session, it already knows.
 
-## Scanner
+### Multi-agent orchestration
 
-The scanner (`scripts/scan.mjs`) performs deterministic codebase analysis and outputs JSON. It detects:
+claudeops delegates work to 7 specialized agents:
 
-- Programming languages and file counts
-- Frameworks (JS, Python, Rust, Go, Java ecosystems)
-- Build systems and scripts
-- Test frameworks and test directories
-- Linters and formatters
-- CI/CD pipelines
-- Database/ORM configurations
-- API styles (REST, GraphQL, gRPC, tRPC)
-- Monorepo tools
-- Code conventions (imports, exports, naming, test location)
-- Language-specific details (Python venvs, Rust editions, Go modules, Java build tools)
+| Agent | Tier | Role |
+|-------|------|------|
+| **architect** | opus | System design, deep analysis, plan critique, performance review |
+| **executor** | sonnet | Code implementation — any complexity |
+| **explore** | haiku | Fast file search and codebase mapping |
+| **designer** | sonnet | UI/UX, components, styling |
+| **tester** | sonnet | Test planning, TDD, quality assurance |
+| **security** | opus | Security audit, threat modeling, OWASP |
+| **researcher** | sonnet | Tech evaluation, best practices, API analysis |
 
-### Usage
+Skills coordinate these agents using four patterns:
 
-```bash
-node scripts/scan.mjs /path/to/project
+- **Fan-out** — parallel execution for independent work (review spawns 3 agents simultaneously)
+- **Pipeline** — sequential handoff (diagnose → hypothesize → fix → verify)
+- **Task graph** — complex dependencies tracked with TaskCreate/TaskUpdate
+- **Speculative** — try 2-3 approaches in parallel, pick the winner
+
+## How it works
+
+```
+claudeops/
+├── skills/          # 9 workflow skills (SKILL.md files)
+│   ├── init/        # Project setup + CLAUDE.md generation
+│   ├── autopilot/   # Autonomous execution (pipeline, swarm, worktree, plan-first)
+│   ├── debug/       # Debugging (hypothesis, CI, container, paste-and-fix)
+│   ├── review/      # Code review (PR, adversarial, explain/teach)
+│   ├── scan/        # Codebase analysis (enhanced scan, tech debt, context dump)
+│   ├── doctor/      # Plugin health + environment tips
+│   ├── learn/       # Session learning capture
+│   ├── query/       # Natural language → database queries
+│   └── create-skill/# Scaffold new skills (user-only)
+├── agents/          # 7 agent definitions (.md files)
+├── hooks/           # 11 event-driven hooks (.mjs + hooks.json)
+└── scripts/         # Deterministic codebase scanner
 ```
 
-Outputs JSON to stdout. Used by the `init` and `scan` skills.
+Every skill is a markdown file with YAML frontmatter. No compiled code, no abstractions, no framework. Open any SKILL.md and you'll see exactly what it does — the trigger phrases, the agent assignments, the prompts, the output format.
+
+### The scanner
+
+`scripts/scan.mjs` performs deterministic codebase analysis and outputs JSON. It detects languages, frameworks, build systems, test runners, linters, CI/CD pipelines, databases, API styles, monorepo tools, and code conventions. Used by `init` and `scan` to bootstrap project understanding without burning tokens on exploration.
 
 ## Customization
 
-### Adding skills
+### Create a new skill
 
-Create `skills/<name>/SKILL.md` with YAML frontmatter:
+```
+/claudeops:create-skill
+```
+
+Or manually create `skills/<name>/SKILL.md`:
 
 ```yaml
 ---
-name: my-skill
-description: What this skill does
+description: What this skill does and trigger phrases for auto-invocation
 user-invocable: true
 ---
+
+# Skill Name
+
+## When to Activate
+...
+
+## Execution Steps
+...
 ```
 
-### Adding agents
+### Add an agent
 
-Create `agents/<name>.md` with YAML frontmatter:
+Create `agents/<name>.md` with YAML frontmatter describing the agent's specialty.
 
-```yaml
----
-name: my-agent
-description: What this agent specializes in. Use proactively when...
-model: sonnet
----
-```
-
-### Adding hooks
+### Add a hook
 
 1. Create a `.mjs` file in `hooks/`
 2. Register it in `hooks/hooks.json`
