@@ -4,8 +4,8 @@
       {
         "matcher": "Bash",
         "hooks": [
-          { "type": "command", "command": "node ./hooks/security-scan.mjs", "timeout": 10 },
-          { "type": "command", "command": "node ./hooks/git-branch-check.mjs", "timeout": 5 }
+          { "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/hooks/security-scan.mjs", "timeout": 10 },
+          { "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/hooks/git-branch-check.mjs", "timeout": 5 }
         ]
       }
     ],
@@ -13,25 +13,25 @@
       {
         "matcher": "Edit|Write",
         "hooks": [
-          { "type": "command", "command": "node ./hooks/lint-changed.mjs", "timeout": 30 },
-          { "type": "command", "command": "node ./hooks/typecheck-changed.mjs", "timeout": 60 }
+          { "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/hooks/lint-changed.mjs", "timeout": 30 },
+          { "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/hooks/typecheck-changed.mjs", "timeout": 60 }
         ]
       }
     ],
     "Stop": [
       {
         "hooks": [
-          { "type": "command", "command": "node ./hooks/continuation-check.mjs", "timeout": 15 },
-          { "type": "command", "command": "node ./hooks/session-save.mjs", "timeout": 10 },
-          { "type": "command", "command": "node ./hooks/session-learner.mjs", "timeout": 15 }
+          { "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/hooks/continuation-check.mjs", "timeout": 15 },
+          { "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/hooks/session-save.mjs", "timeout": 10 },
+          { "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/hooks/session-learner.mjs", "timeout": 15 }
         ]
       }
     ],
     "UserPromptSubmit": [
       {
         "hooks": [
-          { "type": "command", "command": "node ./hooks/session-restore.mjs", "timeout": 10 },
-          { "type": "command", "command": "node ./hooks/learning-retriever.mjs", "timeout": 10 }
+          { "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/hooks/session-restore.mjs", "timeout": 10 },
+          { "type": "command", "command": "node ${CLAUDE_PLUGIN_ROOT}/hooks/learning-retriever.mjs", "timeout": 10 }
         ]
       }
     ]

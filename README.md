@@ -21,14 +21,21 @@ claudeops is a **Claude Code directory plugin** that adds multi-agent orchestrat
 
 ## Installation
 
-### Option 1: Clone and use as plugin directory
+### Option 1: Install from marketplace (recommended)
+
+```shell
+/plugin marketplace add goamaan/claudeops
+/plugin install claudeops@claudeops
+```
+
+### Option 2: Clone and use as plugin directory
 
 ```bash
 git clone https://github.com/goamaan/claudeops.git ~/.claude-plugins/claudeops
 claude --plugin-dir ~/.claude-plugins/claudeops
 ```
 
-### Option 2: Use directly from a local clone
+### Option 3: Use directly from a local clone
 
 ```bash
 git clone https://github.com/goamaan/claudeops.git

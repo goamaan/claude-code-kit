@@ -1,0 +1,19 @@
+{
+  "name": "claudeops",
+  "owner": {
+    "name": "Amaan",
+    "email": "goamaan@gmail.com"
+  },
+  "metadata": {
+    "description": "Multi-agent orchestration, codebase scanning, quality hooks, and workflow skills for Claude Code"
+  },
+  "plugins": [
+    {
+      "name": "claudeops",
+      "source": "./",
+      "description": "Multi-agent orchestration, codebase scanning, quality hooks, and workflow skills for Claude Code",
+      "category": "productivity",
+      "tags": ["orchestration", "multi-agent", "scanning", "hooks", "workflow"]
+    }
+  ]
+}

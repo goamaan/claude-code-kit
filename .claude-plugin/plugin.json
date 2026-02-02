@@ -5,5 +5,8 @@
   "author": {
     "name": "Amaan"
   },
-  "repository": "https://github.com/goamaan/claudeops"
+  "license": "MIT",
+  "homepage": "https://github.com/goamaan/claudeops",
+  "repository": "https://github.com/goamaan/claudeops",
+  "keywords": ["orchestration", "multi-agent", "scanning", "hooks", "workflow", "automation"]
 }
