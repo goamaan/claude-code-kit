@@ -1,5 +1,4 @@
 ---
-name: autopilot
 description: >
   Full autonomous execution from idea to working code. Use when the user says "autopilot",
   "build me", "create me", "make me", "implement everything", "full auto", "handle it all",

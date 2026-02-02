@@ -1,5 +1,4 @@
 ---
-name: init
 description: Interactive project setup — scan codebase and generate .claude/CLAUDE.md with orchestration instructions and .claude/settings.json with permissions.
 user-invocable: true
 disable-model-invocation: true

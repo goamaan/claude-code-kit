@@ -1,5 +1,4 @@
 ---
-name: scan
 description: >
   AI-enhanced codebase analysis that goes beyond deterministic scanning. Reads key files,
   discovers non-obvious conventions, and enhances .claude/CLAUDE.md with architecture insights,

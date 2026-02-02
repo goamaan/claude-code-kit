@@ -1,5 +1,4 @@
 ---
-name: debug
 description: >
   Systematic debugging with parallel hypothesis testing. Use when the user says "debug",
   "investigate", "diagnose", "fix bug", "why is X not working", reports an error, or

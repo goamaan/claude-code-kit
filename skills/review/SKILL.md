@@ -1,5 +1,4 @@
 ---
-name: review
 description: >
   Multi-specialist parallel code review. Use when the user says "review", "audit", "code review",
   "PR review", asks for security/architecture/performance review, wants pre-merge validation,
