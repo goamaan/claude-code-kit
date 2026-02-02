@@ -9,7 +9,5 @@
   "homepage": "https://github.com/goamaan/claudeops",
   "repository": "https://github.com/goamaan/claudeops",
   "keywords": ["orchestration", "multi-agent", "scanning", "hooks", "workflow", "automation"],
-  "skills": "./skills/",
-  "agents": "./agents/",
-  "hooks": "./hooks/hooks.json"
+  "skills": "./skills/"
 }
