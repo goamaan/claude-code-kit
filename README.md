@@ -7,7 +7,7 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Claude Code Plugin](https://img.shields.io/badge/claude_code-plugin-purple.svg)](https://docs.anthropic.com/en/docs/claude-code)
 
-9 workflow skills. 7 specialized agents. 11 quality hooks. Zero dependencies.
+10 workflow skills. 7 specialized agents. Deep project context. Zero dependencies.
 
 [Get Started](#installation) | [What It Does](#what-can-it-do) | [How It Works](#how-it-works) | [Reference](#skills)
 
@@ -21,10 +21,10 @@ Claude Code is already good. But it works alone, forgets between sessions, and d
 
 claudeops fixes that. Install it once, run `/claudeops:init`, and Claude Code gains:
 
+- **Deep project context** — multiple agents analyze your codebase, interview you for tacit knowledge, and generate comprehensive CLAUDE.md that enables paste-a-bug-and-fix workflows
 - **Multi-agent orchestration** — fan out work to specialized agents that run in parallel
-- **Session memory** — learnings, corrections, and context persist across sessions
 - **Intent routing** — say "fix CI" or paste an error and the right workflow fires automatically
-- **Quality guardrails** — hooks catch secrets, flag dangerous commands, and lint your code before you see it
+- **Built-in guardrails** — CLAUDE.md rules for linting, typechecking, and security are baked in
 
 ### Design philosophy
 
@@ -39,9 +39,9 @@ claudeops is **markdown, JavaScript, and JSON**. You can read every file in it. 
 | **Zero overhead** | No build step, no dependencies, no runtime services, no lock-in |
 | **Just talk** | Describe what you want in natural language — intent routing handles the rest |
 | **Few commands** | 1 new command to memorize (`/claudeops:create-skill`). Everything else auto-invokes. |
-| **Quality over quantity** | 9 skills that cover real workflows, not 30+ thin wrappers |
+| **Skills over hooks** | Everything is a skill — readable, customizable, no hidden automation |
+| **Deep context** | One init generates comprehensive project context that persists forever |
 | **Readable internals** | Every skill is a SKILL.md you can open and understand |
-| **Native plugin** | Uses Claude Code's plugin system as designed — skills, agents, hooks |
 
 ## Installation
 
@@ -65,7 +65,29 @@ Then initialize your project:
 /claudeops:init
 ```
 
-This scans your codebase, detects your stack, and generates `.claude/CLAUDE.md` with orchestration instructions, an intent routing table, and project-specific conventions. Claude reads this every session — no repeated explanations.
+This is where the magic happens. Init offers two modes:
+
+### Full Deep Dive (recommended)
+
+Multiple agents analyze your codebase in parallel:
+- **explore** maps directories and entry points
+- **architect** traces architecture and patterns
+- **researcher** reads docs and understands domain
+- **security** finds auth patterns and sensitive areas
+- **tester** maps test structure and coverage
+- **designer** analyzes UI patterns (if frontend detected)
+
+Then you're interviewed for tacit knowledge:
+- What does this product do?
+- Any gotchas or footguns?
+- Unwritten coding rules?
+- Sensitive areas that need extra care?
+
+The result: a comprehensive `.claude/CLAUDE.md` that enables you to paste a bug and have Claude know exactly where to look and how to fix it.
+
+### Quick Setup
+
+Basic scanning, minimal questions, fast initialization. Good for small projects or when you're in a hurry.
 
 ## What can it do?
 
@@ -86,22 +108,28 @@ You don't pick modes or memorize commands. Just describe the problem.
 | "tech debt report" | **Tech debt scan** — finds TODOs, dead code, duplicated logic, missing tests |
 | "onboard me" | **Context dump** — project summary with architecture, recent activity, open PRs/issues |
 | "query users by signup date" | **Query skill** — detects your database, writes SQL, shows it for approval, executes, analyzes results |
+| "have we seen this before?" | **Recall** — surfaces relevant past learnings from `.claude/learnings/` |
 | "work on auth and API in parallel" | **Worktree mode** — creates git worktrees for independent features, scoped agents per worktree |
 
 ### What you don't have to do
 
 You don't have to remember that "fix CI" maps to the debug skill's CI workflow. The skill descriptions contain trigger phrases, and Claude matches your intent automatically. This is how Claude Code plugins are designed to work — you just haven't seen it done this way before.
 
-### Hooks that work in the background
+### Quality built into CLAUDE.md
 
-Things you never have to think about:
+Instead of hidden hooks running in the background, claudeops generates CLAUDE.md with explicit rules:
 
-- **Smart command approval** — `ls`, `git status`, `npm test` run without friction. `rm -rf`, `git push --force`, `sudo` get flagged with a warning.
-- **Secret scanning** — catches API keys, tokens, and credentials before they hit git.
-- **Branch protection** — warns when you're about to commit to main.
-- **Auto-lint and typecheck** — runs on files you just edited, not the whole project.
-- **Session memory** — saves state on exit, restores on next session. Learnings from past debugging sessions surface when relevant.
-- **Rule learning** — when you correct Claude ("don't do that", "always use X"), the rule-suggester prompts Claude to save it to your CLAUDE.md. Next session, it already knows.
+```markdown
+## Rules
+
+- Always run `npm run lint` after modifying code
+- Always run `npm run typecheck` after TypeScript changes
+- Never commit directly to main/master
+- Never commit .env, credentials, or secrets
+- Complete all tasks before ending session
+```
+
+Claude follows these every session. You can see them, modify them, and understand exactly what's happening.
 
 ### Multi-agent orchestration
 
@@ -128,18 +156,18 @@ Skills coordinate these agents using four patterns:
 
 ```
 claudeops/
-├── skills/          # 9 workflow skills (SKILL.md files)
-│   ├── init/        # Project setup + CLAUDE.md generation
+├── skills/          # 10 workflow skills (SKILL.md files)
+│   ├── init/        # Deep project setup + comprehensive CLAUDE.md generation
 │   ├── autopilot/   # Autonomous execution (pipeline, swarm, worktree, plan-first)
 │   ├── debug/       # Debugging (hypothesis, CI, container, paste-and-fix)
 │   ├── review/      # Code review (PR, adversarial, explain/teach)
-│   ├── scan/        # Codebase analysis (enhanced scan, tech debt, context dump)
+│   ├── scan/        # Codebase health (tech debt, context dump, refresh)
+│   ├── recall/      # Retrieve past learnings from .claude/learnings/
 │   ├── doctor/      # Plugin health + environment tips
 │   ├── learn/       # Session learning capture
 │   ├── query/       # Natural language → database queries
 │   └── create-skill/# Scaffold new skills (user-only)
 ├── agents/          # 7 agent definitions (.md files)
-├── hooks/           # 11 event-driven hooks (.mjs + hooks.json)
 └── scripts/         # Deterministic codebase scanner
 ```
 
@@ -148,6 +176,23 @@ Every skill is a markdown file with YAML frontmatter. No compiled code, no abstr
 ### The scanner
 
 `scripts/scan.mjs` performs deterministic codebase analysis and outputs JSON. It detects languages, frameworks, build systems, test runners, linters, CI/CD pipelines, databases, API styles, monorepo tools, and code conventions. Used by `init` and `scan` to bootstrap project understanding without burning tokens on exploration.
+
+### Generated artifacts
+
+After running `/claudeops:init`, you get:
+
+```
+.claude/
+├── CLAUDE.md           # Comprehensive project context (loaded every session)
+├── settings.json       # Permission allowlists for common commands
+├── rules/              # Path-specific rules (optional)
+│   ├── api.md          # Rules for src/api/**
+│   └── testing.md      # Rules for **/*.test.*
+└── learnings/          # Past debugging sessions (optional)
+    ├── build-errors/
+    ├── type-errors/
+    └── patterns/
+```
 
 ## Customization
 
@@ -178,11 +223,38 @@ user-invocable: true
 
 Create `agents/<name>.md` with YAML frontmatter describing the agent's specialty.
 
-### Add a hook
+### Modify CLAUDE.md
 
-1. Create a `.mjs` file in `hooks/`
-2. Register it in `hooks/hooks.json`
-3. Hook reads JSON from stdin, outputs JSON to stdout
+The generated `.claude/CLAUDE.md` is yours to customize. Add rules, remove sections, tweak conventions. It's just markdown.
+
+### Use @imports for large projects
+
+If your project needs more documentation than fits in 400 lines:
+
+```markdown
+## Architecture
+@docs/architecture.md
+
+## API Patterns
+@docs/api-guide.md
+```
+
+Claude Code imports these on demand, keeping your main CLAUDE.md lean.
+
+## Skills Reference
+
+| Skill | Trigger | What it does |
+|-------|---------|--------------|
+| **init** | "init", "initialize", "setup" | Deep codebase analysis + CLAUDE.md generation |
+| **autopilot** | "build me", "autopilot", "full auto" | Autonomous end-to-end execution |
+| **debug** | "fix bug", "debug", "fix CI", paste error | Hypothesis-driven debugging |
+| **review** | "review", "audit", "explain" | Parallel code review, adversarial mode |
+| **scan** | "tech debt", "onboard me", "context dump" | Codebase health and context |
+| **recall** | "have we seen this", "remember" | Surface past learnings |
+| **learn** | "capture this", "save learning" | Save debugging session for future |
+| **query** | "query", "SQL", "analytics" | Natural language to database |
+| **doctor** | "doctor", "check plugin" | Plugin health diagnostics |
+| **create-skill** | manual only | Scaffold new custom skill |
 
 ## Requirements
 

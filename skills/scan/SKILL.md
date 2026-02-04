@@ -1,249 +1,256 @@
 ---
 description: >
-  AI-enhanced codebase analysis that goes beyond deterministic scanning. Reads key files,
-  discovers non-obvious conventions, and enhances .claude/CLAUDE.md with architecture insights,
-  gotchas, and patterns. Use when the user wants deeper codebase analysis, asks to improve
-  their project configuration, says "tech debt", "find dead code", "find duplicated code",
-  "missing tests", "find TODOs", "code quality", "context dump", "summarize project",
-  "project summary", or "onboard me".
+  Ongoing codebase health analysis and context refresh. Use after initial setup for
+  tech debt analysis, context dumps, project summaries, or to refresh CLAUDE.md with
+  new discoveries. Triggers on "scan", "tech debt", "dead code", "find TODOs",
+  "code quality", "context dump", "summarize project", "onboard me", or "refresh context".
 user-invocable: true
-allowed-tools: [Bash, Read, Write, Glob, Grep, Edit]
+allowed-tools: [Bash, Read, Write, Glob, Grep, Edit, Task]
 ---
 
-# AI-Enhanced Codebase Analysis
+# Codebase Health & Context Analysis
 
-You are a codebase analysis expert. Your job is to enhance the .claude/ artifacts beyond what deterministic scanning provides.
+Analyze codebase health and refresh project context. Complements `/claudeops:init` by providing ongoing analysis after initial setup.
 
-## Workflow
+## When to Use
 
-### Step 1: Check existing artifacts
+- **Tech debt analysis**: Find TODOs, dead code, missing tests
+- **Context refresh**: Update CLAUDE.md with new discoveries
+- **Onboarding**: Generate comprehensive context dump for new team members
+- **Health check**: Periodic codebase quality assessment
 
-Check if `.claude/CLAUDE.md` already exists. If not, run the scanner first:
+## Workflows
 
-```bash
-node scripts/scan.mjs "$PWD"
-```
-
-Note: `scripts/scan.mjs` is bundled alongside this skill file.
-
-Use the JSON output to generate a baseline `.claude/CLAUDE.md`. Then read the generated file to understand what the deterministic scan already captured.
-
-### Step 2: Read key files for deeper context
-
-Based on the project, read the most important files to understand it:
-- README.md (project overview)
-- Main config files (package.json, pyproject.toml, Cargo.toml, etc.)
-- Entry points (src/index.ts, main.go, etc.)
-- Contributing guidelines if present
-- Schema files (prisma/schema.prisma, etc.)
-
-### Step 3: Enhance CLAUDE.md
-
-Review the existing CLAUDE.md and enhance it with insights that deterministic scanning can't provide:
-- Non-obvious conventions discovered from reading code
-- Architecture insights from entry point analysis
-- Common gotchas or patterns
-- Environment setup notes
-
-**Important:** Preserve any existing managed sections. Add your enhancements in a way that doesn't conflict with future automated updates.
-
-### Step 4: Generate .claude/skills/ (only if warranted)
-
-Only create skills if the project has notable domain-specific patterns worth documenting. Most projects don't need custom skills.
-
-Good reasons to create a skill:
-- Complex API patterns (e.g., custom middleware chain, specific error handling conventions)
-- Non-obvious database conventions (e.g., soft deletes, specific migration patterns)
-- Custom auth flow that differs from framework defaults
-- Domain-specific business logic patterns
-
-Each skill should be:
-- A directory under `.claude/skills/` with a `SKILL.md` file
-- Has proper frontmatter: `name`, `description`, `user-invocable: false`
-- Describes HOW things are done in THIS specific codebase
-- Short and focused (under 50 lines)
-
-### Step 5: Update .claude/settings.json
-
-If the project has linters/formatters, add appropriate hooks:
-- Auto-format on file save (if prettier/black/rustfmt detected)
-- Permission allowlists for detected build tools
-
-If settings.json already exists, MERGE — don't overwrite.
-
-## Important Rules
-
-1. **Preserve existing .claude/ content** — if CLAUDE.md already exists, ask the user before overwriting
-2. **Preserve managed sections** — don't overwrite automated/managed content sections
-3. **Be concise** — Claude reads this every session, brevity matters
-4. **Be specific** — use actual commands from the project, not generic ones
-5. **Don't over-generate** — fewer, better files beat many mediocre ones
-6. **Git-friendly** — everything goes in `.claude/` which teams can commit
-
-## Additional Workflows
-
-### Tech Debt Analysis
+### 1. Tech Debt Analysis
 
 Triggered by: "tech debt", "find dead code", "find duplicated code", "missing tests", "find TODOs", "code quality"
 
 #### Step 1: Scan for Markers
-```
-# Find all TODO/FIXME/HACK/XXX comments
-Grep: pattern="TODO|FIXME|HACK|XXX|DEPRECATED|WORKAROUND" (all source files)
-```
 
-#### Step 2: Identify Dead Code and Duplication
 ```
-Task(subagent_type="explore", run_in_background=True,
-     prompt="Find dead code: exported functions/classes that are never imported elsewhere,
-     unused variables, unreachable code paths. List each with file:line...")
-
-Task(subagent_type="architect", run_in_background=True,
-     prompt="Identify duplicated logic patterns: functions that do similar things,
-     copy-pasted code blocks, repeated error handling patterns. Group by similarity...")
+Grep: pattern="TODO|FIXME|HACK|XXX|DEPRECATED|WORKAROUND"
+      output_mode="content"
 ```
 
-#### Step 3: Find Missing Test Coverage
+#### Step 2: Parallel Analysis
+
 ```
-Task(subagent_type="tester",
-     prompt="Find source files without corresponding test files. Check:
-     - src/foo.ts → test for foo.test.ts or __tests__/foo.test.ts
-     - Identify critical paths (auth, payments, data mutations) without tests
-     List each untested file with a priority rating...")
+Task(subagent_type="claudeops:explore", run_in_background=true,
+     prompt="Find potentially dead code:
+     - Exported functions/classes never imported elsewhere
+     - Unused variables and parameters
+     - Unreachable code paths
+     - Files with no imports
+     List each with file:line and confidence level.")
+
+Task(subagent_type="claudeops:architect", run_in_background=true,
+     prompt="Identify duplicated logic patterns:
+     - Functions doing similar things
+     - Copy-pasted code blocks
+     - Repeated error handling patterns
+     - Similar data transformations
+     Group by similarity, suggest consolidation.")
+
+Task(subagent_type="claudeops:tester", run_in_background=true,
+     prompt="Find test coverage gaps:
+     - Source files without corresponding tests
+     - Critical paths without tests (auth, payments, data mutations)
+     - Complex functions without unit tests
+     Rate each by priority (Critical/High/Medium/Low).")
 ```
 
-#### Step 4: Output Report
-```
-## Tech Debt Report
+#### Step 3: Generate Report
 
-### Summary
-- TODO/FIXME comments: [N]
-- Dead exports: [N]
-- Duplicated patterns: [N]
-- Untested source files: [N] of [M]
+```markdown
+# Tech Debt Report
+Generated: {date}
 
-### Priority Items (Fix These First)
-| # | Type | Location | Description | Priority |
-|---|------|----------|-------------|----------|
-| 1 | [type] | [file:line] | [description] | Critical |
+## Summary
+| Category | Count | Priority Items |
+|----------|-------|----------------|
+| TODO/FIXME | {N} | {N critical} |
+| Dead Code | {N} | {N high-confidence} |
+| Duplicated Logic | {N} | {N patterns} |
+| Missing Tests | {N} | {N critical paths} |
 
-### TODO/FIXME Comments
-| File:Line | Comment | Age (git blame) |
-|-----------|---------|-----------------|
-| [file:line] | [comment text] | [date] |
+## Critical Priority (Fix These First)
 
-### Dead Code
-- [file:line] — [exported symbol never imported]
+| # | Type | Location | Description |
+|---|------|----------|-------------|
+| 1 | {type} | {file:line} | {description} |
 
-### Duplicated Logic
-- Pattern: [description]
-  - [file1:line] and [file2:line]
+## TODO/FIXME Comments
 
-### Missing Tests
+| File:Line | Comment | Age |
+|-----------|---------|-----|
+| {loc} | {text} | {git blame date} |
+
+## Dead Code Candidates
+
+- `{file:line}` - {symbol} (confidence: {high/medium})
+
+## Duplicated Patterns
+
+### Pattern: {description}
+- `{file1:line}`
+- `{file2:line}`
+Suggested: {consolidation approach}
+
+## Missing Test Coverage
+
 | Source File | Priority | Reason |
 |-------------|----------|--------|
-| [file] | High | Critical auth path |
+| {file} | Critical | Handles authentication |
+| {file} | High | Complex business logic |
 ```
 
-### Context Aggregation
+---
+
+### 2. Context Dump / Onboarding
 
 Triggered by: "context dump", "summarize project", "project summary", "onboard me"
 
-Produces a single structured context document for onboarding or handoff.
+#### Step 1: Gather Metadata
 
-#### Step 1: Gather Project Metadata
 ```bash
-# Read project docs
-cat README.md CONTRIBUTING.md .claude/CLAUDE.md 2>/dev/null
-
-# Recent activity
-git log --oneline -30
+git log --oneline -20
 git shortlog -sn --since="30 days ago"
-
-# Open work
-gh pr list --state open --limit 10 2>/dev/null
-gh issue list --state open --limit 10 2>/dev/null
+gh pr list --state open --limit 5 2>/dev/null || true
+gh issue list --state open --limit 5 2>/dev/null || true
 ```
 
-#### Step 2: Analyze Architecture
-```
-Task(subagent_type="explore",
-     prompt="Map the project's high-level architecture: entry points, key modules,
-     data flow, external dependencies. Produce an ASCII diagram...")
-```
+Read: README.md, CONTRIBUTING.md, .claude/CLAUDE.md
 
-#### Step 3: Output Context Document
+#### Step 2: Architecture Analysis
+
 ```
-## Project Context: [Project Name]
-Generated: [date]
-
-### Overview
-[1-2 sentences from README]
-
-### Tech Stack
-- [language] + [framework] + [build tool]
-
-### Architecture
-```
-[ASCII diagram of key components]
+Task(subagent_type="claudeops:architect",
+     prompt="Create a high-level architecture overview:
+     1. Main components and their responsibilities
+     2. Data flow through the system
+     3. External dependencies and integrations
+     4. Key abstractions and patterns
+     Include an ASCII diagram if helpful.")
 ```
 
-### Key Directories
-| Directory | Purpose |
-|-----------|---------|
-| [dir] | [purpose] |
-
-### Active Development
-- Open PRs: [list with titles]
-- Open Issues: [list with titles]
-- Recent commits: [last 10 with short descriptions]
-
-### Top Contributors (Last 30 Days)
-| Author | Commits |
-|--------|---------|
-| [name] | [count] |
-
-### Build & Test
-```bash
-[build command]
-[test command]
-[dev command]
-```
-
-### Known Issues / Tech Debt
-[Summary from TODO/FIXME scan if available]
-```
-
-#### Optional: Save to File
-If user asks, write the output to `.claude/context-dump.md` for sharing.
-
-## Example Enhanced CLAUDE.md Output
+#### Step 3: Generate Context Document
 
 ```markdown
-# Project Conventions
+# Project Context: {Project Name}
+Generated: {date}
 
-## Commands
-- Build: `npm run build`
-- Test: `npm test`
-- Lint: `npm run lint`
+## Overview
+{From README - 2-3 sentences}
 
 ## Tech Stack
-- TypeScript
-- React
-- Vitest for testing
-- ESLint
+- **Language**: {lang} {version}
+- **Framework**: {framework}
+- **Database**: {db}
+- **Key Dependencies**: {top 5}
 
 ## Architecture
-- `src/core/` — Core business logic
-- `src/commands/` — CLI commands
+```
+{ASCII diagram from architect agent}
+```
 
-## Conventions
-- ESM-only (type: "module" in package.json)
-- Zod schemas for all config types
-- Tests colocated with source files (*.test.ts)
-- Use bracket notation for index signature access (`obj['key']` not `obj.key`)
+## Directory Guide
+| Directory | Purpose | Key Files |
+|-----------|---------|-----------|
+| {dir} | {purpose} | {files} |
 
-## Gotchas
-- Always pass `joiner: '\n'` when using the TOML parser
-- Use `findPackageRoot()` instead of `__dirname` for repo root
+## Active Development
+### Open PRs
+{list with titles and authors}
+
+### Open Issues
+{list with titles and labels}
+
+### Recent Commits (Last 20)
+{commit list with messages}
+
+## Top Contributors (30 days)
+| Author | Commits |
+|--------|---------|
+| {name} | {count} |
+
+## Quick Commands
+```bash
+{build}   # Build
+{test}    # Test
+{dev}     # Dev server
+```
+
+## Known Issues / Tech Debt
+{Summary from previous tech debt scan if exists}
+
+## Key Contacts
+{From CONTRIBUTING.md if exists}
+```
+
+Option to save: "Write to `.claude/context-dump.md` for sharing?"
+
+---
+
+### 3. Context Refresh
+
+Triggered by: "refresh context", "update CLAUDE.md", "rescan"
+
+Update existing CLAUDE.md with new discoveries without full re-init.
+
+#### Step 1: Compare Current State
+
+```
+Task(subagent_type="claudeops:explore",
+     prompt="Compare current codebase to what's documented in .claude/CLAUDE.md:
+     - New directories/files not documented
+     - Documented paths that no longer exist
+     - New dependencies added
+     - Changed patterns or conventions")
+```
+
+#### Step 2: Generate Diff
+
+```markdown
+## CLAUDE.md Refresh Suggestions
+
+### New Content to Add
+- Directory `src/new-feature/` - {discovered purpose}
+- Dependency `{new-dep}` - {what it's used for}
+
+### Outdated Content to Remove
+- `src/old-module/` no longer exists
+- `{old-pattern}` no longer used
+
+### Updates Needed
+- Build command changed from `{old}` to `{new}`
+- Test command now includes `{new-flags}`
+```
+
+#### Step 3: Apply Changes (with confirmation)
+
+Ask user: "Apply these updates to CLAUDE.md?"
+- If yes: Edit CLAUDE.md with changes
+- If no: Save suggestions to `.claude/refresh-suggestions.md`
+
+---
+
+## Output Locations
+
+| Workflow | Default Output |
+|----------|----------------|
+| Tech Debt | Display in chat |
+| Context Dump | Display, optional save to `.claude/context-dump.md` |
+| Refresh | Edits `.claude/CLAUDE.md` (with confirmation) |
+
+## Scheduling Suggestions
+
+Add to CLAUDE.md for periodic health checks:
+
+```markdown
+## Maintenance
+
+Consider running periodically:
+- `/claudeops:scan tech debt` - Monthly
+- `/claudeops:scan refresh` - After major changes
+- `/claudeops:scan context` - Before onboarding new team members
 ```

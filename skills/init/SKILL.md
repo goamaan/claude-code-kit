@@ -1,297 +1,449 @@
 ---
-description: Interactive project setup — scan codebase and generate .claude/CLAUDE.md with orchestration instructions and .claude/settings.json with permissions.
+description: >
+  Deep project initialization that creates comprehensive CLAUDE.md context. Scans codebase with
+  multiple agents, interviews user for tacit knowledge, and generates project-level context
+  that enables paste-a-bug-and-fix workflows. Use when the user says "init", "initialize",
+  "setup claude", "configure project", or wants to improve their CLAUDE.md.
 user-invocable: true
 disable-model-invocation: true
-allowed-tools: [Bash, Read, Write, Glob, Grep, Edit, AskUserQuestion]
+allowed-tools: [Bash, Read, Write, Glob, Grep, Edit, AskUserQuestion, Task]
 ---
 
-# Project Initialization Skill
+# Deep Project Initialization
 
-Initialize a project with claudeops by scanning the codebase and generating `.claude/` configuration files with embedded orchestration.
+Initialize a project with comprehensive context that enables Claude to understand and fix issues with minimal back-and-forth.
 
-## Execution Steps
+## Philosophy
 
-### 1. Run the Scanner
+The goal is to create a CLAUDE.md that contains everything Claude needs to:
+1. Understand what this project does
+2. Know where to look for any given issue
+3. Understand patterns, conventions, and gotchas
+4. Execute common workflows without asking
 
-Execute the deterministic scanner to detect project characteristics:
+**Keep it scannable**: Claude reads this every session. Brevity with density is the goal.
+
+## Execution Flow
+
+### Step 1: Check for Existing CLAUDE.md
+
+Search for existing CLAUDE.md files in priority order:
+
+```
+./.claude/CLAUDE.md          # Project (preferred location)
+./CLAUDE.md                   # Project root
+~/.claude/CLAUDE.md           # User-level (don't modify)
+```
+
+Use Glob and Read tools (NOT shell commands) for cross-platform compatibility.
+
+### Step 2: Present Options to User
+
+Use AskUserQuestion with these options:
+
+**If CLAUDE.md exists:**
+```
+question: "Found existing CLAUDE.md. How should we proceed?"
+options:
+  - label: "Enhance (Recommended)"
+    description: "Deep dive with multiple agents, add comprehensive context while preserving your existing content"
+  - label: "Minimal"
+    description: "Just add claudeops routing table and essential commands"
+  - label: "Fresh Start"
+    description: "Replace with new comprehensive CLAUDE.md (backs up existing)"
+```
+
+**If no CLAUDE.md exists:**
+```
+question: "No CLAUDE.md found. How comprehensive should the setup be?"
+options:
+  - label: "Full Deep Dive (Recommended)"
+    description: "Multiple agents analyze codebase, interview you for tacit knowledge"
+  - label: "Quick Setup"
+    description: "Basic scanning, minimal questions, fast initialization"
+```
+
+### Step 3: Run Deterministic Scanner
+
+Execute the scanner to get baseline project info:
 
 ```bash
 node scripts/scan.mjs "$PWD"
 ```
 
-Note: `scripts/scan.mjs` is bundled alongside this skill file.
+Parse the JSON output to extract:
+- `projectName`, `languages`, `frameworks`
+- `buildCommands`, `testCommands`, `devCommands`
+- `structure` (key directories)
+- `packageManager`
+- `configFiles`
 
-The scanner outputs JSON containing:
-- Detected languages and frameworks
-- Build tools and package managers
-- Test frameworks
-- Project structure
-- Configuration files
-- Common commands
+### Step 4: Deep Dive with Parallel Agents (if Enhance/Full mode)
 
-### 2. Parse Scanner Output
+Spawn multiple agents in parallel to analyze different aspects:
 
-Extract the following from the JSON:
-- `projectName`: from package.json or directory name
-- `languages`: detected programming languages
-- `frameworks`: web frameworks, test frameworks, build tools
-- `buildCommands`: detected build/test/dev commands
-- `structure`: key directories and their purposes
-- `configFiles`: important configuration files
-- `packageManager`: npm, yarn, pnpm, bun, etc.
+```
+Task(subagent_type="claudeops:explore", run_in_background=true,
+     prompt="Map this codebase comprehensively:
+     1. List ALL top-level directories with their purpose
+     2. Identify entry points (main files, index files, app entry)
+     3. Find configuration files and what they configure
+     4. Map the test structure (where tests live, naming conventions)
+     5. Identify any monorepo structure (workspaces, packages)
+     Output as structured markdown.")
 
-### 3. Filter Agent Catalog
+Task(subagent_type="claudeops:architect", run_in_background=true,
+     prompt="Analyze the architecture:
+     1. Read main entry points and trace the application flow
+     2. Identify key abstractions and patterns used
+     3. Find the data layer (database, API clients, state management)
+     4. Identify external service integrations
+     5. Note any unusual or clever patterns
+     Output as structured markdown with file:line references.")
 
-Based on scan results, determine which agents are relevant to this project:
+Task(subagent_type="claudeops:researcher", run_in_background=true,
+     prompt="Understand the project context:
+     1. Read README.md thoroughly - extract product description, setup instructions
+     2. Read CONTRIBUTING.md if exists - extract workflow expectations
+     3. Read any docs/ directory for architecture decisions
+     4. Check package.json/pyproject.toml for project metadata
+     5. Look for ADRs (Architecture Decision Records)
+     Output key findings as structured markdown.")
+```
 
-| Scan Signal | Agents Included |
-|-------------|----------------|
-| Always | `architect`, `executor`, `explore` |
-| Frontend detected (React/Vue/Svelte/Angular/CSS/Tailwind) | + `designer` |
-| Test framework or test scripts detected | + `tester` |
-| Web framework, API, auth deps detected | + `security` |
-| Complex project (>3 languages, monorepo, large) | + `researcher` |
+**Conditionally spawn based on scanner results:**
 
-**Detection heuristics:**
-- **Frontend**: Look for React, Vue, Svelte, Angular, Next.js, Nuxt, SvelteKit, Remix, Astro in dependencies; CSS/SCSS/Tailwind files; `src/components/` or similar directories
-- **Test framework**: Look for jest, vitest, mocha, pytest, go test, cargo test, JUnit in dependencies or config; `test/`, `tests/`, `__tests__/`, `*.test.*`, `*.spec.*` directories/files; test scripts in package.json
-- **Web/API/Security**: Look for express, fastify, koa, django, flask, gin, actix, spring in dependencies; auth libraries (passport, next-auth, clerk, auth0); API route directories
-- **Complex**: More than 3 languages detected; monorepo tools (nx, turborepo, lerna, pnpm workspaces); large file count (>500 source files)
+```
+# If frontend detected (React/Vue/Svelte/Angular/CSS)
+Task(subagent_type="claudeops:designer", run_in_background=true,
+     prompt="Analyze the frontend:
+     1. Identify component library/framework patterns
+     2. Find styling approach (CSS modules, Tailwind, styled-components)
+     3. Map component hierarchy and shared components
+     4. Identify state management patterns
+     5. Find any design system or theme configuration
+     Output as structured markdown.")
 
-### 4. Clarify with User
+# If test framework detected
+Task(subagent_type="claudeops:tester", run_in_background=true,
+     prompt="Analyze testing patterns:
+     1. Find test configuration files
+     2. Identify testing patterns (unit, integration, e2e)
+     3. Find test utilities, fixtures, mocks
+     4. Check coverage configuration
+     5. Note any testing conventions (naming, organization)
+     Output as structured markdown.")
 
-Use AskUserQuestion to resolve ambiguities and gather preferences:
+# If web framework/API/auth detected
+Task(subagent_type="claudeops:security", run_in_background=true,
+     prompt="Analyze security-sensitive areas:
+     1. Find authentication implementation
+     2. Identify authorization patterns
+     3. Locate API route definitions
+     4. Find input validation patterns
+     5. Check for secrets management approach
+     Output as structured markdown with sensitivity notes.")
+```
 
-- If multiple build commands detected: "Which is your primary build command?"
-- If multiple test runners: "Which test framework should I prioritize?"
-- "Are there any code conventions or patterns I should enforce?"
-- "Any critical files or directories I should highlight?"
-- "Should I add any custom build permissions to settings.json?"
+Wait for all background agents to complete, then collect their findings.
 
-**Anti-pattern**: Do NOT ask questions the scanner already answered (e.g., "what package manager do you use?" when package.json exists).
+### Step 5: User Interview
 
-### 5. Check for Existing Configuration
+Based on agent findings, ask targeted questions. Use AskUserQuestion for each.
 
-Before generating files, check if `.claude/CLAUDE.md` exists using the Read tool or Glob tool (cross-platform). Do NOT use shell commands with `2>/dev/null` as they don't work on Windows.
+**Always ask:**
 
-If it exists:
-- Read the current file
-- Ask: "A .claude/CLAUDE.md already exists. Should I (o)verwrite, (m)erge, or (c)ancel?"
-- If merge: preserve user-added sections, update detected content
+```
+question: "In 1-2 sentences, what does this product do?"
+header: "Product"
+options:
+  - label: "Let me type it"
+    description: "I'll provide a custom description"
+  - label: "Skip"
+    description: "Use what was found in README"
+```
 
-### 6. Generate .claude/CLAUDE.md with Orchestration
+```
+question: "Any gotchas or footguns that trip people up?"
+header: "Gotchas"
+options:
+  - label: "Yes, let me list them"
+    description: "I know some pain points"
+  - label: "None that I know of"
+    description: "Skip this section"
+```
 
-Create a concise, scannable reference document with embedded orchestration instructions. Claude reads this every session, so brevity is critical.
+```
+question: "Any unwritten coding rules not captured in linter configs?"
+header: "Conventions"
+options:
+  - label: "Yes, I have some"
+    description: "Things like naming conventions, patterns to follow"
+  - label: "Just follow the linter"
+    description: "No additional conventions"
+```
 
-**Template**:
+```
+question: "Which parts of the codebase need extra care when modifying?"
+header: "Sensitive Areas"
+options:
+  - label: "Let me specify"
+    description: "Auth, payments, critical paths, etc."
+  - label: "Nothing special"
+    description: "Standard care everywhere"
+```
+
+**Ask based on findings:**
+
+- If complex auth found: "We found auth in {path}. Anything tricky about it?"
+- If multiple databases: "We found {db1} and {db2}. When should each be used?"
+- If monorepo: "Which packages are most actively developed?"
+
+### Step 6: Generate CLAUDE.md
+
+Create `.claude/CLAUDE.md` with this structure (keep under 400 lines):
 
 ````markdown
 # {Project Name}
 
-{One-line description from package.json or user input}
+{One-line product description from user or README}
 
-## Build & Test
+## Quick Reference
 
 ```bash
-{primary-build-command}    # Build description
-{primary-test-command}     # Test description
-{dev-command}              # Dev server (if applicable)
+{build_cmd}    # Build
+{test_cmd}     # Test
+{dev_cmd}      # Dev server
+{lint_cmd}     # Lint
 ```
-
-## Tech Stack
-
-- **Language**: {detected language + version}
-- **Framework**: {primary framework}
-- **Build Tool**: {build tool}
-- **Test Framework**: {test framework}
-- **Package Manager**: {npm/yarn/pnpm/bun}
 
 ## Architecture
 
 ```
-{key directories from scanner with brief descriptions}
+{ASCII diagram or directory tree from explore agent}
 ```
 
-## Code Style
+### Key Entry Points
+- `{main_entry}` - {description}
+- `{api_entry}` - {description}
 
+### Data Layer
+- {database/ORM info from architect agent}
+- {API clients, external services}
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Language | {lang + version} |
+| Framework | {framework} |
+| Database | {db} |
+| Testing | {test framework} |
+| Build | {build tool} |
+
+## Conventions
+
+{From scanner + user interview}
 - {convention 1}
 - {convention 2}
-- {detected linter config, e.g., "ESLint + Prettier"}
 
-## Important Files
+## Gotchas
 
-- `{file}`: {purpose}
-- `{file}`: {purpose}
+{From user interview + agent discoveries}
+- {gotcha 1}
+- {gotcha 2}
 
-## Orchestration
+## Feature Map
 
-You are a conductor. Delegate all implementation work to specialized agents.
+| Feature | Location | Notes |
+|---------|----------|-------|
+| {feature} | `{path}` | {notes} |
 
-### Available Agents
+## Common Workflows
 
-{Generate a table with ONLY the agents included by the filter in step 3}
+### Add a new API endpoint
+{Steps specific to this project}
 
-| Agent | Model | Use For |
-|-------|-------|---------|
-| architect | opus | Deep analysis, debugging, system design, performance review, plan critique |
-| executor | sonnet | Code changes of any complexity, bug fixes, refactoring |
-| explore | haiku | File search, codebase discovery, structure mapping |
-{if designer included:}
-| designer | sonnet | UI/UX, component creation, styling, responsive layouts |
-{if tester included:}
-| tester | sonnet | Test planning, TDD workflow, test writing, quality assurance |
-{if security included:}
-| security | opus | Security audit, threat modeling, vulnerability assessment |
-{if researcher included:}
-| researcher | sonnet | Technology evaluation, best practices, API analysis |
+### Add a database migration
+{Steps specific to this project}
 
-### Delegation Rules
+### Run specific tests
+{Commands specific to this project}
 
-- Code changes → executor
-- Deep analysis, debugging, architecture review → architect
-- Codebase search and discovery → explore
-{if designer included:}
-- UI/frontend work → designer
-{if tester included:}
-- Test writing and execution → tester
-{if security included:}
-- Security analysis and auditing → security
-{if researcher included:}
-- Research and technology evaluation → researcher
-- Plan and decision review → architect (review mode)
+## Sensitive Areas
 
-### Orchestration Patterns
+{From security agent + user interview}
+- `{path}` - {why it's sensitive}
 
-- **Independent subtasks** → spawn agents in parallel (fan-out)
-- **Sequential dependencies** → pipeline (pass results forward)
-- **Complex dependencies** → task graph (TaskCreate with blockedBy)
-- **Uncertain approach** → speculative (try 2-3 approaches, pick best)
+## Agent Routing
 
-### Worker Prompt Template
+When delegating work, use these specialized agents:
 
-Structure every agent prompt with 5 elements:
+| Agent | Use For |
+|-------|---------|
+| `claudeops:architect` | Deep analysis, debugging, system design, plan review |
+| `claudeops:executor` | Code changes, bug fixes, refactoring, implementation |
+| `claudeops:explore` | File search, codebase discovery, structure mapping |
+{if designer relevant:}
+| `claudeops:designer` | UI/UX, components, styling, responsive layouts |
+{if tester relevant:}
+| `claudeops:tester` | Test writing, TDD workflow, coverage improvement |
+{if security relevant:}
+| `claudeops:security` | Security audit, auth review, vulnerability assessment |
+| `claudeops:researcher` | Technology evaluation, best practices, API analysis |
 
-1. **Preamble**: "You are a [agent-type] agent working on a specific subtask."
-2. **Context**: Project description, tech stack, previous results, relevant files
-3. **Scope**: Precise task description + DO/DO NOT boundaries
-4. **Constraints**: Read before modify, match patterns, verify after changes
-5. **Expected Output**: Files modified, changes made, verification results
-
-### Subagent Context Management
-
-- **Direct** (no subagent): Single-file changes under ~20 lines, simple renames, config tweaks
-- **Delegate**: Multi-file changes, anything requiring exploration, changes needing verification
-- **Context budget**: Only include files the agent needs to touch — less is more
-- **Explore first**: Always use explore agent to identify relevant files before passing to executor
-- **Keep main context clean**: Orchestrator context is for coordination, not implementation
-
-### Intent Routing
-
-| User Says | Skill | Mode |
-|-----------|-------|------|
-| "build me X", "autopilot", "full auto" | autopilot | Pipeline/Swarm |
-| "plan first", "plan before coding" | autopilot | Plan-First |
-| "worktrees", "parallel branches" | autopilot | Parallel Worktree |
-| "debug", "fix bug", "why is X broken" | debug | Diagnose-Hypothesize-Fix |
-| "fix CI", "pipeline failed" | debug | CI/Pipeline |
-| "fix containers", "docker broken" | debug | Container |
-| [pastes error with no context] | debug | Paste-and-Fix |
-| "review", "audit", "PR review" | review | PR Review |
-| "grill me", "challenge", "prove it works" | review | Adversarial |
-| "explain", "how does this work", "teach me" | review | Explain |
-| "scan", "analyze codebase" | scan | Full Scan |
-| "tech debt", "find dead code", "TODOs" | scan | Tech Debt |
-| "context dump", "summarize project" | scan | Context Aggregation |
-| "query", "SQL", "analytics" | query | Query |
-| "capture learning", "save this" | learn | Capture |
+### Delegation Patterns
+- **Code changes** → executor
+- **Deep debugging** → architect
+- **Find files/code** → explore
+- **Multiple independent tasks** → spawn agents in parallel
 
 ## Rules
 
-<!-- Rules are auto-captured from corrections. Run corrections naturally and they'll appear here. -->
+- Always run `{lint_cmd}` after modifying code
+- Always run `{typecheck_cmd}` after TypeScript changes
+- Never commit directly to main/master
+- Never commit .env, credentials, or secrets
+- Complete all tasks before ending session
+
+<!-- Additional rules will be added here as corrections are made -->
 ````
 
-**Guidelines**:
-- Keep total length under 120 lines
-- Use bullet points, not paragraphs
-- Highlight only critical information
-- Skip empty sections
-- Focus on what Claude needs to know to make code changes
-- The orchestration section is always included
+### Step 7: Generate Path-Specific Rules (if warranted)
 
-### 7. Generate/Merge .claude/settings.json
+If the project has distinct areas with different conventions, create `.claude/rules/` files:
 
-Create or update settings.json with appropriate permissions for detected tools.
+```markdown
+# .claude/rules/api.md
+---
+paths:
+  - "src/api/**"
+  - "src/routes/**"
+---
 
-**Example structure**:
+# API Development Rules
+
+- All endpoints must validate input with {validation_lib}
+- Use {error_format} for error responses
+- Include OpenAPI comments for documentation
+```
+
+```markdown
+# .claude/rules/testing.md
+---
+paths:
+  - "**/*.test.*"
+  - "**/*.spec.*"
+  - "tests/**"
+---
+
+# Testing Conventions
+
+- Use {describe/it pattern or other}
+- Mock external services with {mocking approach}
+- Test files live {colocated or in tests/}
+```
+
+Only create rules files if there are genuinely different conventions for different paths.
+
+### Step 8: Generate/Merge settings.json
+
+Create or merge `.claude/settings.json`:
 
 ```json
 {
-  "allowedCommands": {
-    "{packageManager} install": "allow",
-    "{packageManager} run build": "allow",
-    "{packageManager} run test": "allow",
-    "{buildTool}": "allow"
-  },
-  "allowedPaths": {
-    "read": ["**/*"],
-    "write": [
-      "src/**/*",
-      "tests/**/*",
-      "{other-source-dirs}/**/*"
+  "permissions": {
+    "allow": [
+      "Bash({packageManager} install*)",
+      "Bash({packageManager} run *)",
+      "Bash({packageManager} test*)",
+      "Bash({buildTool} *)",
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(git log*)"
     ]
   }
 }
 ```
 
-If settings.json exists, merge the allowedCommands and allowedPaths arrays intelligently:
-- Read existing file
-- Add new detected commands that aren't already present
-- Preserve user-added custom commands
-- Sort alphabetically for consistency
+If settings.json exists, merge intelligently - preserve user permissions, add detected ones.
 
-### 8. Verify and Report
+### Step 9: Backup and Write
 
-After generation:
-- Confirm files were written
-- Show the user where files were created
-- List the key detected features
-- List which agents were included and why
-- Suggest next steps (e.g., "Review and customize `.claude/CLAUDE.md`")
+If replacing existing CLAUDE.md:
+1. Copy existing to `.claude/CLAUDE.md.backup.{timestamp}`
+2. Write new CLAUDE.md
 
-## Anti-Patterns
+### Step 10: Summary Report
 
-- Don't ask the user to confirm information the scanner already detected
-- Don't generate verbose documentation - this is a reference, not a tutorial
-- Don't add speculative sections (e.g., "Deployment" if no deploy config exists)
-- Don't overwrite user content without asking
-- Don't add commands to allowedCommands that weren't actually detected
-- Don't include agents that aren't relevant to the detected project
-
-## Example Output
+Output a summary:
 
 ```
 Project initialized successfully.
 
-Created:
-- .claude/CLAUDE.md (98 lines)
-- .claude/settings.json (merged with existing)
+Created/Updated:
+- .claude/CLAUDE.md ({N} lines)
+- .claude/settings.json (merged)
+{if rules created:}
+- .claude/rules/api.md
+- .claude/rules/testing.md
 
-Detected:
-- TypeScript + Node.js project
-- Bun package manager
-- Vitest test framework
-- Express API framework
+Analysis Summary:
+- {language} + {framework} project
+- {N} key directories mapped
+- {N} entry points identified
+- {N} conventions documented
+- {N} gotchas captured
 
-Agents included:
-- architect, executor, explore (always)
-- tester (vitest detected)
-- security (express API detected)
+Agents used:
+- explore: directory mapping
+- architect: architecture analysis
+- researcher: documentation review
+{conditional agents}
 
-Excluded:
-- designer (no frontend detected)
-- researcher (single language, not complex)
+Your CLAUDE.md is now optimized for:
+- Paste a bug → Claude knows where to look
+- Request a feature → Claude knows patterns to follow
+- Ask about anything → Claude has context
 
-Next steps:
-1. Review .claude/CLAUDE.md and customize as needed
-2. Run `/claudeops:scan` for AI-enhanced analysis
+Next: Review .claude/CLAUDE.md and customize as needed.
 ```
+
+## Minimal Mode
+
+If user selects "Minimal" or "Quick Setup":
+
+1. Run scanner only (no agents)
+2. Skip user interview
+3. Generate basic CLAUDE.md with:
+   - Commands
+   - Tech stack
+   - Basic structure
+   - Agent routing table
+   - Standard rules
+
+Keep it under 100 lines.
+
+## Anti-Patterns
+
+- Don't ask questions the scanner already answered
+- Don't generate verbose prose - use bullets and tables
+- Don't add speculative sections
+- Don't overwrite without backup
+- Don't create rules files unless genuinely needed
+- Don't exceed 400 lines in CLAUDE.md (use @imports for more)
+- Don't include agents that aren't relevant to the project
+
+## Using @imports for Large Projects
+
+If the project needs more documentation than fits in 400 lines, use @imports:
+
+```markdown
+## Architecture
+@docs/architecture.md
+
+## API Patterns
+@docs/api-guide.md
+```
+
+This keeps CLAUDE.md lean while providing access to detailed reference material.
