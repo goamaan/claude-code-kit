@@ -72,11 +72,7 @@ Use AskUserQuestion to resolve ambiguities and gather preferences:
 
 ### 5. Check for Existing Configuration
 
-Before generating files, check if `.claude/CLAUDE.md` exists:
-
-```bash
-ls .claude/CLAUDE.md 2>/dev/null
-```
+Before generating files, check if `.claude/CLAUDE.md` exists using the Read tool or Glob tool (cross-platform). Do NOT use shell commands with `2>/dev/null` as they don't work on Windows.
 
 If it exists:
 - Read the current file

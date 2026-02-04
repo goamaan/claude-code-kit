@@ -25,10 +25,11 @@ import { execSync } from 'child_process';
  */
 function getCurrentBranch(cwd) {
   try {
-    return execSync('git rev-parse --abbrev-ref HEAD 2>/dev/null', {
+    return execSync('git rev-parse --abbrev-ref HEAD', {
       encoding: 'utf8',
       cwd,
       timeout: 5000,
+      stdio: ['pipe', 'pipe', 'pipe'] // Cross-platform stderr suppression
     }).trim();
   } catch {
     return null;
@@ -40,10 +41,11 @@ function getCurrentBranch(cwd) {
  */
 function getModifiedFiles(cwd) {
   try {
-    const status = execSync('git diff --name-only HEAD 2>/dev/null', {
+    const status = execSync('git diff --name-only HEAD', {
       encoding: 'utf8',
       cwd,
       timeout: 5000,
+      stdio: ['pipe', 'pipe', 'pipe'] // Cross-platform stderr suppression
     }).trim();
     return status ? status.split('\n').filter(Boolean) : [];
   } catch {

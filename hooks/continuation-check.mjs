@@ -16,9 +16,10 @@
  * - Can block stoppage by returning decision: "block" with a reason
  */
 
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync, readdirSync, statSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'child_process';
+import { homedir } from 'os';
 
 // Read input from stdin
 let input;
@@ -38,13 +39,43 @@ if (input.stop_hook_active) {
 const cwd = input.cwd || process.cwd();
 
 /**
+ * Recursively find JSON files in a directory (cross-platform)
+ */
+function findJsonFiles(dir, files = [], depth = 0) {
+  if (depth > 3) return files; // Limit recursion depth
+  if (!existsSync(dir)) return files;
+
+  try {
+    const entries = readdirSync(dir);
+    for (const entry of entries) {
+      if (files.length >= 10) break; // Limit total files
+      const fullPath = join(dir, entry);
+      try {
+        const stat = statSync(fullPath);
+        if (stat.isDirectory()) {
+          findJsonFiles(fullPath, files, depth + 1);
+        } else if (entry.endsWith('.json')) {
+          files.push(fullPath);
+        }
+      } catch {
+        // Skip inaccessible entries
+      }
+    }
+  } catch {
+    // Skip inaccessible directories
+  }
+  return files;
+}
+
+/**
  * Check for pending tasks in the task list
  * Returns array of incomplete task subjects
  */
 function checkPendingTasks() {
   // Look for task files in common locations
+  // Use os.homedir() for cross-platform compatibility (works on Windows/Mac/Linux)
   const taskDirs = [
-    join(process.env.HOME, '.claude', 'tasks'),
+    join(homedir(), '.claude', 'tasks'),
     join(cwd, '.claude', 'tasks')
   ];
 
@@ -54,10 +85,7 @@ function checkPendingTasks() {
     if (!existsSync(dir)) continue;
 
     try {
-      const files = execSync(`find "${dir}" -name "*.json" -type f 2>/dev/null || true`, {
-        encoding: 'utf8',
-        timeout: 5000
-      }).trim().split('\n').filter(Boolean);
+      const files = findJsonFiles(dir);
 
       for (const file of files.slice(0, 10)) { // Limit to prevent slowdown
         try {
@@ -73,7 +101,7 @@ function checkPendingTasks() {
         }
       }
     } catch {
-      // Skip if find fails
+      // Skip if directory access fails
     }
   }
 
@@ -85,10 +113,11 @@ function checkPendingTasks() {
  */
 function _hasUncommittedChanges() {
   try {
-    const status = execSync('git status --porcelain 2>/dev/null || true', {
+    const status = execSync('git status --porcelain', {
       encoding: 'utf8',
       cwd,
-      timeout: 5000
+      timeout: 5000,
+      stdio: ['pipe', 'pipe', 'pipe'] // Suppress stderr cross-platform
     }).trim();
     return status.length > 0;
   } catch {

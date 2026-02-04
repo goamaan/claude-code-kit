@@ -19,6 +19,7 @@ const LANGUAGE_EXTENSIONS = {
   '.rb': 'Ruby',
   '.php': 'PHP',
   '.cs': 'C#',
+  '.vb': 'VB.NET',
   '.cpp': 'C++',
   '.c': 'C',
   '.zig': 'Zig',
@@ -1008,6 +1009,60 @@ function detectJava(root) {
   return Object.keys(java).length > 0 ? java : undefined;
 }
 
+// Detect .NET-specific info
+function detectDotNet(root) {
+  // Look for solution files or project files
+  const hasSln = hasFilesWithPattern(root, /\.sln$/);
+  const hasCsproj = hasFilesWithPattern(root, /\.csproj$/);
+  const hasVbproj = hasFilesWithPattern(root, /\.vbproj$/);
+
+  if (!hasSln && !hasCsproj && !hasVbproj) {
+    return undefined;
+  }
+
+  const dotnet = {
+    hasSolution: hasSln,
+    projectTypes: [],
+  };
+
+  if (hasCsproj) dotnet.projectTypes.push('C#');
+  if (hasVbproj) dotnet.projectTypes.push('VB.NET');
+
+  // Check for common .NET patterns
+  if (existsSync(join(root, 'global.json'))) {
+    try {
+      const content = JSON.parse(readFileSync(join(root, 'global.json'), 'utf8'));
+      if (content.sdk?.version) {
+        dotnet.sdkVersion = content.sdk.version;
+      }
+    } catch {}
+  }
+
+  // Check for NuGet packages
+  if (existsSync(join(root, 'packages.config')) || existsSync(join(root, 'nuget.config'))) {
+    dotnet.hasNuGet = true;
+  }
+
+  // Check for ASP.NET
+  if (hasFilesWithPattern(root, /Startup\.cs$/) ||
+      hasFilesWithPattern(root, /Program\.cs$/) ||
+      existsSync(join(root, 'appsettings.json'))) {
+    dotnet.aspNet = true;
+  }
+
+  // Check for Entity Framework
+  if (existsSync(join(root, 'Migrations')) || hasFilesWithPattern(root, /DbContext\.cs$/)) {
+    dotnet.entityFramework = true;
+  }
+
+  // Check for test projects
+  if (hasFilesWithPattern(root, /Tests?\.csproj$/) || hasFilesWithPattern(root, /\.Tests?\//)) {
+    dotnet.hasTests = true;
+  }
+
+  return Object.keys(dotnet).length > 0 ? dotnet : undefined;
+}
+
 // Detect code conventions
 function detectConventions(root) {
   const conventions = {
@@ -1219,6 +1274,7 @@ const python = detectPython(root);
 const rust = detectRust(root);
 const go = detectGo(root);
 const java = detectJava(root);
+const dotnet = detectDotNet(root);
 const conventions = detectConventions(root);
 
 const result = {
@@ -1239,6 +1295,7 @@ const result = {
   rust,
   go,
   java,
+  dotnet,
   conventions,
 };
 
