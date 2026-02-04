@@ -1,12 +1,12 @@
 ---
 description: >
-  Deep project initialization that creates comprehensive CLAUDE.md context. Scans codebase with
-  multiple agents, interviews user for tacit knowledge, and generates project-level context
+  Deep project initialization that creates comprehensive CLAUDE.md context. Analyzes codebase with
+  multiple specialized agents, interviews user for tacit knowledge, and generates project-level context
   that enables paste-a-bug-and-fix workflows. Use when the user says "init", "initialize",
   "setup claude", "configure project", or wants to improve their CLAUDE.md.
 user-invocable: true
 disable-model-invocation: true
-allowed-tools: [Bash, Read, Write, Glob, Grep, Edit, AskUserQuestion, Task]
+allowed-tools: [Read, Write, Glob, Grep, Edit, AskUserQuestion, Task]
 ---
 
 # Deep Project Initialization
@@ -48,7 +48,7 @@ options:
   - label: "Enhance (Recommended)"
     description: "Deep dive with multiple agents, add comprehensive context while preserving your existing content"
   - label: "Minimal"
-    description: "Just add claudeops routing table and essential commands"
+    description: "Quick analysis, essential commands and routing table only"
   - label: "Fresh Start"
     description: "Replace with new comprehensive CLAUDE.md (backs up existing)"
 ```
@@ -60,61 +60,104 @@ options:
   - label: "Full Deep Dive (Recommended)"
     description: "Multiple agents analyze codebase, interview you for tacit knowledge"
   - label: "Quick Setup"
-    description: "Basic scanning, minimal questions, fast initialization"
+    description: "Fast analysis, minimal questions, basic initialization"
 ```
 
-### Step 3: Run Deterministic Scanner
+### Step 3: Foundation Analysis (Always Runs First)
 
-Execute the scanner to get baseline project info:
+Spawn the foundation agent to gather essential project metadata. This agent extracts what a deterministic scanner would find, but with semantic understanding.
 
-```bash
-node scripts/scan.mjs "$PWD"
+```
+Task(subagent_type="claudeops:explore", model="haiku",
+     prompt="Analyze this project's foundation. Output ONLY a structured report with these exact sections:
+
+## Project Identity
+- **Name**: (from package.json, Cargo.toml, go.mod, pyproject.toml, or directory name)
+- **Description**: (from README first line or package description)
+
+## Languages
+List each language found with file count (scan top 5 directory levels, skip node_modules/.git/dist/build/vendor):
+- TypeScript: N files (.ts, .tsx)
+- Python: N files (.py)
+(etc.)
+
+## Package Manager
+Identify: npm | yarn | pnpm | bun | pip | poetry | cargo | go | maven | gradle | dotnet | composer | bundler | mix
+Evidence: (which lockfile or config found)
+
+## Commands
+Extract from package.json scripts, Makefile, pyproject.toml, Cargo.toml, etc:
+- **Build**: command or 'none'
+- **Test**: command or 'none'
+- **Dev**: command or 'none'
+- **Lint**: command or 'none'
+- **Typecheck**: command or 'none'
+
+## Frameworks Detected
+List frameworks found in dependencies/imports:
+- React (from package.json)
+- FastAPI (from requirements.txt)
+(etc.)
+
+## Project Type Signals
+Answer yes/no with evidence:
+- **Has Frontend**: yes/no (React/Vue/Svelte/Angular/CSS files)
+- **Has Backend/API**: yes/no (Express/FastAPI/Rails/API routes)
+- **Has Tests**: yes/no (test files, jest/pytest/etc config)
+- **Has Auth**: yes/no (auth libraries, login routes)
+- **Is Monorepo**: yes/no (workspaces, lerna, turborepo, nx)
+
+## Config Files Found
+List key config files:
+- tsconfig.json
+- .eslintrc
+- docker-compose.yml
+(etc.)
+
+## Directory Structure
+Show top-level directories with one-line purpose:
+```
+src/        # Main source code
+tests/      # Test files
+docs/       # Documentation
 ```
 
-Parse the JSON output to extract:
-- `projectName`, `languages`, `frameworks`
-- `buildCommands`, `testCommands`, `devCommands`
-- `structure` (key directories)
-- `packageManager`
-- `configFiles`
+Be thorough but concise. This forms the foundation for deeper analysis.")
+```
+
+Wait for this agent to complete before proceeding. Parse its output to determine which specialist agents to spawn.
 
 ### Step 4: Deep Dive with Parallel Agents (if Enhance/Full mode)
 
-Spawn multiple agents in parallel to analyze different aspects:
+Based on the foundation analysis, spawn specialist agents in parallel:
+
+**Always spawn (for Full/Enhance mode):**
 
 ```
-Task(subagent_type="claudeops:explore", run_in_background=true,
-     prompt="Map this codebase comprehensively:
-     1. List ALL top-level directories with their purpose
-     2. Identify entry points (main files, index files, app entry)
-     3. Find configuration files and what they configure
-     4. Map the test structure (where tests live, naming conventions)
-     5. Identify any monorepo structure (workspaces, packages)
-     Output as structured markdown.")
-
 Task(subagent_type="claudeops:architect", run_in_background=true,
-     prompt="Analyze the architecture:
+     prompt="Analyze the architecture deeply:
      1. Read main entry points and trace the application flow
      2. Identify key abstractions and patterns used
      3. Find the data layer (database, API clients, state management)
      4. Identify external service integrations
      5. Note any unusual or clever patterns
+     6. Find where errors are handled and logged
      Output as structured markdown with file:line references.")
 
 Task(subagent_type="claudeops:researcher", run_in_background=true,
-     prompt="Understand the project context:
+     prompt="Extract project context from documentation:
      1. Read README.md thoroughly - extract product description, setup instructions
      2. Read CONTRIBUTING.md if exists - extract workflow expectations
      3. Read any docs/ directory for architecture decisions
-     4. Check package.json/pyproject.toml for project metadata
-     5. Look for ADRs (Architecture Decision Records)
+     4. Look for ADRs (Architecture Decision Records)
+     5. Find any API documentation or OpenAPI specs
      Output key findings as structured markdown.")
 ```
 
-**Conditionally spawn based on scanner results:**
+**Conditionally spawn based on foundation analysis:**
 
 ```
-# If frontend detected (React/Vue/Svelte/Angular/CSS)
+# If frontend detected (Has Frontend: yes)
 Task(subagent_type="claudeops:designer", run_in_background=true,
      prompt="Analyze the frontend:
      1. Identify component library/framework patterns
@@ -124,7 +167,7 @@ Task(subagent_type="claudeops:designer", run_in_background=true,
      5. Find any design system or theme configuration
      Output as structured markdown.")
 
-# If test framework detected
+# If tests detected (Has Tests: yes)
 Task(subagent_type="claudeops:tester", run_in_background=true,
      prompt="Analyze testing patterns:
      1. Find test configuration files
@@ -134,7 +177,7 @@ Task(subagent_type="claudeops:tester", run_in_background=true,
      5. Note any testing conventions (naming, organization)
      Output as structured markdown.")
 
-# If web framework/API/auth detected
+# If backend/API or auth detected
 Task(subagent_type="claudeops:security", run_in_background=true,
      prompt="Analyze security-sensitive areas:
      1. Find authentication implementation
@@ -243,7 +286,7 @@ Create `.claude/CLAUDE.md` with this structure (keep under 400 lines):
 
 ## Conventions
 
-{From scanner + user interview}
+{From foundation analysis + user interview}
 - {convention 1}
 - {convention 2}
 
@@ -284,11 +327,11 @@ When delegating work, use these specialized agents:
 | `claudeops:architect` | Deep analysis, debugging, system design, plan review |
 | `claudeops:executor` | Code changes, bug fixes, refactoring, implementation |
 | `claudeops:explore` | File search, codebase discovery, structure mapping |
-{if designer relevant:}
+{if frontend detected:}
 | `claudeops:designer` | UI/UX, components, styling, responsive layouts |
-{if tester relevant:}
+{if tests detected:}
 | `claudeops:tester` | Test writing, TDD workflow, coverage improvement |
-{if security relevant:}
+{if backend/auth detected:}
 | `claudeops:security` | Security audit, auth review, vulnerability assessment |
 | `claudeops:researcher` | Technology evaluation, best practices, API analysis |
 
@@ -396,8 +439,8 @@ Analysis Summary:
 - {N} gotchas captured
 
 Agents used:
-- explore: directory mapping
-- architect: architecture analysis
+- explore: foundation analysis
+- architect: architecture deep dive
 - researcher: documentation review
 {conditional agents}
 
@@ -413,8 +456,8 @@ Next: Review .claude/CLAUDE.md and customize as needed.
 
 If user selects "Minimal" or "Quick Setup":
 
-1. Run scanner only (no agents)
-2. Skip user interview
+1. Run foundation analysis only (single explore agent with haiku)
+2. Skip user interview (or ask only product description)
 3. Generate basic CLAUDE.md with:
    - Commands
    - Tech stack
@@ -424,15 +467,26 @@ If user selects "Minimal" or "Quick Setup":
 
 Keep it under 100 lines.
 
+```
+Task(subagent_type="claudeops:explore", model="haiku",
+     prompt="Quick project scan. Output:
+     1. Project name and one-line description
+     2. Main language and framework
+     3. Package manager and key commands (build/test/dev/lint)
+     4. Top-level directory structure with purposes
+     5. Key entry points
+     Keep it brief - this is for minimal setup.")
+```
+
 ## Anti-Patterns
 
-- Don't ask questions the scanner already answered
 - Don't generate verbose prose - use bullets and tables
 - Don't add speculative sections
 - Don't overwrite without backup
 - Don't create rules files unless genuinely needed
 - Don't exceed 400 lines in CLAUDE.md (use @imports for more)
 - Don't include agents that aren't relevant to the project
+- Don't ask questions the agents already answered definitively
 
 ## Using @imports for Large Projects
 

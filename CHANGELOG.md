@@ -7,7 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Major restructuring + Boris's 10 Tips integration. Consolidate 18 agents to 7, expand 7 skills to 9 with new workflows/modes, add 2 hooks (9→11), and make orchestration the default behavior via init-generated CLAUDE.md. Zero new commands to memorize (except `create-skill` for meta/setup).
+## [3.0.0] - 2026-02-04
+
+Remove deterministic scanner in favor of AI-driven analysis. Pure markdown architecture.
+
+### Removed
+
+- **Deterministic scanner** (`scripts/scan.mjs`): 1300+ lines of JavaScript pattern matching replaced by AI-driven foundation analysis
+- **scripts/ directory**: No more JavaScript in the project
+- **Node.js requirement**: Only Claude Code is required now
+
+### Changed
+
+- **init skill**: Now uses explore agent for foundation analysis instead of scanner
+  - Extracts languages, frameworks, commands, and project structure via AI
+  - Better semantic understanding than pattern matching
+  - Self-updating for new frameworks without code changes
+  - Conditional agent spawning based on foundation agent findings
+- **doctor skill**: Removed scanner and hook checks, simplified to plugin/project structure validation
+- **Tech stack**: Changed from "Markdown, JavaScript, JSON" to "Markdown only"
+
+### Why
+
+The scanner was 1300 lines of maintenance burden that duplicated what AI agents already do better. Init spawns 3-6 agents anyway - having them also handle foundation analysis is simpler and more capable.
+
+## [2.0.0] - 2026-02-03
+
+Major restructuring + Boris's 10 Tips integration. Consolidate 18 agents to 7, expand 7 skills to 9 with new workflows/modes, remove hooks for simplicity, and make orchestration the default behavior via init-generated CLAUDE.md. Zero new commands to memorize (except `create-skill` for meta/setup).
 
 ### Added
 

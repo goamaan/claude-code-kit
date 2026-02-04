@@ -32,14 +32,14 @@ claudeops fixes that. Install it once, run `/claudeops:init`, and Claude Code ga
 
 There are no background services to run, no databases to configure, no separate CLI to learn, no runtimes to install. No Byzantine consensus algorithms. No WebAssembly sidecars. No vector databases. No web UIs on localhost ports.
 
-claudeops is **markdown, JavaScript, and JSON**. You can read every file in it. You can understand what each piece does. You can change anything in minutes.
+claudeops is **pure markdown**. You can read every file in it. You can understand what each piece does. You can change anything in minutes.
 
 | Principle | What it means |
 |-----------|---------------|
 | **Zero overhead** | No build step, no dependencies, no runtime services, no lock-in |
 | **Just talk** | Describe what you want in natural language — intent routing handles the rest |
 | **Few commands** | 1 new command to memorize (`/claudeops:create-skill`). Everything else auto-invokes. |
-| **Skills over hooks** | Everything is a skill — readable, customizable, no hidden automation |
+| **Skills over scripts** | Everything is a skill — readable, customizable, no hidden automation |
 | **Deep context** | One init generates comprehensive project context that persists forever |
 | **Readable internals** | Every skill is a SKILL.md you can open and understand |
 
@@ -70,7 +70,7 @@ This is where the magic happens. Init offers two modes:
 ### Full Deep Dive (recommended)
 
 Multiple agents analyze your codebase in parallel:
-- **explore** maps directories and entry points
+- **explore** maps directories, languages, frameworks, and commands
 - **architect** traces architecture and patterns
 - **researcher** reads docs and understands domain
 - **security** finds auth patterns and sensitive areas
@@ -87,7 +87,7 @@ The result: a comprehensive `.claude/CLAUDE.md` that enables you to paste a bug 
 
 ### Quick Setup
 
-Basic scanning, minimal questions, fast initialization. Good for small projects or when you're in a hurry.
+Fast analysis, minimal questions, basic initialization. Good for small projects or when you're in a hurry.
 
 ## What can it do?
 
@@ -117,7 +117,7 @@ You don't have to remember that "fix CI" maps to the debug skill's CI workflow. 
 
 ### Quality built into CLAUDE.md
 
-Instead of hidden hooks running in the background, claudeops generates CLAUDE.md with explicit rules:
+Instead of hidden scripts running in the background, claudeops generates CLAUDE.md with explicit rules:
 
 ```markdown
 ## Rules
@@ -167,15 +167,10 @@ claudeops/
 │   ├── learn/       # Session learning capture
 │   ├── query/       # Natural language → database queries
 │   └── create-skill/# Scaffold new skills (user-only)
-├── agents/          # 7 agent definitions (.md files)
-└── scripts/         # Deterministic codebase scanner
+└── agents/          # 7 agent definitions (.md files)
 ```
 
 Every skill is a markdown file with YAML frontmatter. No compiled code, no abstractions, no framework. Open any SKILL.md and you'll see exactly what it does — the trigger phrases, the agent assignments, the prompts, the output format.
-
-### The scanner
-
-`scripts/scan.mjs` performs deterministic codebase analysis and outputs JSON. It detects languages, frameworks, build systems, test runners, linters, CI/CD pipelines, databases, API styles, monorepo tools, and code conventions. Used by `init` and `scan` to bootstrap project understanding without burning tokens on exploration.
 
 ### Generated artifacts
 
@@ -259,8 +254,6 @@ Claude Code imports these on demand, keeping your main CLAUDE.md lean.
 ## Requirements
 
 - Claude Code
-- Node.js 20+
-- Git
 
 ## License
 

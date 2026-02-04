@@ -1,7 +1,7 @@
 {
   "name": "claudeops",
   "description": "Deep project initialization, multi-agent orchestration, and workflow skills that level up Claude Code with comprehensive codebase context",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "author": {
     "name": "Amaan"
   },
