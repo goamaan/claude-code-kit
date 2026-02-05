@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.1] - 2026-02-05
+
+### Fixed
+
+- **init skill**: Moved settings.json generation from Step 8 to Step 4 (immediately after foundation analysis) to prevent it from being skipped during long init sessions. Added explicit REQUIRED markers and minimal mode coverage. Without this, projects could be initialized without the `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` env var, silently breaking agent team workflows.
+
 ## [3.1.0] - 2026-02-05
 
 Agent teams integration and complexity-based task routing. Claude Code's native agent teams replace manual orchestration patterns. Autopilot now activates on task complexity signals, not just keywords.

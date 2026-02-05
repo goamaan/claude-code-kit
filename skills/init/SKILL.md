@@ -127,7 +127,36 @@ Be thorough but concise. This forms the foundation for deeper analysis.")
 
 Wait for this agent to complete before proceeding. Parse its output to determine which specialist agents to spawn.
 
-### Step 4: Deep Dive with Parallel Agents (if Enhance/Full mode)
+### Step 4: Generate/Merge settings.json (REQUIRED — do this immediately)
+
+Using the package manager and build tool from the foundation analysis, create or merge `.claude/settings.json` NOW, before spawning deep-dive agents. This step is critical — without the env var, agent teams will not work.
+
+Read existing `.claude/settings.json` if it exists. Merge the following, preserving any existing user permissions:
+
+```json
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "permissions": {
+    "allow": [
+      "Bash({packageManager} install*)",
+      "Bash({packageManager} run *)",
+      "Bash({packageManager} test*)",
+      "Bash({buildTool} *)",
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(git log*)"
+    ]
+  }
+}
+```
+
+Replace `{packageManager}` and `{buildTool}` with values from the foundation analysis. Omit lines where the value is "none". If settings.json already has the `env` and `permissions` keys, merge — do not overwrite existing entries.
+
+Write the file with the Write tool. Confirm it was written before proceeding.
+
+### Step 5: Deep Dive with Parallel Agents (if Enhance/Full mode)
 
 Based on the foundation analysis, spawn specialist agents in parallel:
 
@@ -190,7 +219,7 @@ Task(subagent_type="claudeops:security", run_in_background=true,
 
 Wait for all background agents to complete, then collect their findings.
 
-### Step 5: User Interview
+### Step 6: User Interview
 
 Based on agent findings, ask targeted questions. Use AskUserQuestion for each.
 
@@ -242,7 +271,7 @@ options:
 - If multiple databases: "We found {db1} and {db2}. When should each be used?"
 - If monorepo: "Which packages are most actively developed?"
 
-### Step 6: Generate CLAUDE.md
+### Step 7: Generate CLAUDE.md
 
 Create `.claude/CLAUDE.md` with this structure (keep under 600 lines):
 
@@ -349,7 +378,7 @@ Key heuristic: if you need to explore the codebase before knowing what files to 
 <!-- Additional rules will be added here as corrections are made -->
 ````
 
-### Step 7: Generate Path-Specific Rules (if warranted)
+### Step 8: Generate Path-Specific Rules (if warranted)
 
 If the project has distinct areas with different conventions, create `.claude/rules/` files:
 
@@ -385,31 +414,6 @@ paths:
 ```
 
 Only create rules files if there are genuinely different conventions for different paths.
-
-### Step 8: Generate/Merge settings.json
-
-Create or merge `.claude/settings.json`:
-
-```json
-{
-  "env": {
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
-  },
-  "permissions": {
-    "allow": [
-      "Bash({packageManager} install*)",
-      "Bash({packageManager} run *)",
-      "Bash({packageManager} test*)",
-      "Bash({buildTool} *)",
-      "Bash(git status)",
-      "Bash(git diff*)",
-      "Bash(git log*)"
-    ]
-  }
-}
-```
-
-If settings.json exists, merge intelligently - preserve user permissions, add detected ones.
 
 ### Step 9: Backup and Write
 
@@ -457,8 +461,9 @@ Next: Review .claude/CLAUDE.md and customize as needed.
 If user selects "Minimal" or "Quick Setup":
 
 1. Run foundation analysis only (single explore agent with haiku)
-2. Skip user interview (or ask only product description)
-3. Generate basic CLAUDE.md with:
+2. Generate/merge settings.json immediately (same as Step 4 above — this is REQUIRED even in minimal mode)
+3. Skip user interview (or ask only product description)
+4. Generate basic CLAUDE.md with:
    - Commands
    - Tech stack
    - Basic structure
