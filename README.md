@@ -22,7 +22,7 @@ Claude Code is already good. But it works alone, forgets between sessions, and d
 claudeops fixes that. Install it once, run `/claudeops:init`, and Claude Code gains:
 
 - **Deep project context** — multiple agents analyze your codebase, interview you for tacit knowledge, and generate comprehensive CLAUDE.md that enables paste-a-bug-and-fix workflows
-- **Multi-agent orchestration** — fan out work to specialized agents that run in parallel
+- **Agent teams integration** — complex tasks spawn coordinated agent teams that self-organize, share findings, and parallelize work natively
 - **Intent routing** — say "fix CI" or paste an error and the right workflow fires automatically
 - **Built-in guardrails** — CLAUDE.md rules for linting, typechecking, and security are baked in
 
@@ -97,13 +97,13 @@ You don't pick modes or memorize commands. Just describe the problem.
 
 | You say | What happens |
 |---------|-------------|
-| "build me an auth system" | **Autopilot** — discovers codebase, plans, executes in parallel, verifies, self-corrects |
-| "plan first, then build" | **Plan-first mode** — architect plans, staff-engineer critiques, you approve, then execution |
+| "build me an auth system" | **Autopilot** — discovers codebase, plans, agent teams coordinate the work in parallel, verify, self-correct |
+| "plan first, then build" | **Pipeline with plan-first** — architect plans, staff-engineer critiques, you approve, then execution |
 | "fix CI" | **CI debugger** — pulls failure logs from `gh run`, diagnoses, fixes, verifies. Zero context needed from you. |
 | *[paste a stack trace]* | **Paste-and-fix** — parses file paths and errors, skips interview, fixes directly |
 | "fix containers" | **Container debugger** — reads Dockerfile + compose logs, diagnoses port/volume/env issues |
-| "review this PR" | **Parallel review** — security, architecture, and testing agents review simultaneously |
-| "grill me on this code" | **Adversarial review** — hostile staff engineer + red team. Demands evidence, won't rubber-stamp. |
+| "review this PR" | **Agent team review** — security, architecture, and testing reviewers coordinate in parallel |
+| "grill me on this code" | **Adversarial agent team** — hostile staff engineer + red team. Demands evidence, won't rubber-stamp. |
 | "explain how auth works" | **Teach mode** — traces code paths, generates ASCII architecture diagrams, step-by-step walkthrough |
 | "tech debt report" | **Tech debt scan** — finds TODOs, dead code, duplicated logic, missing tests |
 | "onboard me" | **Context dump** — project summary with architecture, recent activity, open PRs/issues |
@@ -131,7 +131,22 @@ Instead of hidden scripts running in the background, claudeops generates CLAUDE.
 
 Claude follows these every session. You can see them, modify them, and understand exactly what's happening.
 
-### Multi-agent orchestration
+### Agent teams + subagents
+
+claudeops uses two coordination strategies:
+
+**Agent teams** for complex parallel work — multiple Claude sessions coordinate via native TeammateTool:
+- PR review with security, architecture, and testing reviewers
+- Autopilot execution with multiple workers sharing a task list
+- Performance debugging across database, API, and frontend layers
+- Competing hypothesis testing during uncertain debugging
+
+**Subagents** for focused single tasks — sequential pipelines and quick analysis:
+- CI debugging: diagnose → fix → verify
+- Paste-and-fix: parse error → read files → fix → test
+- Init analysis: foundation scan → deep dive → interview
+
+Skills choose the right strategy automatically based on the task.
 
 claudeops delegates work to 7 specialized agents:
 
@@ -145,20 +160,13 @@ claudeops delegates work to 7 specialized agents:
 | **security** | opus | Security audit, threat modeling, OWASP |
 | **researcher** | sonnet | Tech evaluation, best practices, API analysis |
 
-Skills coordinate these agents using four patterns:
-
-- **Fan-out** — parallel execution for independent work (review spawns 3 agents simultaneously)
-- **Pipeline** — sequential handoff (diagnose → hypothesize → fix → verify)
-- **Task graph** — complex dependencies tracked with TaskCreate/TaskUpdate
-- **Speculative** — try 2-3 approaches in parallel, pick the winner
-
 ## How it works
 
 ```
 claudeops/
 ├── skills/          # 10 workflow skills (SKILL.md files)
 │   ├── init/        # Deep project setup + comprehensive CLAUDE.md generation
-│   ├── autopilot/   # Autonomous execution (pipeline, swarm, worktree, plan-first)
+│   ├── autopilot/   # Autonomous execution (team, pipeline, worktree)
 │   ├── debug/       # Debugging (hypothesis, CI, container, paste-and-fix)
 │   ├── review/      # Code review (PR, adversarial, explain/teach)
 │   ├── scan/        # Codebase health (tech debt, context dump, refresh)
@@ -179,7 +187,7 @@ After running `/claudeops:init`, you get:
 ```
 .claude/
 ├── CLAUDE.md           # Comprehensive project context (loaded every session)
-├── settings.json       # Permission allowlists for common commands
+├── settings.json       # Permission allowlists for common commands + CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS env var
 ├── rules/              # Path-specific rules (optional)
 │   ├── api.md          # Rules for src/api/**
 │   └── testing.md      # Rules for **/*.test.*
@@ -224,7 +232,7 @@ The generated `.claude/CLAUDE.md` is yours to customize. Add rules, remove secti
 
 ### Use @imports for large projects
 
-If your project needs more documentation than fits in 400 lines:
+If your project needs more documentation than fits in 600 lines:
 
 ```markdown
 ## Architecture

@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-02-05
+
+Agent teams integration and complexity-based task routing. Claude Code's native agent teams replace manual orchestration patterns. Autopilot now activates on task complexity signals, not just keywords.
+
+### Added
+
+- **Agent teams support**: Skills now create agent teams for complex parallel work (3+ streams, competing hypotheses, cross-cutting review)
+- **`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` env var**: Automatically set in generated `settings.json` via init
+- **Team vs subagent decision heuristic**: Skills choose intelligently between agent teams, subagents, and direct execution
+- **Agent teams diagnostic check**: Doctor skill verifies agent teams env var is configured
+- **Complexity-based task routing**: Autopilot activates on structural complexity signals (3+ files, cross-module, integration/migration) not just keyword triggers
+- **Task routing table**: Init-generated CLAUDE.md includes complexity assessment guidance (High/Medium/Low → strategy)
+- **Skill boundary sentences**: Debug and review descriptions clarify when to prefer them over autopilot
+
+### Changed
+
+- **autopilot skill**: Collapsed from 4 modes to 3. Mode A is now "Agent Team" (replaces self-organizing swarm with native teams). Mode D (plan-first) merged into Mode B as a flag. Description rewritten from keyword triggers to complexity signals. "When to Activate" section expanded with complexity signals, examples, explicit keywords, and negative boundaries.
+- **review skill**: PR Review and Adversarial modes now use agent teams for parallel review instead of manual fan-out. Added boundary: "Prefer this over autopilot when the user wants analysis or evaluation of existing code, not building or changing it."
+- **debug skill**: Competing-hypothesis debugging and performance debugging now use agent teams for shared findings. Added boundary: "Prefer this over autopilot when the task is fixing something broken, not building something new."
+- **scan skill**: Tech debt analysis uses agent team so dead code, duplication, and test gap finders share insights
+- **init skill**: Generated CLAUDE.md replaces "Agent Routing" table with "Task Routing" section including complexity assessment table and execution strategies; generated settings.json includes agent teams env var; line limit increased 400 → 600
+- **create-skill skill**: Generated template includes team vs subagent decision guidance
+- **doctor skill**: Checks for agent teams env var in settings.json
+- **CLAUDE.md line limit**: Increased from 400 to 600 lines (1M context window)
+
+### Removed
+
+- **Manual orchestration patterns**: Fan-out, pipeline, task graph, speculative patterns replaced by native agent teams
+- **"Agent Routing" table**: Replaced by "Task Routing" section in generated CLAUDE.md
+- **Stale scanner permission**: Removed `Bash(node scripts/scan.mjs*)` from settings.json
+
+### Fixed
+
+- **recall skill filename**: Renamed `skill.md` → `SKILL.md` for consistency
+
 ## [3.0.0] - 2026-02-04
 
 Remove deterministic scanner in favor of AI-driven analysis. Pure markdown architecture.

@@ -5,7 +5,8 @@ description: >
   "poke holes", "explain", "how does this work", "walk me through", "teach me", "create a diagram",
   "visualize", asks for security/architecture/performance review, wants pre-merge validation,
   or wants a plan/design critiqued. Spawns parallel security, architecture, and testing agents
-  then synthesizes findings into a unified report.
+  then synthesizes findings into a unified report. Prefer this over autopilot when the user wants
+  analysis or evaluation of existing code, not building or changing it.
 user-invocable: true
 ---
 
@@ -27,28 +28,25 @@ Multi-specialist parallel code review system. Spawns parallel review agents cove
 
 ### 1. PR Review: Multi-Dimensional Analysis
 
-**Pattern**: Fan-Out + Reduce
+**Pattern**: Agent Team + Synthesis
 
 #### Phase 1: Context
 1. Spawn explore agent to identify all changed files
 2. Gather PR context: description, commits, linked issues
 
-#### Phase 2: Parallel Review (Fan-Out)
-Spawn 3 specialist agents simultaneously:
+#### Phase 2: Parallel Review (Agent Team)
+Create an agent team with three reviewer teammates to analyze the changed files in parallel:
 
-```
-Task(subagent_type="security", run_in_background=True,
-     prompt="Review these files for security vulnerabilities: [files]. Focus on OWASP Top 10...")
+1. **Security reviewer** — Analyze the changed files for security vulnerabilities, focusing on OWASP Top 10 issues, authentication/authorization flaws, injection vulnerabilities, data exposure risks, and cryptographic weaknesses. Review input validation, session handling, and sensitive data flows.
 
-Task(subagent_type="architect", run_in_background=True,
-     prompt="Review these files for architecture, performance, design quality, and simplicity: [files]. Check patterns, YAGNI, complexity, algorithms...")
+2. **Architecture reviewer** — Evaluate the changed files for architecture quality, performance implications, design patterns, and code simplicity. Check for proper abstractions, YAGNI violations, unnecessary complexity, algorithm efficiency, scalability concerns, and adherence to established patterns.
 
-Task(subagent_type="tester", run_in_background=True,
-     prompt="Check test coverage for changed files: [files]. Identify missing test scenarios...")
-```
+3. **Testing reviewer** — Assess test coverage for the changed files. Identify missing test scenarios, edge cases that aren't covered, error conditions that should be tested, and integration test gaps.
 
-#### Phase 3: Synthesis (Reduce)
-Collect all results, produce unified report.
+As team lead, collect findings from all three reviewers and ensure comprehensive coverage across security, architecture, and testing dimensions.
+
+#### Phase 3: Synthesis
+Synthesize all reviewer findings into a unified Code Review Report. Organize findings by severity (Must Fix, Should Fix, Consider), highlight strengths, and provide a summary by specialist. Clean up the agent team.
 
 ### 2. Plan / Architecture Critique
 
@@ -72,27 +70,21 @@ Gates (all must pass):
 
 ### 4. Adversarial / Challenge
 
-**Pattern**: Adversarial Fan-Out
+**Pattern**: Adversarial Agent Team
 
 Triggered by: "grill me", "challenge this", "prove it works", "poke holes", "devil's advocate"
 
 #### Phase 1: Understand Claims
 Identify the claims being made (from PR description, code comments, or user's explanation).
 
-#### Phase 2: Adversarial Review (Fan-Out)
-```
-Task(subagent_type="architect", run_in_background=True,
-     prompt="Act as a hostile staff engineer reviewing this code. For every claim:
-     - Demand evidence: 'How do you know this works?'
-     - Test assumptions: 'What if [dependency] fails? What if [input] is malformed?'
-     - Challenge scale: 'Does this work with 10x load? 100x?'
-     - Question necessity: 'Why not [simpler approach]?'
-     Be rigorous, not polite. No rubber stamps...")
+#### Phase 2: Adversarial Review (Agent Team)
+Create an agent team with two adversarial reviewers who will challenge the code and each other's findings:
 
-Task(subagent_type="security", run_in_background=True,
-     prompt="Red-team this code. Find attack vectors, injection points, auth bypasses,
-     data leaks, privilege escalation paths. Assume adversarial input everywhere...")
-```
+1. **Hostile architect** — Act as a hostile staff engineer reviewing this code. For every claim, demand evidence and test assumptions. Ask "How do you know this works?" and "What if [dependency] fails or [input] is malformed?" Challenge scalability: "Does this work with 10x load? 100x?" Question necessity: "Why not [simpler approach]?" Be rigorous and thorough, not polite. No rubber stamps. Push back on unproven claims and identify architectural weaknesses.
+
+2. **Red-team security** — Red-team this code as if you're trying to exploit it. Find attack vectors, injection points, authentication bypasses, authorization flaws, data leaks, and privilege escalation paths. Assume adversarial input everywhere. Look for race conditions, resource exhaustion vulnerabilities, and side-channel attacks. Challenge the security reviewer's findings to ensure nothing is missed.
+
+As team lead, synthesize the adversarial findings and ensure both reviewers have challenged each other's assumptions to produce the most rigorous analysis possible.
 
 #### Phase 3: "Prove It Works" Variant
 If triggered by "prove it works":
@@ -250,10 +242,11 @@ If user asks for a presentation or visualization, generate a self-contained HTML
 ```
 
 ## Anti-Patterns
-1. **Sequential review** — Always use parallel Fan-Out for specialists
+1. **Sequential review** — Always use parallel agent teams for specialists
 2. **Single perspective** — Use multiple specialists for comprehensive coverage
 3. **No synthesis** — Always produce a unified report from parallel findings
 4. **Rubber stamping** — Deep analysis required, not "looks good"
 5. **No positive feedback** — Acknowledge what's done well alongside issues
 6. **Vague comments** — "This looks wrong" → "This causes X because Y, recommend Z"
 7. **Bike-shedding** — Focus on critical issues first, not formatting
+8. **Forgetting cleanup** — Always clean up agent teams after synthesis

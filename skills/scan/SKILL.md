@@ -34,30 +34,15 @@ Grep: pattern="TODO|FIXME|HACK|XXX|DEPRECATED|WORKAROUND"
 
 #### Step 2: Parallel Analysis
 
-```
-Task(subagent_type="claudeops:explore", run_in_background=true,
-     prompt="Find potentially dead code:
-     - Exported functions/classes never imported elsewhere
-     - Unused variables and parameters
-     - Unreachable code paths
-     - Files with no imports
-     List each with file:line and confidence level.")
+Create an agent team with 3 specialists:
 
-Task(subagent_type="claudeops:architect", run_in_background=true,
-     prompt="Identify duplicated logic patterns:
-     - Functions doing similar things
-     - Copy-pasted code blocks
-     - Repeated error handling patterns
-     - Similar data transformations
-     Group by similarity, suggest consolidation.")
+- **Dead Code Finder** (explore agent): Find exported functions/classes never imported elsewhere, unused variables and parameters, unreachable code paths, and files with no imports. List each with file:line and confidence level.
 
-Task(subagent_type="claudeops:tester", run_in_background=true,
-     prompt="Find test coverage gaps:
-     - Source files without corresponding tests
-     - Critical paths without tests (auth, payments, data mutations)
-     - Complex functions without unit tests
-     Rate each by priority (Critical/High/Medium/Low).")
-```
+- **Duplication Finder** (architect agent): Identify duplicated logic patterns including functions doing similar things, copy-pasted code blocks, repeated error handling patterns, and similar data transformations. Group by similarity and suggest consolidation.
+
+- **Test Gap Finder** (tester agent): Find test coverage gaps including source files without corresponding tests, critical paths without tests (auth, payments, data mutations), and complex functions without unit tests. Rate each by priority (Critical/High/Medium/Low).
+
+Team members should share findings - dead code candidates may also be untested, duplicated patterns may warrant shared test utilities.
 
 #### Step 3: Generate Report
 

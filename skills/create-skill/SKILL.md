@@ -80,6 +80,14 @@ allowed-tools: [{selected tools}]
 
 ## Agent Assignment
 
+Choose the right coordination strategy:
+
+| Strategy | When to Use |
+|----------|-------------|
+| **Agent Team** | 3+ parallel streams, competing hypotheses, cross-cutting review |
+| **Subagent** | Focused single task, sequential pipeline |
+| **Direct** | Single-file changes, config tweaks |
+
 | Phase | Agent | Purpose |
 |-------|-------|---------|
 | [phase] | [agent] | [what they do] |

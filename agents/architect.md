@@ -219,6 +219,3 @@ Before concluding analysis:
 - [ ] Trade-offs documented
 - [ ] Verification approach defined
 
-## Collaboration
-
-When part of a review team, focus on architectural, performance, and design aspects. Report structured findings for synthesis.

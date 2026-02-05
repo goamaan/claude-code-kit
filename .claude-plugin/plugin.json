@@ -1,13 +1,13 @@
 {
   "name": "claudeops",
-  "description": "Deep project initialization, multi-agent orchestration, and workflow skills that level up Claude Code with comprehensive codebase context",
-  "version": "3.0.0",
+  "description": "Agent-team-aware workflows, codebase analysis, and workflow skills for Claude Code",
+  "version": "3.1.0",
   "author": {
     "name": "Amaan"
   },
   "license": "MIT",
   "homepage": "https://github.com/goamaan/claudeops",
   "repository": "https://github.com/goamaan/claudeops",
-  "keywords": ["orchestration", "multi-agent", "context", "init", "workflow", "automation", "CLAUDE.md"],
+  "keywords": ["orchestration", "agent-teams", "context", "init", "workflow", "automation", "CLAUDE.md"],
   "skills": "./skills/"
 }

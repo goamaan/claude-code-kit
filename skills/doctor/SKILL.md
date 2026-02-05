@@ -51,6 +51,7 @@ Check the current working directory for:
 
 - `.claude/CLAUDE.md` exists (suggest running `/claudeops:init` if missing)
 - `.claude/settings.json` exists and is valid JSON
+  - Verify `env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` is set to `"1"` (suggest re-running `/claudeops:init` if missing)
 - `.claude/learnings/` directory (informational, not required)
 - `.claude/rules/` directory (informational, not required)
 

@@ -244,7 +244,7 @@ options:
 
 ### Step 6: Generate CLAUDE.md
 
-Create `.claude/CLAUDE.md` with this structure (keep under 400 lines):
+Create `.claude/CLAUDE.md` with this structure (keep under 600 lines):
 
 ````markdown
 # {Project Name}
@@ -318,28 +318,25 @@ Create `.claude/CLAUDE.md` with this structure (keep under 400 lines):
 {From security agent + user interview}
 - `{path}` - {why it's sensitive}
 
-## Agent Routing
+## Task Routing
 
-When delegating work, use these specialized agents:
+Before starting any task, assess its complexity:
 
-| Agent | Use For |
-|-------|---------|
-| `claudeops:architect` | Deep analysis, debugging, system design, plan review |
-| `claudeops:executor` | Code changes, bug fixes, refactoring, implementation |
-| `claudeops:explore` | File search, codebase discovery, structure mapping |
-{if frontend detected:}
-| `claudeops:designer` | UI/UX, components, styling, responsive layouts |
-{if tests detected:}
-| `claudeops:tester` | Test writing, TDD workflow, coverage improvement |
-{if backend/auth detected:}
-| `claudeops:security` | Security audit, auth review, vulnerability assessment |
-| `claudeops:researcher` | Technology evaluation, best practices, API analysis |
+| Complexity | Signals | Strategy |
+|------------|---------|----------|
+| **High** | 3+ files, cross-module, integration/migration, needs exploration | `/claudeops:autopilot` — discovery, planning, agent teams, verification |
+| **Medium** | 2-3 files, single module, clear scope | Subagent or direct with build/test verification |
+| **Low** | Single file, config tweak, typo, rename | Direct execution |
 
-### Delegation Patterns
-- **Code changes** → executor
-- **Deep debugging** → architect
-- **Find files/code** → explore
-- **Multiple independent tasks** → spawn agents in parallel
+Key heuristic: if you need to explore the codebase before knowing what files to change, route to autopilot.
+
+### Execution Strategies
+
+| Strategy | When to Use |
+|----------|-------------|
+| **Agent Team** | 3+ parallel work streams, competing hypotheses, cross-cutting review |
+| **Subagent** | Focused single task, sequential pipeline |
+| **Direct** | Single-file changes, known fixes |
 
 ## Rules
 
@@ -395,6 +392,9 @@ Create or merge `.claude/settings.json`:
 
 ```json
 {
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
   "permissions": {
     "allow": [
       "Bash({packageManager} install*)",
@@ -484,13 +484,13 @@ Task(subagent_type="claudeops:explore", model="haiku",
 - Don't add speculative sections
 - Don't overwrite without backup
 - Don't create rules files unless genuinely needed
-- Don't exceed 400 lines in CLAUDE.md (use @imports for more)
+- Don't exceed 600 lines in CLAUDE.md (use @imports for more)
 - Don't include agents that aren't relevant to the project
 - Don't ask questions the agents already answered definitively
 
 ## Using @imports for Large Projects
 
-If the project needs more documentation than fits in 400 lines, use @imports:
+If the project needs more documentation than fits in 600 lines, use @imports:
 
 ```markdown
 ## Architecture

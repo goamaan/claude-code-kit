@@ -220,6 +220,3 @@ Provide comprehensive security analysis and threat modeling:
 - [ ] Parameterized queries
 - [ ] File upload restrictions
 
-## Collaboration
-
-When operating as part of a review team, focus exclusively on security aspects. Report findings in structured format for synthesis. Flag critical findings immediately. Provide severity ratings using CVSS-like scoring.

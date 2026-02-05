@@ -5,10 +5,11 @@ description: >
   "pipeline failed", "build failed", "fix containers", "docker not working", "compose failing",
   reports an error, describes unexpected behavior, or pastes an error/stack trace with no context.
   Spawns parallel diagnostic agents, forms hypotheses, tests fixes, and verifies resolution.
+  Prefer this over autopilot when the task is fixing something broken, not building something new.
 user-invocable: true
 ---
 
-# Debug Skill (v6.0)
+# Debug Skill (v7.0)
 
 Systematic debugging orchestration that diagnoses issues through parallel investigation, hypothesizes root causes, tests fixes, and verifies resolution.
 
@@ -26,7 +27,7 @@ Systematic debugging orchestration that diagnoses issues through parallel invest
 
 ### 1. Diagnose-Hypothesize-Fix
 
-**Pattern**: Pipeline + Speculative
+**Pattern**: Pipeline + Agent Team
 
 The primary debugging workflow:
 
@@ -53,18 +54,18 @@ Spawn architect agent to synthesize diagnostic findings:
 - Form ranked hypotheses about root cause
 - Identify which hypothesis to test first
 
-#### Phase 3: Fix (Speculative or Pipeline)
+#### Phase 3: Fix (Agent Team or Pipeline)
 
 **If hypothesis is uncertain** (multiple plausible causes):
-```
-# Speculative pattern — test 2-3 approaches in parallel
-Task(subagent_type="executor", run_in_background=True,
-     prompt="Implement fix for hypothesis A: [description]...")
 
-Task(subagent_type="executor", run_in_background=True,
-     prompt="Implement fix for hypothesis B: [description]...")
-```
-Then evaluate which fix works and discard the other.
+Create an agent team where each member tests a different hypothesis in parallel. Team members share their findings as they investigate, so that insights from one hypothesis (e.g., discovering a race condition) can inform others' investigations. Once all team members report back, select the fix that best addresses the root cause and discard the others.
+
+Spawn 2-3 executor agents, each assigned to investigate a different hypothesis:
+- First executor: Investigate hypothesis A, share findings about what you discover
+- Second executor: Investigate hypothesis B, share findings about what you discover
+- Third executor (if needed): Investigate hypothesis C, share findings about what you discover
+
+After all investigators share their findings, evaluate which fix actually resolves the issue and explains the symptoms most completely.
 
 **If hypothesis is clear** (one obvious cause):
 ```
@@ -93,22 +94,16 @@ For bugs that are hard to reproduce:
 
 ### 3. Performance Debugging
 
-**Pattern**: Fan-Out (layer-by-layer)
+**Pattern**: Agent Team (layer investigation)
 
-For performance issues:
+For performance issues, create an agent team where each investigator analyzes a different layer but shares findings across the team. Performance issues often span multiple layers (e.g., a slow database query causes slow API responses which cause frontend delays), so investigators should cross-reference their findings.
 
-```
-Task(subagent_type="architect", run_in_background=True,
-     prompt="Analyze database query performance. Look for N+1, missing indexes, slow queries...")
+Spawn 3 architect agents to investigate different performance layers:
+- First architect: Analyze database query performance. Look for N+1 queries, missing indexes, slow queries. Share what you find with the team.
+- Second architect: Analyze API endpoint performance. Check response times, payload sizes, caching. Correlate with database findings if relevant.
+- Third architect: Analyze frontend rendering performance. Check re-renders, bundle size, lazy loading. Correlate with API findings if relevant.
 
-Task(subagent_type="architect", run_in_background=True,
-     prompt="Analyze API endpoint performance. Check response times, payload sizes, caching...")
-
-Task(subagent_type="architect", run_in_background=True,
-     prompt="Analyze frontend rendering performance. Check re-renders, bundle size, lazy loading...")
-```
-
-Synthesize findings and implement optimizations.
+After all investigators share their findings, synthesize a complete picture of the performance bottleneck and implement optimizations that address the root cause (which may span multiple layers).
 
 ### 4. CI/Pipeline Debugging
 
@@ -217,7 +212,8 @@ Task(subagent_type="executor",
 | Diagnose | architect | Analyze code paths, state, and git history |
 | Hypothesize | architect | Synthesize and rank hypotheses |
 | Fix | executor | Implement targeted fix |
-| Fix (speculative) | executor x 2-3 | Parallel fix attempts |
+| Fix (team mode) | executor team | Parallel investigation with shared findings |
+| Performance (team mode) | architect team | Cross-layer investigation with shared findings |
 | Verify | tester | Regression testing |
 | CI Diagnose | architect | Analyze CI failure logs |
 | Container Diagnose | architect | Analyze Docker/compose logs and config |

@@ -165,6 +165,3 @@ Conduct deep research to synthesize information from multiple sources:
 4. **Note assumptions**: Be clear about context
 5. **Cite specifically**: Reference exact files/lines
 
-## Collaboration
-
-When part of a review or research team, focus on best practices and technology research. Report structured findings for synthesis.
