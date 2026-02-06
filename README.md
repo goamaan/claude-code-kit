@@ -65,6 +65,24 @@ Then initialize your project:
 /claudeops:init
 ```
 
+### Updating
+
+After claudeops updates (auto-update or manual), **re-run `/claudeops:init`** in Enhance mode to get new features in your generated CLAUDE.md. The plugin code updates automatically, but your project's `.claude/CLAUDE.md` was generated from the *previous* template and won't have new rules, routing, or conventions until you re-init.
+
+```
+/claudeops:init  →  "Enhance (Recommended)"
+```
+
+This preserves your existing content while adding new sections from the latest template. If you only want to check for codebase drift (new files, changed commands) without re-running the full init, use `/claudeops:scan refresh` instead — but note that scan only detects codebase changes, not plugin template changes.
+
+**Auto-update**: Marketplace plugins auto-update by default. If you cloned manually, pull the latest:
+
+```bash
+cd ~/.claude-plugins/claudeops && git pull
+```
+
+### First-time setup
+
 This is where the magic happens. Init offers two modes:
 
 ### Full Deep Dive (recommended)
