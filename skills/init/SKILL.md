@@ -349,15 +349,18 @@ Create `.claude/CLAUDE.md` with this structure (keep under 600 lines):
 
 ## Task Routing
 
-Before starting any task, assess its complexity:
+**Plan first, code second.** For any non-trivial change, create a plan and get user approval before writing code. Only skip planning for truly trivial tasks (typos, config tweaks, single-line fixes). Say "skip planning" or "just do it" to bypass.
 
 | Complexity | Signals | Strategy |
 |------------|---------|----------|
-| **High** | 3+ files, cross-module, integration/migration, needs exploration | `/claudeops:autopilot` — discovery, planning, agent teams, verification |
-| **Medium** | 2-3 files, single module, clear scope | Subagent or direct with build/test verification |
-| **Low** | Single file, config tweak, typo, rename | Direct execution |
+| **High** | 3+ files, cross-module, integration/migration, needs exploration | `/claudeops:autopilot` — discovery, architect-reviewed plan (user approves), agent teams, verification |
+| **Medium** | 2-3 files, single module, clear scope | Use plan mode (`Shift+Tab` or `EnterPlanMode`) → explore, write plan → user approves → implement |
+| **Low** | Single file, config tweak, typo, rename | Direct execution (no plan needed) |
 
-Key heuristic: if you need to explore the codebase before knowing what files to change, route to autopilot.
+Key heuristics:
+- If you need to explore the codebase before knowing what to change → autopilot
+- If you know what to change but it touches 2+ files → enter plan mode, plan, get approval, then implement
+- If it's a single obvious change → just do it
 
 ### Execution Strategies
 
@@ -369,6 +372,7 @@ Key heuristic: if you need to explore the codebase before knowing what files to 
 
 ## Rules
 
+- **Always plan before coding** — For any non-trivial change (2+ files, new feature, refactor), use plan mode (`Shift+Tab` or `EnterPlanMode`) to explore and create a plan, then get user approval before writing code. For high-complexity tasks, use `/claudeops:autopilot` which has its own planning phase. Only skip for truly trivial tasks (typos, config tweaks, single-line fixes). Say "skip planning" or "just do it" to bypass.
 - Always run `{lint_cmd}` after modifying code
 - Always run `{typecheck_cmd}` after TypeScript changes
 - Never commit directly to main/master

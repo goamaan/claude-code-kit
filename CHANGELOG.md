@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-02-05
+
+Plan-first by default. Non-trivial tasks always get a plan and user approval before any code is written. Leverages Claude Code's native plan mode for medium-complexity tasks and autopilot's architect-reviewed planning for high-complexity tasks.
+
+### Added
+
+- **Plan-first as default behavior**: All non-trivial tasks (2+ files, new features, refactors) require a plan and user approval before code is written
+- **"Planning Is the Default" section** in autopilot skill establishing plan-first as the core principle
+- **"Relationship to Claude Code's Native Plan Mode" section** in autopilot skill explaining two-tier planning: native `EnterPlanMode` for medium tasks, autopilot's subagent-based planning for complex tasks
+- **Skip-planning keywords**: "just do it", "skip planning", "no plan" as opt-out escape hatch (replaces opt-in "plan first" keyword)
+- **"Always plan before coding" rule** in init-generated CLAUDE.md with references to both native plan mode and autopilot
+- **"Coding before planning" anti-pattern** added as #1 in autopilot anti-patterns list
+
+### Changed
+
+- **autopilot skill**: Mode A (Agent Team) Phase 2 is now BLOCKING with mandatory user approval via AskUserQuestion. Mode B (Subagent Pipeline) Phase 2 is now BLOCKING with mandatory user approval (previously optional, triggered only by "plan first" keyword). Removed "plan first" and "plan mode" from activation keywords (planning is now the default, not a trigger).
+- **init skill**: Task Routing template updated — medium complexity strategy changed from "subagent or direct" to "use plan mode (`Shift+Tab` or `EnterPlanMode`) → explore, write plan → user approves → implement". High complexity now explicitly notes architect-reviewed planning with user approval.
+- **init skill**: Generated Rules section now starts with "Always plan before coding" referencing native plan mode and autopilot
+
+### Removed
+
+- **"Optional: Plan-First Gate"** section from autopilot Mode B — plan approval is now always-on, not gated behind keywords
+- **"plan first" and "plan mode"** as autopilot activation keywords — these are now the default behavior, not triggers
+
 ## [3.1.1] - 2026-02-05
 
 ### Fixed

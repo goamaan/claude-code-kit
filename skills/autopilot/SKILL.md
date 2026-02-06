@@ -40,9 +40,14 @@ Full autonomous execution from idea to working code. Gathers requirements, creat
 
 ### Explicit Keywords (always activate)
 
-- "autopilot", "plan first", "plan mode", "full auto", "handle it all"
+- "autopilot", "full auto", "handle it all"
 - "build me", "create me", "make me", "implement everything"
 - "worktrees", "parallel branches"
+
+### Skip-Planning Keywords (bypass the plan approval gate)
+
+- "just do it", "skip planning", "no plan", "skip plan"
+- Only these keywords bypass the plan-first default — everything else plans first
 
 ### When NOT to Activate
 
@@ -52,6 +57,24 @@ Full autonomous execution from idea to working code. Gathers requirements, creat
 - Questions about the codebase → direct answer
 
 ## Execution Modes
+
+### Planning Is the Default
+
+**All non-trivial tasks get a plan before any code is written.** This means:
+- Present the plan to the user and get explicit approval before execution
+- Only skip planning when the user explicitly says "just do it", "skip planning", or "no plan"
+- Even "medium" tasks (2-3 files, clear scope) get a lightweight plan
+
+This is the single most important principle: **plan first, code second.**
+
+### Relationship to Claude Code's Native Plan Mode
+
+Claude Code has a built-in plan mode (`Shift+Tab` or `EnterPlanMode`) that restricts Claude to read-only operations while exploring and planning. Autopilot's planning is **more capable** than native plan mode because it spawns specialist subagents (explore, architect) for deeper analysis. Use:
+
+- **Native plan mode** → Medium-complexity tasks (2-3 files, clear scope). Use `EnterPlanMode`, explore, write plan, `ExitPlanMode` for user approval.
+- **Autopilot planning** → High-complexity tasks (3+ files, cross-module, needs exploration). Autopilot's discovery + architect-reviewed planning + `AskUserQuestion` approval gate.
+
+Both mechanisms achieve the same goal: user approves a plan before any code is written.
 
 ### Decision Heuristic: Team vs Subagent vs Direct
 
@@ -65,7 +88,7 @@ Choose execution mode based on work characteristics:
 
 Additional considerations:
 - **Parallel Worktree** is orthogonal — use for fully independent feature tracks (different directories, no shared files)
-- **Plan-first flag** can be applied to any mode when user says "plan first" or "plan before coding"
+- Planning applies to all modes above except Direct. For Agent Team and Subagent Pipeline, always complete Discovery + Planning phases and get user approval before any execution.
 
 ### Mode A: Agent Team
 
@@ -77,8 +100,8 @@ Spawn explore + architect subagents to understand scope:
 2. `Task(subagent_type="architect")` — Analyze requirements, existing patterns, and technical constraints
 3. If requirements ambiguous, use AskUserQuestion (max 4 questions, 4 options each)
 
-#### Phase 2: Planning
-Create comprehensive plan with architect review:
+#### Phase 2: Planning (BLOCKING — requires user approval)
+Create comprehensive plan with architect review, then get user sign-off:
 1. Spawn architect subagent to create task breakdown and define approach
 2. Spawn architect subagent (review mode) to critique as senior staff engineer:
 ```
@@ -90,7 +113,14 @@ Task(subagent_type="architect",
      - What are the risks?
      Produce a revised plan with your recommendations...")
 ```
-3. Finalize plan with task dependencies and file ownership boundaries
+3. Present the plan to the user with `AskUserQuestion`:
+   - Option 1: "Approve plan — proceed to execution"
+   - Option 2: "Revise plan — address these concerns: [user input]"
+   - Option 3: "Reject — start over with different approach"
+4. **No execution until user explicitly approves**
+5. Once approved, finalize plan with task dependencies and file ownership boundaries
+
+**Skip planning**: Only if user explicitly says "just do it", "skip planning", or "no plan".
 
 #### Phase 3: Execution
 Create an agent team to execute the plan in parallel:
@@ -150,20 +180,6 @@ After team completes, verify and fix if needed:
 
 For sequential or simple work. Default mode when team coordination isn't needed.
 
-#### Optional: Plan-First Gate
-
-Triggered by: "plan first", "plan before coding", "plan mode"
-
-When activated, add an explicit user approval gate between planning and execution:
-
-1. **Discovery** — Same as Phase 1 below
-2. **Planning (BLOCKING)** — Create plan, critique it, then present to user with `AskUserQuestion`:
-   - Option 1: "Approve plan — proceed to execution"
-   - Option 2: "Revise plan — address these concerns: [user input]"
-   - Option 3: "Reject — start over with different approach"
-3. **No execution until user explicitly approves**
-4. If execution diverges significantly → re-enter planning with failure context (max 2 re-plan cycles)
-
 #### Phase 1: Discovery
 
 Understand what needs to be built.
@@ -208,24 +224,34 @@ What NOT to ask (discoverable facts):
   → Requirements: [summary]
 ```
 
-#### Phase 2: Planning
+#### Phase 2: Planning (BLOCKING — requires user approval)
 
-Create strategic plan and architecture.
+Create strategic plan, get user sign-off before any code is written.
 
 **Actions**:
 1. Spawn architect agent to create task breakdown and define technical approach
 2. Spawn architect agent (in review mode) to critique the plan
-3. Create all tasks with TaskCreate, including dependencies
-4. Identify parallelization opportunities
+3. Present the plan to the user with `AskUserQuestion`:
+   - Option 1: "Approve plan — proceed to execution"
+   - Option 2: "Revise plan — address these concerns: [user input]"
+   - Option 3: "Reject — start over with different approach"
+4. **No execution until user explicitly approves**
+5. Once approved, create all tasks with TaskCreate, including dependencies
+6. Identify parallelization opportunities
+
+**Skip planning**: Only if user explicitly says "just do it", "skip planning", or "no plan".
+
+**Re-planning**: If execution diverges significantly from the plan, re-enter planning with failure context (max 2 re-plan cycles).
 
 **Gate**:
-- Plan reviewed and approved
+- Plan reviewed by architect
+- **User has explicitly approved the plan**
 - All tasks created with clear dependencies
 - Parallelization opportunities identified
 
 **Output**:
 ```
-[Phase 2] Planning complete
+[Phase 2] Planning complete (user-approved)
   → Tasks: [N] total ([M] parallelizable)
   → Architecture: [approach summary]
   → Risk areas: [identified risks]
@@ -467,15 +493,16 @@ To resume: "resume autopilot" or "continue where you left off"
 
 ## Anti-Patterns to Avoid
 
-1. **Starting without discovery** — Always explore the codebase first
-2. **Sequential execution** — Parallelize independent tasks
-3. **Skipping verification** — Always run build and tests
-4. **Ignoring review feedback** — Address plan review findings
-5. **No self-correction** — Retry failed tasks, don't give up
-6. **Implementing directly** — ALWAYS delegate to agents or teams
-7. **Missing task tracking** — Use TaskCreate for every work item
-8. **Vague agent prompts** — Use 5-element prompt template
-9. **Over-coordinating teams** — Let teams self-organize, don't micromanage
+1. **Coding before planning** — ALWAYS plan first, get user approval, then code
+2. **Starting without discovery** — Always explore the codebase first
+3. **Sequential execution** — Parallelize independent tasks
+4. **Skipping verification** — Always run build and tests
+5. **Ignoring review feedback** — Address plan review findings
+6. **No self-correction** — Retry failed tasks, don't give up
+7. **Implementing directly** — ALWAYS delegate to agents or teams
+8. **Missing task tracking** — Use TaskCreate for every work item
+9. **Vague agent prompts** — Use 5-element prompt template
+10. **Over-coordinating teams** — Let teams self-organize, don't micromanage
 
 ## Interruption Handling
 
