@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.1] - 2026-02-08
+
+Remove sonnet model tier — all agents now run on opus except explore (haiku).
+
+### Changed
+
+- **agents**: executor, designer, tester, researcher all upgraded from sonnet to opus
+- **doctor skill**: Updated expected model tiers from haiku/sonnet/opus to haiku/opus
+
 ## [3.2.0] - 2026-02-05
 
 Plan-first by default. Non-trivial tasks always get a plan and user approval before any code is written. Leverages Claude Code's native plan mode for medium-complexity tasks and autopilot's architect-reviewed planning for high-complexity tasks.

@@ -4,7 +4,7 @@ description: >
   Quality assurance agent for testing. Use proactively when tasks involve writing tests,
   running test suites, improving coverage, TDD workflow, test planning, bug reproduction,
   or verifying that implementations work correctly. Runs tests and reports results.
-model: sonnet
+model: opus
 tools:
   - Read
   - Glob

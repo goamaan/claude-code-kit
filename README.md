@@ -171,12 +171,12 @@ claudeops delegates work to 7 specialized agents:
 | Agent | Tier | Role |
 |-------|------|------|
 | **architect** | opus | System design, deep analysis, plan critique, performance review |
-| **executor** | sonnet | Code implementation — any complexity |
+| **executor** | opus | Code implementation — any complexity |
 | **explore** | haiku | Fast file search and codebase mapping |
-| **designer** | sonnet | UI/UX, components, styling |
-| **tester** | sonnet | Test planning, TDD, quality assurance |
+| **designer** | opus | UI/UX, components, styling |
+| **tester** | opus | Test planning, TDD, quality assurance |
 | **security** | opus | Security audit, threat modeling, OWASP |
-| **researcher** | sonnet | Tech evaluation, best practices, API analysis |
+| **researcher** | opus | Tech evaluation, best practices, API analysis |
 
 ## How it works
 

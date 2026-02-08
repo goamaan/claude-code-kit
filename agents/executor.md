@@ -4,7 +4,7 @@ description: >
   Primary implementation agent for all code changes. Use proactively for feature implementation,
   bug fixes, refactoring, test writing, configuration changes, and any task that modifies files.
   Handles everything from single-line fixes to multi-file features.
-model: sonnet
+model: opus
 tools:
   - Read
   - Glob

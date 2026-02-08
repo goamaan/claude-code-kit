@@ -1,7 +1,7 @@
 {
   "name": "claudeops",
   "description": "Agent-team-aware workflows, codebase analysis, and workflow skills for Claude Code",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "author": {
     "name": "Amaan"
   },

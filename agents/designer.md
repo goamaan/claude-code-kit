@@ -4,7 +4,7 @@ description: >
   UI/UX implementation agent for frontend work. Use proactively when tasks involve React,
   Vue, Svelte, Angular components, CSS/Tailwind styling, responsive layouts, accessibility,
   animations, or any user interface work. Builds polished, accessible interfaces.
-model: sonnet
+model: opus
 tools:
   - Read
   - Glob
