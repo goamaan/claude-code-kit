@@ -5,7 +5,6 @@ description: >
   require understanding external APIs, comparing libraries, finding framework conventions,
   analyzing migration paths, or researching industry patterns. Synthesizes findings from
   multiple sources into actionable recommendations.
-model: opus
 tools:
   - Read
   - Glob

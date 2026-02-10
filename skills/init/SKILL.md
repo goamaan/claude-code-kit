@@ -68,7 +68,7 @@ options:
 Spawn the foundation agent to gather essential project metadata. This agent extracts what a deterministic scanner would find, but with semantic understanding.
 
 ```
-Task(subagent_type="claudeops:explore", model="haiku",
+Task(subagent_type="claudeops:explore",
      prompt="Analyze this project's foundation. Output ONLY a structured report with these exact sections:
 
 ## Project Identity
@@ -464,7 +464,7 @@ Next: Review .claude/CLAUDE.md and customize as needed.
 
 If user selects "Minimal" or "Quick Setup":
 
-1. Run foundation analysis only (single explore agent with haiku)
+1. Run foundation analysis only (single explore agent)
 2. Generate/merge settings.json immediately (same as Step 4 above — this is REQUIRED even in minimal mode)
 3. Skip user interview (or ask only product description)
 4. Generate basic CLAUDE.md with:
@@ -477,7 +477,7 @@ If user selects "Minimal" or "Quick Setup":
 Keep it under 100 lines.
 
 ```
-Task(subagent_type="claudeops:explore", model="haiku",
+Task(subagent_type="claudeops:explore",
      prompt="Quick project scan. Output:
      1. Project name and one-line description
      2. Main language and framework

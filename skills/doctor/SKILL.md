@@ -42,8 +42,7 @@ For each skill in `skills/*/SKILL.md`:
 
 For each agent in `agents/*.md`:
 - Verify YAML frontmatter is valid
-- Verify `name`, `description`, `model`, `tools` fields exist
-- Report expected model tier (haiku/opus)
+- Verify `name`, `description`, `tools` fields exist
 
 ### Check 4: Project .claude/ Setup
 

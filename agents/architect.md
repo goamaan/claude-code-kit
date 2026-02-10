@@ -5,7 +5,6 @@ description: >
   Use proactively when tasks involve complex debugging, system design decisions, performance
   bottlenecks, architecture compliance, plan critique, or any analysis requiring cross-cutting
   investigation. Delegates here for root cause analysis, trade-off evaluation, and verification.
-model: opus
 tools:
   - Read
   - Glob

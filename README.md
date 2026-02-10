@@ -168,15 +168,15 @@ Skills choose the right strategy automatically based on the task.
 
 claudeops delegates work to 7 specialized agents:
 
-| Agent | Tier | Role |
-|-------|------|------|
-| **architect** | opus | System design, deep analysis, plan critique, performance review |
-| **executor** | opus | Code implementation — any complexity |
-| **explore** | haiku | Fast file search and codebase mapping |
-| **designer** | opus | UI/UX, components, styling |
-| **tester** | opus | Test planning, TDD, quality assurance |
-| **security** | opus | Security audit, threat modeling, OWASP |
-| **researcher** | opus | Tech evaluation, best practices, API analysis |
+| Agent | Role |
+|-------|------|
+| **architect** | System design, deep analysis, plan critique, performance review |
+| **executor** | Code implementation — any complexity |
+| **explore** | Fast file search and codebase mapping |
+| **designer** | UI/UX, components, styling |
+| **tester** | Test planning, TDD, quality assurance |
+| **security** | Security audit, threat modeling, OWASP |
+| **researcher** | Tech evaluation, best practices, API analysis |
 
 ## How it works
 

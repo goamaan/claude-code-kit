@@ -4,7 +4,6 @@ description: >
   Security analysis agent. Use proactively when tasks involve authentication, authorization,
   input validation, cryptography, API security, dependency auditing, or any code handling
   sensitive data. Performs OWASP Top 10 analysis, threat modeling, and vulnerability assessment.
-model: opus
 tools:
   - Read
   - Glob

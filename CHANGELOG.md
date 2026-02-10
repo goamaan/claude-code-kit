@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.3.0] - 2026-02-10
+
+Remove model prescriptions — agents inherit the conversation model via Claude Code's default `inherit` behavior.
+
+### Changed
+
+- **agents**: Remove `model:` field from all 7 agent definitions (defaults to inherit)
+- **init skill**: Remove `model="haiku"` from Task calls
+- **doctor skill**: Stop validating model field in agent definitions
+- **docs**: Remove model tier tables and annotations from CLAUDE.md and README.md
+
 ## [3.2.1] - 2026-02-08
 
 Remove sonnet model tier — all agents now run on opus except explore (haiku).
